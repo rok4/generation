@@ -1,0 +1,6 @@
+version: "3"
+services:
+
+  tests:
+    build: .
+    image: rok4/rok4generation-tools-tests
