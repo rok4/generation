@@ -9,11 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(BUILD_SHARED_LIBS OFF)
 
 # Définit le nom du projet 
-project(ROK4SERVER)
-
-set(CPACK_PACKAGE_VERSION ${ROK4_VERSION})
-set(CPACK_PACKAGE_DESCRIPTION "WMS/WMTS/TMS server")
-set(CPACK_PACKAGE_VENDOR "IGN")
+project(ROK4GENERATION)
 
 ################### PARAMÈTRES
 
@@ -21,12 +17,30 @@ option(BUILD_VERSION "Build version" 0.0.0)
 option(OBJECT_ENABLED "Build with object storage" 0)
 option(KDU_ENABLED "Build with kakadu" 0)
 option(KDU_THREADING "Build with kakadu" 0)
-
+option(DEBUG_BUILD "Build with debug mode" 0)
 
 ################### VERSION
 set(ROK4_VERSION ${BUILD_VERSION})
 
 message("Version ${ROK4_VERSION}")
+
+################### PACKAGE CONFIGURATION
+
+set(CPACK_PACKAGE_NAME "ROK4GENERATION")
+set(CPACK_PACKAGE_VERSION ${ROK4_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION "WMS/WMTS/TMS server")
+set(CPACK_PACKAGE_VENDOR "IGN")
+
+################### MODE DEBUG
+
+if(DEBUG_BUILD)
+  set(CMAKE_BUILD_TYPE debugbuild)
+  set(CMAKE_CXX_FLAGS_DEBUGBUILD "-g -O0")
+  set(CMAKE_C_FLAGS_DEBUGBUILD "-g")
+else(DEBUG_BUILD)
+  set(CMAKE_BUILD_TYPE specificbuild)
+  set(CMAKE_CXX_FLAGS_SPECIFICBUILD "-O3")
+endif(DEBUG_BUILD)
 
 ################### DÉPENDANCES
 
@@ -41,17 +55,30 @@ include(cmake/modules/dependencies.cmake)
 configure_file(config.h.in config.h ESCAPE_QUOTES @ONLY)
 
 message(STATUS "Building rok4core")
-set(FILEIMAGE_ENABLED 0)
+set(FILEIMAGE_ENABLED 1)
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/core)
 
-message(STATUS "Building ROK4 Server")
-file(GLOB ROK4SERVER_SRCS "${PROJECT_SOURCE_DIR}/src/*.cpp")
-add_executable(rok4 ${ROK4SERVER_SRCS})
+set(ROK4GENERATION_COMMANDS 
+    cache2work
+    checkWork
+    composeNtiff
+    decimateNtiff
+    manageNodata
+    merge4tiff
+    mergeNtiff
+    overlayNtiff
+    pbf2cache
+    work2cache
+)
+
+foreach(cmd IN LISTS ROK4GENERATION_COMMANDS)
+    message(STATUS "Building ROK4 GENERATION command ${cmd}")
+    add_executable(${cmd} ${PROJECT_SOURCE_DIR}/src/${cmd}.cpp)
+    target_include_directories(${cmd} PUBLIC "${PROJECT_BINARY_DIR}")
+    target_link_libraries(${cmd} PUBLIC rok4core boostlogsetup boostthread boostfilesystem boostsystem)
+endforeach()
 
 include_directories(lib/core/src)
-
-target_include_directories(rok4 PUBLIC "${PROJECT_BINARY_DIR}")
-target_link_libraries(rok4 PUBLIC rok4core fcgi tinyxml boostlogsetup boostthread boostfilesystem boostsystem)
 
 ################### TESTS
 
@@ -59,45 +86,11 @@ target_link_libraries(rok4 PUBLIC rok4core fcgi tinyxml boostlogsetup boostthrea
 
 ################### INSTALLATION
 
-INSTALL(TARGETS rok4 rok4core
+INSTALL(TARGETS ${ROK4GENERATION_COMMANDS} rok4core
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
-
-if(DEB_PACKAGE)
-
-    # Installe les fichiers de configurations
-    INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/config/" DESTINATION /etc/rok4/config)
-
-    # Installe les fichiers de service
-    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/service/rok4" 
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        DESTINATION /etc/init.d
-    )
-
-    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/service/rok4.service" 
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        DESTINATION /usr/lib/systemd/system
-    )
-
-else(DEB_PACKAGE)
-
-    # Installe les fichiers de configurations
-    INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/config/" DESTINATION etc/rok4/config)
-  
-    # Installe les fichiers de service
-    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/service/rok4"
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        DESTINATION etc/init.d
-    )
-
-    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/service/rok4.service" 
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        DESTINATION usr/lib/systemd/system
-    )
-
-endif(DEB_PACKAGE)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(BUILD_ARCHITECTURE "64bit")

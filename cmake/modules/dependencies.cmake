@@ -1,0 +1,38 @@
+if(ROK4GENERATIONDEPENDENCIES_FOUND)
+    return()
+endif(ROK4GENERATIONDEPENDENCIES_FOUND)
+
+message("Search dependencies for ROK4 GENERATION")
+
+# Extern libraries
+
+if(NOT TARGET boostlog)
+    find_package(BoostLog)
+    if(BOOSTLOG_FOUND)
+        add_library(boostlog STATIC IMPORTED)
+        set_property(TARGET boostlog PROPERTY IMPORTED_LOCATION ${BOOSTLOG_LIBRARY})
+        add_library(boostlogsetup STATIC IMPORTED)
+        set_property(TARGET boostlogsetup PROPERTY IMPORTED_LOCATION ${BOOSTLOGSETUP_LIBRARY})
+        add_library(boostthread STATIC IMPORTED)
+        set_property(TARGET boostthread PROPERTY IMPORTED_LOCATION ${BOOSTTHREAD_LIBRARY})
+        add_library(boostsystem STATIC IMPORTED)
+        set_property(TARGET boostsystem PROPERTY IMPORTED_LOCATION ${BOOSTSYSTEM_LIBRARY})
+        add_library(boostfilesystem STATIC IMPORTED)
+        set_property(TARGET boostfilesystem PROPERTY IMPORTED_LOCATION ${BOOSTFILESYSTEM_LIBRARY})
+        add_definitions(-DBOOST_LOG_DYN_LINK -DBOOST_SYSTEM_USE_UTF8)
+    else(BOOSTLOG_FOUND)
+        message(FATAL_ERROR "Cannot find extern library boostlog")
+    endif(BOOSTLOG_FOUND)
+endif(NOT TARGET boostlog)
+
+if(NOT TARGET proj)
+    find_package(Proj)
+    if(PROJ_FOUND)
+        add_library(proj STATIC IMPORTED)
+        set_property(TARGET proj PROPERTY IMPORTED_LOCATION ${PROJ_LIBRARY})
+    else(PROJ_FOUND)
+        message(FATAL_ERROR "Cannot find extern library proj")
+    endif(PROJ_FOUND)
+endif(NOT TARGET proj)
+
+set(ROK4GENERATIONDEPENDENCIES_FOUND TRUE BOOL)
