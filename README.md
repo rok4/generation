@@ -1,5 +1,10 @@
 # Suite d'outils de génération de dalles raster et vecteur
 
+- [Récupération du projet](#récupération-du-projet)
+- [Variables CMake](#variables-cmake)
+- [Dépendances à la compilation](#dépendances-à-la-compilation)
+- [Compilation et installation](#compilation-et-installation)
+- [Dépendances à l'exécution](#dépendances-à-lexécution)
 - [Présentation des outils](#présentation-des-outils)
   - [CACHE2WORK](#cache2work)
     - [Usage](#usage)
@@ -31,12 +36,53 @@
   - [WORK2CACHE](#work2cache)
     - [Usage](#usage-9)
     - [Exemples](#exemples-4)
-- [Tests fonctionnels](#tests-fonctionnels)
-  - [Compilation de l'image de test](#compilation-de-limage-de-test)
-  - [Exécution des tests](#exécution-des-tests)
-  - [Architecture de tests](#architecture-de-tests)
-  - [Contenu des tests](#contenu-des-tests)
 
+## Récupération du projet
+
+`git clone --recursive https://github.com/rok4/generation`
+
+## Variables CMake
+
+* `OBJECT_ENABLED` : active la compilation des classes de gestion des stockages objet
+* `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000
+
+## Dépendances à la compilation
+
+* Submodule GIT
+  * `https://github.com/rok4/core-cpp`
+* Paquets debian
+  * zlib1g-dev
+  * libcurl4-openssl-dev
+  * libproj-dev
+  * libssl-dev
+  * libturbojpeg0-dev
+  * libjpeg-dev
+  * libc6-dev
+  * libjson11-1-dev
+  * libboost-log-dev
+  * libboost-filesystem-dev
+  * libboost-system-dev
+  * libsqlite3-dev
+  * Si `KDU_ENABLED` à 0
+    * libopenjp2-7-dev
+  * libpng-dev
+  * libtiff5-dev
+  * Si `OBJECT_ENABLED` à 1
+    * librados-dev
+
+## Compilation et installation
+
+```shell
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=/ -DBUILD_VERSION=0.0.1 -DOBJECT_ENABLED=1 ..
+make
+make install
+```
+
+## Dépendances à l'exécution
+
+* Dépôt GIT
+    * `https://github.com/rok4/styles`
 
 ## Présentation des outils
 
@@ -385,40 +431,3 @@ La compression PNG a la particularité de ne pas être un standard du TIFF. Une 
 * Stockage CEPH sans conversion : `work2cache input.tif -pool PYRAMIDS -c png -t 256 256 output.tif`
 * Stockage S3 sans conversion : `work2cache input.tif -bucket PYRAMIDS -c png -t 256 256 output.tif`
 * Stockage SWIFT sans conversion : `work2cache input.tif -container PYRAMIDS -c png -t 256 256 output.tif`
-
-
-
-
-
-
-
-
-
-
-
-## Tests fonctionnels
-
-### Compilation de l'image de test
-
-`docker-compose build`
-
-### Exécution des tests
-
-Dans ce dossier : `docker-compose up --abort-on-container-exit`. Le statut de cette commande est alors celui du conteneur de test. 0 si tous les tests se sont bien déroulés, un autre code sinon.
-
-### Architecture de tests
-
-* Conteneur de test (ROK4GENERATION + BATS)
-
-### Contenu des tests
-
-* cache2work
-* checkWork
-* composeNtiff
-* decimtafeNtiff
-* manageNodata
-* merge4tiff
-* mergeNtiff
-* overlayNtiff
-* pbf2cache
-* work2cache
