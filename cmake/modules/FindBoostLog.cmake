@@ -11,35 +11,35 @@ FIND_PATH(BOOSTLOG_INCLUDE_DIR boost/log/core.hpp
     /usr/include 
     )
 
-FIND_LIBRARY(BOOSTLOG_LIBRARY NAMES libboost_log.a PATHS 
+FIND_LIBRARY(BOOSTLOG_LIBRARY NAMES libboost_log.so PATHS 
     /usr/local/lib 
     /usr/lib
     /usr/lib64 
     /usr/lib/x86_64-linux-gnu
     )
 
-FIND_LIBRARY(BOOSTLOGSETUP_LIBRARY NAMES libboost_log_setup.a PATHS
+FIND_LIBRARY(BOOSTLOGSETUP_LIBRARY NAMES libboost_log_setup.so PATHS
     /usr/lib/x86_64-linux-gnu/
     /usr/local/lib 
     /usr/lib
     /usr/lib64
     ) 
 
-FIND_LIBRARY(BOOSTSYSTEM_LIBRARY NAMES libboost_system.a PATHS
+FIND_LIBRARY(BOOSTSYSTEM_LIBRARY NAMES libboost_system.so PATHS
     /usr/lib/x86_64-linux-gnu/
     /usr/local/lib 
     /usr/lib
     /usr/lib64
     )  
 
-FIND_LIBRARY(BOOSTFILESYSTEM_LIBRARY NAMES libboost_filesystem.a PATHS
+FIND_LIBRARY(BOOSTFILESYSTEM_LIBRARY NAMES libboost_filesystem.so PATHS
     /usr/lib/x86_64-linux-gnu/
     /usr/local/lib 
     /usr/lib
     /usr/lib64
     )
 
-FIND_LIBRARY(BOOSTTHREAD_LIBRARY NAMES libboost_thread.a PATHS
+FIND_LIBRARY(BOOSTTHREAD_LIBRARY NAMES libboost_thread.so PATHS
     /usr/lib/x86_64-linux-gnu/
     /usr/local/lib 
     /usr/lib

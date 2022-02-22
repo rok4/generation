@@ -13,7 +13,7 @@ FIND_PATH(PROJ_INCLUDE_DIR proj.h
     C:/dev/cpp/libproj/src
     )
 
-FIND_LIBRARY(PROJ_LIBRARY NAMES libproj.a PATHS
+FIND_LIBRARY(PROJ_LIBRARY NAMES libproj.so PATHS
     /usr/lib/x86_64-linux-gnu/
     /usr/local/lib 
     /usr/lib
