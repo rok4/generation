@@ -68,7 +68,7 @@ namespace keywords = boost::log::keywords;
 #endif
 
 /** \~french Message d'usage de la commande pbf2cache */
-std::string help = std::string("\npbf2cache version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\npbf2cache version ") + std::string(VERSION) + "\n\n"
 
     "Make image tiled and compressed, in TIFF format, respecting ROK4 specifications.\n\n"
 

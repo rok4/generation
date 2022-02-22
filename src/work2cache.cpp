@@ -79,7 +79,7 @@ int fastWhite[4] = {254,254,254,255};
 int white[4] = {255,255,255,255};
 
 /** \~french Message d'usage de la commande work2cache */
-std::string help = std::string("\nwork2cache version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\nwork2cache version ") + std::string(VERSION) + "\n\n"
 
     "Make image tiled and compressed, in TIFF format, respecting ROK4 specifications.\n\n"
 

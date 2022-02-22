@@ -91,7 +91,7 @@ bool debugLogger=false;
 
 
 /** \~french Message d'usage de la commande overlayNtiff */
-std::string help = std::string("\noverlayNtiff version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\noverlayNtiff version ") + std::string(VERSION) + "\n\n"
 
     "Create one TIFF image, from several images with same dimensions, with different available merge methods.\n"
     "Sources and output image can have different numbers of samples per pixel. The sample type have to be the same for all sources and will be the output one\n\n"

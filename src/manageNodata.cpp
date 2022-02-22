@@ -87,7 +87,7 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 /** \~french Message d'usage de la commande manageNodata */
-std::string help = std::string("\nmanageNodata version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\nmanageNodata version ") + std::string(VERSION) + "\n\n"
 
         "Manage nodata pixel color in a TIFF file, byte samples\n\n"
 

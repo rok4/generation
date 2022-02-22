@@ -103,7 +103,7 @@ bool debugLogger=false;
 
 
 /** \~french Message d'usage de la commande decimateNtiff */
-std::string help = std::string("\ndecimateNtiff version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\ndecimateNtiff version ") + std::string(VERSION) + "\n\n"
 
     "Create one georeferenced TIFF image from several georeferenced TIFF images.\n\n"
 

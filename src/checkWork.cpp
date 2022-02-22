@@ -57,7 +57,7 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 /** \~french Message d'usage de la commande checkWork */
-std::string help = std::string("\ncheckWork version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\ncheckWork version ") + std::string(VERSION) + "\n\n"
     "Control TIFF, JPEG, JPEG2000 or PNG image validity\n\n"
 
     "Usage: checkWork <INPUT FILE>\n";

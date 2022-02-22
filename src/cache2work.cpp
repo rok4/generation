@@ -71,7 +71,7 @@ namespace keywords = boost::log::keywords;
 #endif
 
 /** \~french Message d'usage de la commande cache2work */
-std::string help = std::string("\ncache2work version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\ncache2work version ") + std::string(VERSION) + "\n\n"
 
     "Convert a ROK4 pyramid's TIFF image to untiled TIFF image\n\n" 
 

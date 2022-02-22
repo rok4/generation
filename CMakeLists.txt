@@ -20,16 +20,17 @@ option(KDU_THREADING "Build with kakadu" 0)
 option(DEBUG_BUILD "Build with debug mode" 0)
 
 ################### VERSION
-set(ROK4_VERSION ${BUILD_VERSION})
+set(VERSION ${BUILD_VERSION})
 
-message("Version ${ROK4_VERSION}")
+message("Version ${VERSION}")
 
 ################### PACKAGE CONFIGURATION
 
 set(CPACK_PACKAGE_NAME "ROK4GENERATION")
-set(CPACK_PACKAGE_VERSION ${ROK4_VERSION})
+set(CPACK_PACKAGE_VERSION ${VERSION})
 set(CPACK_PACKAGE_DESCRIPTION "WMS/WMTS/TMS server")
 set(CPACK_PACKAGE_VENDOR "IGN")
+set(CPACK_GENERATOR "TGZ")
 
 ################### MODE DEBUG
 

@@ -85,7 +85,7 @@ char* outputImage = 0;
 bool debugLogger=false;
 
 /** \~french Message d'usage de la commande pbf2cache */
-std::string help = std::string("\ncomposeNtiff version ") + std::string(ROK4_VERSION) + "\n\n"
+std::string help = std::string("\ncomposeNtiff version ") + std::string(VERSION) + "\n\n"
     "Monte N TIFF image, forming a regular grid\n\n"
 
     "Usage: composeNtiff -s <DIRECTORY> -g <VAL> <VAL> -c <VAL> <OUTPUT FILE>\n\n"

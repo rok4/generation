@@ -128,7 +128,7 @@ int* styleNodata = NULL;
 bool debugLogger = false;
 
 /** \~french Message d'usage de la commande mergeNtiff */
-std::string help = std::string("\nmergeNtiff version ") + std::string(ROK4_VERSION) +
+std::string help = std::string("\nmergeNtiff version ") + std::string(VERSION) +
                    "\n\n"
 
                    "Create one georeferenced TIFF image from several georeferenced TIFF images.\n\n"
