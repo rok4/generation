@@ -1,5 +1,9 @@
 # Suite d'outils de génération de dalles raster et vecteur
 
+Les outils de génération font partie du projet open-source ROK4 (sous licence CeCILL-C) développé par les équipes du projet [Géoportail](https://www.geoportail.gouv.fr)([@Geoportail](https://twitter.com/Geoportail)) de l’[Institut National de l’Information Géographique et Forestière](https://ign.fr) ([@IGNFrance](https://twitter.com/IGNFrance)). Ils sont écrits en C++ et permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server).
+
+Ces outils sont appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
+
 - [Récupération du projet](#récupération-du-projet)
 - [Variables CMake](#variables-cmake)
 - [Dépendances à la compilation](#dépendances-à-la-compilation)
