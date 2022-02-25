@@ -14,9 +14,10 @@ project(ROK4GENERATION)
 ################### PARAMÈTRES
 
 option(BUILD_VERSION "Build version" 0.0.0)
+option(CMAKE_INSTALL_PREFIX "Installation location" "/usr/local")
 option(OBJECT_ENABLED "Build with object storage" 0)
 option(KDU_ENABLED "Build with kakadu" 0)
-option(KDU_THREADING "Build with kakadu" 0)
+option(KDU_THREADING "Threading level for kakadu" 0)
 option(DEBUG_BUILD "Build with debug mode" 0)
 
 ################### VERSION
@@ -55,7 +56,7 @@ include(cmake/modules/dependencies.cmake)
 # Configuration du fichier (injection de la version et de la compilation objet)
 configure_file(config.h.in config.h ESCAPE_QUOTES @ONLY)
 
-message(STATUS "Building rok4core")
+message(STATUS "Building ROK4 Core")
 set(FILEIMAGE_ENABLED 1)
 add_subdirectory(${PROJECT_SOURCE_DIR}/lib/core)
 
@@ -72,14 +73,15 @@ set(ROK4GENERATION_COMMANDS
     work2cache
 )
 
+# Dossiers contenant les headers nécessaires
+include_directories(lib/core/src)
+include_directories(${PROJECT_BINARY_DIR} ${BOOSTLOG_INCLUDE_DIR} ${CURL_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR} ${PROJ_INCLUDE_DIR})
+
 foreach(cmd IN LISTS ROK4GENERATION_COMMANDS)
     message(STATUS "Building ROK4 GENERATION command ${cmd}")
     add_executable(${cmd} ${PROJECT_SOURCE_DIR}/src/${cmd}.cpp)
-    target_include_directories(${cmd} PUBLIC "${PROJECT_BINARY_DIR}")
     target_link_libraries(${cmd} PUBLIC rok4core boostlogsetup boostthread boostfilesystem boostsystem)
 endforeach()
-
-include_directories(lib/core/src)
 
 ################### TESTS
 

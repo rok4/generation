@@ -5,6 +5,7 @@
 - [Dépendances à la compilation](#dépendances-à-la-compilation)
 - [Compilation et installation](#compilation-et-installation)
 - [Dépendances à l'exécution](#dépendances-à-lexécution)
+- [Variables d'environnement utilisées dans les librairies de core-cpp](#variables-denvironnement-utilisées-dans-les-librairies-de-core-cpp)
 - [Présentation des outils](#présentation-des-outils)
   - [CACHE2WORK](#cache2work)
     - [Usage](#usage)
@@ -43,8 +44,12 @@
 
 ## Variables CMake
 
-* `OBJECT_ENABLED` : active la compilation des classes de gestion des stockages objet
-* `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000
+* `CMAKE_INSTALL_PREFIX` : dossier d'installation du serveur. Valeur par défaut : `/usr/local`
+* `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
+* `OBJECT_ENABLED` : active la compilation des classes de gestion des stockages objet. Valeur par défaut : `0`, `1` pour activer.
+* `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000. Valeur par défaut : `0`, `1` pour activer.
+* `KDU_THREADING` : renseigne le niveau de parallélisation dans le cas de l'utilisation de Kakadu. Valeur par défaut : `0`
+* `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
 
 ## Dépendances à la compilation
 
@@ -82,7 +87,36 @@ make install
 ## Dépendances à l'exécution
 
 * Dépôt GIT
-    * `https://github.com/rok4/styles`
+    * `https://github.com/rok4/styles` 
+
+## Variables d'environnement utilisées dans les librairies de core-cpp
+
+Leur définition est contrôlée à l'usage.
+
+* Pour le stockage CEPH
+    - `ROK4_CEPH_CONFFILE`
+    - `ROK4_CEPH_USERNAME`
+    - `ROK4_CEPH_CLUSTERNAME`
+* Pour le stockage S3
+    - `ROK4_S3_URL`
+    - `ROK4_S3_KEY`
+    - `ROK4_S3_SECRETKEY`
+* Pour le stockage SWIFT
+    - `ROK4_SWIFT_AUTHURL`
+    - `ROK4_SWIFT_USER`
+    - `ROK4_SWIFT_PASSWD`
+    - `ROK4_SWIFT_PUBLICURL`
+    - Si authentification via Swift
+        - `ROK4_SWIFT_ACCOUNT`
+    - Si connection via keystone (présence de `ROK4_KEYSTONE_DOMAINID`)
+        - `ROK4_KEYSTONE_DOMAINID`
+        - `ROK4_KEYSTONE_PROJECTID`
+    - `ROK4_SWIFT_TOKEN_FILE` afin de sauvegarder le token d'accès, et ne pas le demander si ce fichier en contient un
+* Pour configurer l'usage de libcurl (intéraction SWIFT et S3)
+    - `ROK4_SSL_NO_VERIFY`
+    - `HTTP_PROXY`
+    - `HTTPS_PROXY`
+    - `NO_PROXY`
 
 ## Présentation des outils
 

@@ -1,3 +1,0 @@
-/tmp/test_ok_alphatop.tif
-/inputs/overlayNtiff/delete.png
-/inputs/overlayNtiff/find.png
