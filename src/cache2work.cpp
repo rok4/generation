@@ -62,9 +62,10 @@ namespace keywords = boost::log::keywords;
 #include "storage/FileContext.h"
 #include "config.h"
 #include "image/file/FileImage.h"
+#include "utils/Cache.h"
 
 
-#if BUILD_OBJECT
+#if OBJECT_ENABLED
 #include "storage/object/CephPoolContext.h"
 #include "storage/object/SwiftContext.h"
 #include "storage/object/S3Context.h"
@@ -75,7 +76,7 @@ std::string help = std::string("\ncache2work version ") + std::string(VERSION) +
 
     "Convert a ROK4 pyramid's TIFF image to untiled TIFF image\n\n" 
 
-    "Usage: cache2work <INPUT FILE> [-c <VAL>] <OUTPUT FILE> [-pool <VAL>]\n\n" 
+    "Usage: cache2work <INPUT FILE / OBJECT> [-c <VAL>] <OUTPUT FILE>\n\n" 
 
     "Parameters:\n"
     "     -h display this output"
@@ -87,13 +88,12 @@ std::string help = std::string("\ncache2work version ") + std::string(VERSION) +
     "             lzw     Lempel-Ziv & Welch encoding\n"
     "             pkb     PackBits encoding\n"
     "             zip     Deflate encoding\n"
-    "    -pool Ceph pool where data is. INPUT FILE is interpreted as a Ceph object (ONLY IF OBJECT COMPILATION)\n"
-    "    -bucket S3 bucket where data is. INPUT FILE is interpreted as a S3 object (ONLY IF OBJECT COMPILATION)\n"
-    "    -container Swift container where data is. INPUT FILE is interpreted as a Swift object name (ONLY IF OBJECT COMPILATION)\n"
     "    -d debug logger activation\n\n"
 
+    "Input file / object format : [ceph|s3|swift]://tray_name/object_name or [file|ceph|s3|swift]://file_name or file_name\n\n"
+    
     "Example\n"
-    "     cache2work JpegTiled.tif -c zip ZipUntiled.tif\n";
+    "     cache2work file://JpegTiled.tif -c zip ZipUntiled.tif\n";
 
 /**
  * \~french
@@ -138,8 +138,6 @@ int main ( int argc, char **argv )
     Compression::eCompression compression = Compression::NONE;
     bool debugLogger=false;
 
-    char *pool = 0, *container = 0, *bucket = 0;
-
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
     logging::add_common_attributes();
@@ -150,30 +148,6 @@ int main ( int argc, char **argv )
     );
 
     for ( int i = 1; i < argc; i++ ) {
-
-#if BUILD_OBJECT
-        if ( !strcmp ( argv[i],"-pool" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -pool option", -1);
-            }
-            pool = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-bucket" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -bucket option", -1);
-            }
-            bucket = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-container" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -container option", -1);
-            }
-            container = argv[i];
-            continue;
-        }
-#endif
 
         if ( argv[i][0] == '-' ) {
             switch ( argv[i][1] ) {
@@ -225,40 +199,48 @@ int main ( int argc, char **argv )
         error ("Argument must specify one input file/object and one output file", -1);
     }
 
+    ContextType::eContextType type;
+    std::string fo_name = std::string(input);
+    std::string tray_name;
+
+    ContextType::split_path(fo_name, type, fo_name, tray_name);
+
     Context* context;
-
-#if BUILD_OBJECT
-
-    if ( pool != 0 ) {
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Ceph pool ") + pool;
-        context = new CephPoolContext(pool);
-        context->setAttempts(10);
-    } else if (bucket != 0) {
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the S3 bucket ") + bucket;
-        curl_global_init(CURL_GLOBAL_ALL);
-        context = new S3Context(bucket);
-    } else if (container != 0) {
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Swift container ") + container;
-        curl_global_init(CURL_GLOBAL_ALL);
-        context = new SwiftContext(container);
-    } else {
+    switch(type){
+#if OBJECT_ENABLED
+        case ContextType::SWIFTCONTEXT:
+            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Swift container ") + tray_name;
+            curl_global_init(CURL_GLOBAL_ALL);
+            context = StoragePool::addContext(ContextType::SWIFTCONTEXT, tray_name);
+            break;
+        case ContextType::CEPHCONTEXT:
+            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Ceph pool ") + tray_name;
+            context = StoragePool::addContext(ContextType::CEPHCONTEXT, tray_name);
+            break;
+        case ContextType::S3CONTEXT:
+            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the S3 bucket ") + tray_name;
+            curl_global_init(CURL_GLOBAL_ALL);
+            context = StoragePool::addContext(ContextType::S3CONTEXT, tray_name);
+            break;
 #endif
-
-        BOOST_LOG_TRIVIAL(debug) << "Input is a file in a file system";
-        context = new FileContext("");
-
-#if BUILD_OBJECT
+        case ContextType::FILECONTEXT:
+            BOOST_LOG_TRIVIAL(debug) << "Input is a file in a file system";
+            context = StoragePool::addContext(ContextType::FILECONTEXT, "");
+            break;
+        default:
+            error("Input storage type is not handled.", -1);
     }
-#endif
 
-    if (! context->connection()) {
+
+    // Problème lors de l'ajout ou de la récupération de ce contexte de stockage
+    if (context == NULL) {
         error("Unable to connect context", -1);
     }
 
     Rok4ImageFactory R4IF;
-    Rok4Image* rok4image = R4IF.createRok4ImageToRead(input, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
+    Rok4Image* rok4image = R4IF.createRok4ImageToRead(fo_name, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
     if (rok4image == NULL) {
-        delete context;
+        StoragePool::cleanStoragePool();
         error (std::string("Cannot create ROK4 image to read ") + input, 1);
     }
 
@@ -270,7 +252,7 @@ int main ( int argc, char **argv )
 
     if (outputImage == NULL) {
         delete rok4image;
-        delete context;
+        StoragePool::cleanStoragePool();
         error (std::string("Cannot create image to write ") + output, -1);
     }
 
@@ -278,23 +260,19 @@ int main ( int argc, char **argv )
     if (outputImage->writeImage(rok4image) < 0) {
         delete rok4image;
         delete outputImage;
-        delete context;
+        StoragePool::cleanStoragePool();
         error("Cannot write image", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
-    // Nettoyage
+    
     delete rok4image;
     delete outputImage;
-
-#if BUILD_OBJECT
-    if (container != 0 || bucket != 0) {
-        CurlPool::cleanCurlPool();
-        curl_global_cleanup();
-    }
-#endif
-
-    delete context;
+    ProjPool::cleanProjPool();
+    proj_cleanup();
+    CurlPool::cleanCurlPool();
+    curl_global_cleanup();
+    StoragePool::cleanStoragePool();
 
     return 0;
 }

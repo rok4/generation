@@ -22,6 +22,7 @@ Ces outils sont appelés dans les scripts générés par les outils de [prégén
     - [Exemple](#exemple-1)
   - [DECIMATENTIFF](#decimatentiff)
     - [Usage](#usage-3)
+      - [Le fichier de configuration](#le-fichier-de-configuration)
     - [Exemple](#exemple-2)
   - [MANAGENODATA](#managenodata)
     - [Usage](#usage-4)
@@ -31,9 +32,11 @@ Ces outils sont appelés dans les scripts générés par les outils de [prégén
     - [Exemples](#exemples-2)
   - [MERGENTIFF](#mergentiff)
     - [Usage](#usage-6)
+      - [Le fichier de configuration](#le-fichier-de-configuration-1)
     - [Exemples](#exemples-3)
   - [OVERLAYNTIFF](#overlayntiff)
     - [Usage](#usage-7)
+      - [Le fichier de configuration](#le-fichier-de-configuration-2)
     - [Exemple](#exemple-3)
   - [PBF2CACHE](#pbf2cache)
     - [Usage](#usage-8)
@@ -138,19 +141,16 @@ Cet outil lit une dalle ROK4 raster et la convertit en une image TIFF non tuilé
 
 #### Usage
 
-`cache2work -c <COMPRESSION> <INPUT FILE/OBJECT> <OUTPUT FILE> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-d]`
+`cache2work -c <COMPRESSION> <INPUT FILE/OBJECT> <OUTPUT FILE> [-d]`
 
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel lire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel lire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel lire la dalle
 * `-d` : activation des logs de niveau DEBUG
 
 
 #### Exemples
 
 * `cache2work -c zip /home/IGN/slab.tif /home/IGN/workimage.tif`
-* `cache2work -c zip -pool ign slab /home/IGN/workimage.tif`
+* `cache2work -c zip ceph://ign/slab /home/IGN/workimage.tif`
 
 ### CHECKWORK
 
@@ -409,15 +409,12 @@ Cet outil écrit une dalle à partir des tuiles PBF rangées par coordonnées (`
 
 #### Usage
 
-`pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE/OBJECT> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-d]`
+`pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE/OBJECT>  [-d]`
 
 * `-r <DIRECTORY>` : dossier contenant l'arborescence de tuiles PBF
 * `-t <VAL> <VAL>` : nombre de tuiles dans une dalle, en largeur et en hauteur
 * `-ultile <VAL> <VAL>` : indice de la tuile en haut à gauche dans la dalle
 * `-d` : activation des logs de niveau DEBUG
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel écrire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel écrire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel écrire la dalle
 
 #### Exemple
 
@@ -445,13 +442,10 @@ La taille de tuile précisée doit être cohérente avec la taille totale de la 
 
 #### Usage
 
-`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-a <VAL> -s <VAL> -b <VAL>] [-crop]`
+`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-a <VAL> -s <VAL> -b <VAL>] [-crop]`
 
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb, png
 * `-t <INTEGER> <INTEGER>` : taille pixel d'une tuile, enlargeur et hauteur. Doit être un diviseur de la largeur et de la hauteur de l'image en entrée
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel écrire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel écrire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel écrire la dalle
 * `-a <FORMAT>` : format des canaux : float, uint
 * `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
@@ -466,6 +460,6 @@ La compression PNG a la particularité de ne pas être un standard du TIFF. Une 
 
 * Stockage fichier sans conversion : `work2cache input.tif -c png -t 256 256 output.tif`
 * Stockage fichier avec conversion : `work2cache input.tif -c png -t 256 256 -a uint -b 8 -s 1 output.tif`
-* Stockage CEPH sans conversion : `work2cache input.tif -pool PYRAMIDS -c png -t 256 256 output.tif`
-* Stockage S3 sans conversion : `work2cache input.tif -bucket PYRAMIDS -c png -t 256 256 output.tif`
-* Stockage SWIFT sans conversion : `work2cache input.tif -container PYRAMIDS -c png -t 256 256 output.tif`
+* Stockage CEPH sans conversion : `work2cache input.tif -c png -t 256 256 ceph://PYRAMIDS/output.tif`
+* Stockage S3 sans conversion : `work2cache input.tif -c png -t 256 256 s3://PYRAMIDS/output.tif`
+* Stockage SWIFT sans conversion : `work2cache input.tif -c png -t 256 256 swift://PYRAMIDS/output.tif`
