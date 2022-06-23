@@ -19,6 +19,7 @@ option(OBJECT_ENABLED "Build with object storage" 0)
 option(KDU_ENABLED "Build with kakadu" 0)
 option(KDU_THREADING "Threading level for kakadu" 0)
 option(DEBUG_BUILD "Build with debug mode" 0)
+option(DEB_PACKAGE "Debian package compilation" 0)
 
 ################### VERSION
 set(VERSION ${BUILD_VERSION})
@@ -83,22 +84,47 @@ foreach(cmd IN LISTS ROK4GENERATION_COMMANDS)
     target_link_libraries(${cmd} PUBLIC rok4core boostlogsetup boostthread boostfilesystem boostsystem)
 endforeach()
 
-################### TESTS
-
-################### DOCUMENTATION
-
 ################### INSTALLATION
 
-INSTALL(TARGETS ${ROK4GENERATION_COMMANDS} rok4core
+INSTALL(TARGETS ${ROK4GENERATION_COMMANDS}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
+
+################### PACKAGES
+
+if(DEB_PACKAGE)
+
+    message(STATUS "Building a debian package")
+
+    set(CPACK_DEBIAN_PACKAGE_NAME "rok4-generation")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "IGN, Géoportail (<tout_rdev@ign.fr>)")
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "ROK4 pyramids processing utils")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g-dev ,libcurl4-openssl-dev ,libproj-dev ,libssl-dev ,libturbojpeg0-dev ,libjpeg-dev ,libc6-dev ,librados-dev ,libjson11-1-dev ,libboost-log-dev ,libboost-filesystem-dev ,libboost-system-dev, libsqlite3-dev, libopenjp2-7-dev, libpng-dev, libtiff5-dev")
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+    else()
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+    endif()
+
+    set( CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${ROK4GENERATION_SOURCE_DIR}/cmake/debian/postinst;" )
+
+    set(CPACK_BINARY_DEB "ON")
+    set(CPACK_GENERATOR "DEB")
+
+endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(BUILD_ARCHITECTURE "64bit")
 else()
     set(BUILD_ARCHITECTURE "32bit")
 endif()
+
 set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${BUILD_ARCHITECTURE}")
+
 include(CPack)

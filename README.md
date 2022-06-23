@@ -4,11 +4,12 @@ Les outils de génération font partie du projet open-source ROK4 (sous licence 
 
 Ces outils sont appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-- [Récupération du projet](#récupération-du-projet)
-- [Variables CMake](#variables-cmake)
-- [Dépendances à la compilation](#dépendances-à-la-compilation)
-- [Compilation et installation](#compilation-et-installation)
-- [Dépendances à l'exécution](#dépendances-à-lexécution)
+- [Installation via le paquet debian](#installation-via-le-paquet-debian)
+- [Installation depuis les sources](#installation-depuis-les-sources)
+  - [Récupération du projet](#récupération-du-projet)
+  - [Variables CMake](#variables-cmake)
+  - [Dépendances à la compilation](#dépendances-à-la-compilation)
+  - [Compilation et installation](#compilation-et-installation)
 - [Variables d'environnement utilisées dans les librairies de core-cpp](#variables-denvironnement-utilisées-dans-les-librairies-de-core-cpp)
 - [Présentation des outils](#présentation-des-outils)
   - [CACHE2WORK](#cache2work)
@@ -45,11 +46,25 @@ Ces outils sont appelés dans les scripts générés par les outils de [prégén
     - [Usage](#usage-9)
     - [Exemples](#exemples-4)
 
-## Récupération du projet
+
+## Installation via le paquet debian
+
+Télécharger les paquets sur GitHub :
+* (les outils de génération)[https://github.com/rok4/generation/releases/]
+* (les styles)[https://github.com/rok4/styles/releases/]
+
+```
+apt install ./rok4-styles_<version>_all.deb
+apt install ./ROK4SERVER-<version>-Linux-64bit.deb
+```
+
+## Installation depuis les sources
+
+### Récupération du projet
 
 `git clone --recursive https://github.com/rok4/generation`
 
-## Variables CMake
+### Variables CMake
 
 * `CMAKE_INSTALL_PREFIX` : dossier d'installation du serveur. Valeur par défaut : `/usr/local`
 * `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
@@ -57,8 +72,9 @@ Ces outils sont appelés dans les scripts générés par les outils de [prégén
 * `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000. Valeur par défaut : `0`, `1` pour activer.
 * `KDU_THREADING` : renseigne le niveau de parallélisation dans le cas de l'utilisation de Kakadu. Valeur par défaut : `0`
 * `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
+* `DEB_PACKAGE` : active la compilation du paquet debian lors de l'appel à `make package`, plutôt qu'un tarball. Valeur par défaut : `0`, `1` pour activer.
 
-## Dépendances à la compilation
+### Dépendances à la compilation
 
 * Submodule GIT
   * `https://github.com/rok4/core-cpp`
@@ -82,7 +98,7 @@ Ces outils sont appelés dans les scripts générés par les outils de [prégén
   * Si `OBJECT_ENABLED` à 1
     * librados-dev
 
-## Compilation et installation
+### Compilation et installation
 
 ```shell
 mkdir build && cd build
@@ -90,11 +106,6 @@ cmake -DCMAKE_INSTALL_PREFIX=/ -DBUILD_VERSION=0.0.1 -DOBJECT_ENABLED=1 ..
 make
 make install
 ```
-
-## Dépendances à l'exécution
-
-* Dépôt GIT
-    * `https://github.com/rok4/styles` 
 
 ## Variables d'environnement utilisées dans les librairies de core-cpp
 
