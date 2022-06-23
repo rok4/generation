@@ -9,9 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Get the version from tag
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
       - uses: actions/checkout@v2
         with:
@@ -27,7 +24,7 @@ jobs:
       - name: Build debian package
         run: |
           mkdir build && cd build
-          cmake -DCMAKE_INSTALL_PREFIX=/usr -DDEB_PACKAGE=1 -DBUILD_VERSION=${{ steps.get_version.outputs.name }} -DOBJECT_ENABLED=1 ..
+          cmake -DCMAKE_INSTALL_PREFIX=/usr -DDEB_PACKAGE=1 -DBUILD_VERSION=${{ github.ref_name }} -DOBJECT_ENABLED=1 ..
           make
           make package
 
@@ -38,7 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.get_version.outputs.name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
 
@@ -49,6 +46,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/ROK4GENERATION-${{ steps.get_version.outputs.name }}-Linux-64bit.deb
-          asset_name: rok4-generation_${{ steps.get_version.outputs.name }}_amd64.deb
+          asset_path: ./build/ROK4GENERATION-${{ github.ref_name }}-Linux-64bit.deb
+          asset_name: rok4-generation_${{ github.ref_name }}_amd64.deb
           asset_content_type: application/vnd.debian.binary-package
