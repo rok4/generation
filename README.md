@@ -72,7 +72,6 @@ apt install ./ROK4SERVER-<version>-Linux-64bit.deb
 * `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000. Valeur par défaut : `0`, `1` pour activer.
 * `KDU_THREADING` : renseigne le niveau de parallélisation dans le cas de l'utilisation de Kakadu. Valeur par défaut : `0`
 * `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
-* `DEB_PACKAGE` : active la compilation du paquet debian lors de l'appel à `make package`, plutôt qu'un tarball. Valeur par défaut : `0`, `1` pour activer.
 
 ### Dépendances à la compilation
 

@@ -8,9 +8,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(BUILD_SHARED_LIBS OFF)
 
-# Définit le nom du projet 
-project(ROK4GENERATION)
-
 ################### PARAMÈTRES
 
 option(BUILD_VERSION "Build version" 0.0.0)
@@ -19,20 +16,17 @@ option(OBJECT_ENABLED "Build with object storage" 0)
 option(KDU_ENABLED "Build with kakadu" 0)
 option(KDU_THREADING "Threading level for kakadu" 0)
 option(DEBUG_BUILD "Build with debug mode" 0)
-option(DEB_PACKAGE "Debian package compilation" 0)
 
 ################### VERSION
 set(VERSION ${BUILD_VERSION})
 
 message("Version ${VERSION}")
 
-################### PACKAGE CONFIGURATION
-
-set(CPACK_PACKAGE_NAME "ROK4GENERATION")
-set(CPACK_PACKAGE_VERSION ${VERSION})
-set(CPACK_PACKAGE_DESCRIPTION "WMS/WMTS/TMS server")
-set(CPACK_PACKAGE_VENDOR "IGN")
-set(CPACK_GENERATOR "TGZ")
+# Définit le projet 
+project(rok4-generation
+        VERSION ${VERSION}
+        DESCRIPTION "ROK4 pyramids processing utils"
+        LANGUAGES CXX)
 
 ################### MODE DEBUG
 
@@ -92,39 +86,29 @@ INSTALL(TARGETS ${ROK4GENERATION_COMMANDS}
     ARCHIVE DESTINATION lib
 )
 
-################### PACKAGES
-
-if(DEB_PACKAGE)
-
-    message(STATUS "Building a debian package")
-
-    set(CPACK_DEBIAN_PACKAGE_NAME "rok4-generation")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "IGN, Géoportail (<tout_rdev@ign.fr>)")
-    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "ROK4 pyramids processing utils")
-    set(CPACK_DEBIAN_PACKAGE_SECTION "science")
-    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g-dev ,libcurl4-openssl-dev ,libproj-dev ,libssl-dev ,libturbojpeg0-dev ,libjpeg-dev ,libc6-dev ,librados-dev ,libjson11-1-dev ,libboost-log-dev ,libboost-filesystem-dev ,libboost-system-dev, libsqlite3-dev, libopenjp2-7-dev, libpng-dev, libtiff5-dev")
-
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-    else()
-        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-    endif()
-
-    set( CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${ROK4GENERATION_SOURCE_DIR}/cmake/debian/postinst;" )
-
-    set(CPACK_BINARY_DEB "ON")
-    set(CPACK_GENERATOR "DEB")
-
-endif()
+################### PACKAGE CONFIGURATION
+message(STATUS "Configuring packages")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BUILD_ARCHITECTURE "64bit")
+    set(BUILD_ARCHITECTURE "amd64")
 else()
-    set(BUILD_ARCHITECTURE "32bit")
+    set(BUILD_ARCHITECTURE "i386")
 endif()
 
-set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${BUILD_ARCHITECTURE}")
+set(CPACK_GENERATOR "DEB;TGZ")
+set(CPACK_SYSTEM_NAME "linux")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION}-${CPACK_SYSTEM_NAME}-${BUILD_ARCHITECTURE}")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/")
+
+set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_PACKAGE_VENDOR "IGN")
+set(CPACK_PACKAGE_CONTACT "IGN - Géoportail (<tout_rdev@ign.fr>)")
+
+# Debian
+set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g-dev ,libcurl4-openssl-dev ,libproj-dev ,libssl-dev ,libturbojpeg0-dev ,libjpeg-dev ,libc6-dev ,librados-dev ,libjson11-1-dev ,libboost-log-dev ,libboost-filesystem-dev ,libboost-system-dev, libsqlite3-dev, libopenjp2-7-dev, libpng-dev, libtiff5-dev")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${ROK4GENERATION_SOURCE_DIR}/cmake/debian/postinst;" )
+set(CPACK_BINARY_DEB "ON")
 
 include(CPack)
