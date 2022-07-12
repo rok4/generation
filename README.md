@@ -4,49 +4,6 @@ Les outils de génération font partie du projet open-source ROK4 (sous licence 
 
 Ces outils sont appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-- [Installation via le paquet debian](#installation-via-le-paquet-debian)
-- [Installation depuis les sources](#installation-depuis-les-sources)
-  - [Récupération du projet](#récupération-du-projet)
-  - [Variables CMake](#variables-cmake)
-  - [Dépendances à la compilation](#dépendances-à-la-compilation)
-  - [Compilation et installation](#compilation-et-installation)
-- [Variables d'environnement utilisées dans les librairies de core-cpp](#variables-denvironnement-utilisées-dans-les-librairies-de-core-cpp)
-- [Présentation des outils](#présentation-des-outils)
-  - [CACHE2WORK](#cache2work)
-    - [Usage](#usage)
-    - [Exemples](#exemples)
-  - [CHECKWORK](#checkwork)
-    - [Usage](#usage-1)
-    - [Exemple](#exemple)
-  - [COMPOSENTIFF](#composentiff)
-    - [Usage](#usage-2)
-    - [Exemple](#exemple-1)
-  - [DECIMATENTIFF](#decimatentiff)
-    - [Usage](#usage-3)
-      - [Le fichier de configuration](#le-fichier-de-configuration)
-    - [Exemple](#exemple-2)
-  - [MANAGENODATA](#managenodata)
-    - [Usage](#usage-4)
-    - [Exemples](#exemples-1)
-  - [MERGE4TIFF](#merge4tiff)
-    - [Usage](#usage-5)
-    - [Exemples](#exemples-2)
-  - [MERGENTIFF](#mergentiff)
-    - [Usage](#usage-6)
-      - [Le fichier de configuration](#le-fichier-de-configuration-1)
-    - [Exemples](#exemples-3)
-  - [OVERLAYNTIFF](#overlayntiff)
-    - [Usage](#usage-7)
-      - [Le fichier de configuration](#le-fichier-de-configuration-2)
-    - [Exemple](#exemple-3)
-  - [PBF2CACHE](#pbf2cache)
-    - [Usage](#usage-8)
-    - [Exemple](#exemple-4)
-  - [WORK2CACHE](#work2cache)
-    - [Usage](#usage-9)
-    - [Exemples](#exemples-4)
-
-
 ## Installation via le paquet debian
 
 Télécharger les paquets sur GitHub :
@@ -54,8 +11,8 @@ Télécharger les paquets sur GitHub :
 * (les styles)[https://github.com/rok4/styles/releases/]
 
 ```
-apt install ./rok4-styles_<version>_all.deb
-apt install ./ROK4SERVER-<version>-Linux-64bit.deb
+apt install ./rok4-styles-<version>-linux-all.deb
+apt install ./rok4-generation-<version>-ubuntu20.04-amd64.deb
 ```
 
 ## Installation depuis les sources
@@ -76,26 +33,26 @@ apt install ./ROK4SERVER-<version>-Linux-64bit.deb
 ### Dépendances à la compilation
 
 * Submodule GIT
-  * `https://github.com/rok4/core-cpp`
+    * `https://github.com/rok4/core-cpp`
 * Paquets debian
-  * zlib1g-dev
-  * libcurl4-openssl-dev
-  * libproj-dev
-  * libssl-dev
-  * libturbojpeg0-dev
-  * libjpeg-dev
-  * libc6-dev
-  * libjson11-1-dev
-  * libboost-log-dev
-  * libboost-filesystem-dev
-  * libboost-system-dev
-  * libsqlite3-dev
-  * Si `KDU_ENABLED` à 0
-    * libopenjp2-7-dev
-  * libpng-dev
-  * libtiff5-dev
-  * Si `OBJECT_ENABLED` à 1
-    * librados-dev
+    * zlib1g-dev
+    * libcurl4-openssl-dev
+    * libproj-dev
+    * libssl-dev
+    * libturbojpeg0-dev
+    * libjpeg-dev
+    * libc6-dev
+    * libjson11-1-dev
+    * libboost-log-dev
+    * libboost-filesystem-dev
+    * libboost-system-dev
+    * libsqlite3-dev
+    * Si `KDU_ENABLED` à 0
+        * libopenjp2-7-dev
+    * libpng-dev
+    * libtiff5-dev
+    * Si `OBJECT_ENABLED` à 1
+        * librados-dev
 
 ### Compilation et installation
 
@@ -379,11 +336,8 @@ Cet outil génère une image à partir de plusieurs images de même dimension et
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec les masques éventuels
 * `-m <METHOD>` : méthode de fusion des pixels (toutes tiennent compte des éventuels masques) :
     * `ALPHATOP` : fusion par alpha blending
-![alpha top](./docs/images/LIBIMAGE/merge_transparency.png)
     * `MULTIPLY` : fusion par multiplication des valeurs des canaux
-![alpha top](./docs/images/LIBIMAGE/merge_multiply.png)
     * `TOP` : seul le pixel de donnée du dessus est pris en compte
-![alpha top](./docs/images/LIBIMAGE/merge_mask.png)
 * `-b <COLOR>` : couleur de fond, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)
 * `-t <COLOR>` : couleur à considérer comme transparente, valeurs décimales pour chaque canal, séparées par des virgules
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
