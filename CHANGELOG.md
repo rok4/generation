@@ -8,14 +8,9 @@ Cette release contient les outils de génération des pyramides de données, per
 
 ## Changelog
 
-### [Added]
+### [Fixed]
 
-* L'outil mergeNtiff peut prendre en compte un style à appliquer aux données, avant l'éventuelle reprojection
-
-### [Changed]
-
-* Les chemins des dalles finales sont fournis dans un format précisant le type de stockage : `(file|ceph|s3|swift)://<chemin vers le fichier ou l'objet>`. Dans le cas du stockage objet, le chemin est de la forme `<nom du contenant>/<nom de l'objet>`
-* Passage de la librairie PROJ à la version 6 
+* Outil `manageNodata` : une erreur lors de la lecture initiale (et complète) de l'image de données en entrée fait sortir en erreur la commande
 
 <!-- 
 ### [Added]

@@ -71,8 +71,8 @@
 
 using namespace std;
 
-#include "image/file/TiffNodataManager.h"
 #include "enums/Format.h"
+#include "image/file/TiffNodataManager.h"
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -333,13 +333,13 @@ int main ( int argc, char* argv[] ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Target color treatment (uint8)" ;
         TiffNodataManager<float> TNM ( channels, targetValue, touchEdges, newData, newNodata, tolerance );
         if ( ! TNM.treatNodata ( inputImage, outputImage, outputMask ) ) {
-            error ( "Error : unable to treat nodata for this 8-bit integer image : " + string ( inputImage ), -1 );
+            error ( "Error : unable to treat nodata for this 32-bit float image : " + string ( inputImage ), -1 );
         }
     } else if ( bitspersample == 8 && sampleformat == SampleFormat::UINT ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Target color treatment (float)" ;
         TiffNodataManager<uint8_t> TNM ( channels, targetValue, touchEdges, newData, newNodata, tolerance );
         if ( ! TNM.treatNodata ( inputImage, outputImage, outputMask ) ) {
-            error ( "Error : unable to treat nodata for this 32-bit float image : " + string ( inputImage ), -1 );
+            error ( "Error : unable to treat nodata for this 8-bit integer float image : " + string ( inputImage ), -1 );
         }
     }
 
