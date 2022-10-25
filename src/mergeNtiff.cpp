@@ -1029,7 +1029,31 @@ int mergeTabImages(FileImage *pImageOut,                          // Sortie
             BOOST_LOG_TRIVIAL(debug) << "\t is compatible";
             /* les images sources et finale ont la meme resolution et la meme phase
              * on aura donc pas besoin de reechantillonnage.*/
-            pOverlayedImages.push_back(pECI);
+            if (styleProvided) {
+                Image* pStyled = NULL;
+                
+                if (style->isEstompage()) {
+                    pStyled = new EstompageImage (pECI, style->getEstompage());
+                }
+                else if (style->isPente()) {
+                    pStyled = new PenteImage (pECI, style->getPente());
+                }
+                else if (style->isAspect()) {
+                    pStyled = new AspectImage (pECI, style->getAspect()) ;           
+                }
+
+                if ( pECI->getChannels() == 1 && ! ( style->getPalette()->getColoursMap()->empty() ) ) {
+                    if (pStyled != NULL) {
+                        pOverlayedImages.push_back(new StyledImage ( pStyled, samplesperpixel , style->getPalette() ));
+                    } else {
+                        pOverlayedImages.push_back(new StyledImage ( pECI, samplesperpixel , style->getPalette() ));
+                    }
+                } else {
+                    pOverlayedImages.push_back(pStyled);
+                }
+            } else {
+                pOverlayedImages.push_back(pECI);
+            }
 
         } else if (pECI->getCRS()->cmpRequestCode(pImageOut->getCRS()->getRequestCode())) {
             BOOST_LOG_TRIVIAL(debug) << "\t need a resampling";

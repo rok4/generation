@@ -11,6 +11,7 @@ Cette release contient les outils de génération des pyramides de données, per
 ### [Fixed]
 
 * Outil `manageNodata` : une erreur lors de la lecture initiale (et complète) de l'image de données en entrée fait sortir en erreur la commande
+* Outil `mergeNtiff` : gestion correcte d'un style de pente pur (sans palette), dans le cas d'images en entrée phasée avec la sortie (pas de réechantillonnage ou reprojection)
 
 <!-- 
 ### [Added]

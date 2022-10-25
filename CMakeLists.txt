@@ -11,6 +11,7 @@ set(BUILD_SHARED_LIBS OFF)
 ################### PARAMÈTRES
 
 option(BUILD_VERSION "Build version" 0.0.0)
+option(CPACK_SYSTEM_NAME "System name for packaging" "linux")
 option(CMAKE_INSTALL_PREFIX "Installation location" "/usr/local")
 option(OBJECT_ENABLED "Build with object storage" 0)
 option(KDU_ENABLED "Build with kakadu" 0)
@@ -46,6 +47,9 @@ message(STATUS "Modules CMake : ${CMAKE_MODULE_PATH}")
 
 include(cmake/modules/dependencies.cmake)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 ################### COMPILATION
 
 # Configuration du fichier (injection de la version et de la compilation objet)
@@ -76,6 +80,7 @@ foreach(cmd IN LISTS ROK4GENERATION_COMMANDS)
     message(STATUS "Building ROK4 GENERATION command ${cmd}")
     add_executable(${cmd} ${PROJECT_SOURCE_DIR}/src/${cmd}.cpp)
     target_link_libraries(${cmd} PUBLIC rok4core boostlogsetup boostthread boostfilesystem boostsystem)
+    target_link_libraries(${cmd} PRIVATE Threads::Threads)
 endforeach()
 
 ################### INSTALLATION
@@ -95,8 +100,7 @@ else()
     set(BUILD_ARCHITECTURE "i386")
 endif()
 
-set(CPACK_GENERATOR "DEB;TGZ")
-set(CPACK_SYSTEM_NAME "linux")
+set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${VERSION}-${CPACK_SYSTEM_NAME}-${BUILD_ARCHITECTURE}")
 set(CPACK_PACKAGING_INSTALL_PREFIX "/")
 
@@ -104,11 +108,21 @@ set(CPACK_PACKAGE_VERSION ${VERSION})
 set(CPACK_PACKAGE_VENDOR "IGN")
 set(CPACK_PACKAGE_CONTACT "IGN - Géoportail (<tout_rdev@ign.fr>)")
 
-# Debian
-set(CPACK_DEBIAN_PACKAGE_SECTION "science")
-set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g-dev ,libcurl4-openssl-dev ,libproj-dev ,libssl-dev ,libturbojpeg0-dev ,libjpeg-dev ,libc6-dev ,librados-dev ,libjson11-1-dev ,libboost-log-dev ,libboost-filesystem-dev ,libboost-system-dev, libsqlite3-dev, libopenjp2-7-dev, libpng-dev, libtiff5-dev")
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${ROK4GENERATION_SOURCE_DIR}/cmake/debian/postinst;" )
-set(CPACK_BINARY_DEB "ON")
+
+if(CPACK_SYSTEM_NAME AND CPACK_SYSTEM_NAME STREQUAL "debian11" OR CPACK_SYSTEM_NAME STREQUAL "debian12")
+    set(CPACK_GENERATOR "DEB;TGZ")
+
+    # Debian
+    set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "zlib1g-dev ,libcurl4-openssl-dev ,libproj-dev ,libssl-dev ,libturbojpeg0-dev ,libjpeg-dev ,libc6-dev ,librados-dev ,libboost-log-dev ,libboost-filesystem-dev ,libboost-system-dev, libsqlite3-dev, libopenjp2-7-dev, libpng-dev, libtiff5-dev")
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${ROK4GENERATION_SOURCE_DIR}/cmake/debian/postinst;" )
+    set(CPACK_BINARY_DEB "ON")
+endif()
+
+if(CPACK_SYSTEM_NAME AND CPACK_SYSTEM_NAME STREQUAL "alpine3")
+    set(CPACK_GENERATOR "TGZ")
+endif()
 
 include(CPack)
+
