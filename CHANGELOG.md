@@ -2,9 +2,7 @@
 
 ## Summary
 
-Le projet ROK4 a été totalement refondu, dans son organisation et sa mise à disposition. Les composants sont désormais disponibles dans des releases sur GitHub au format debian.
-
-Cette release contient les outils de génération des pyramides de données, permettant les reprojections, le sous echantillonnage, ou encore la mise au format final des données.
+Corrections de la gestion du style dans mergeNtiff et ajout d'includes manquants
 
 ## Changelog
 
@@ -12,6 +10,11 @@ Cette release contient les outils de génération des pyramides de données, per
 
 * Outil `manageNodata` : une erreur lors de la lecture initiale (et complète) de l'image de données en entrée fait sortir en erreur la commande
 * Outil `mergeNtiff` : gestion correcte d'un style de pente pur (sans palette), dans le cas d'images en entrée phasée avec la sortie (pas de réechantillonnage ou reprojection)
+* Include de la librairie d'annuaire (stockage, proj...)
+
+### [Changed]
+
+* Prise en compte du nouveau nommage dans l'utilisation de l'annuaire de contexte de stockage
 
 <!-- 
 ### [Added]

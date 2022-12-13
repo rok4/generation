@@ -65,6 +65,7 @@ namespace keywords = boost::log::keywords;
 #include "image/file/FileImage.h"
 #include "image/DecimatedImage.h"
 #include "image/ExtendedCompoundImage.h"
+#include "utils/Cache.h"
 
 #include "enums/Format.h"
 #include "math.h"

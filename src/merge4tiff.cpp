@@ -46,6 +46,7 @@
 #include "tiffio.h"
 #include "image/Image.h"
 #include "enums/Format.h"
+#include "utils/Cache.h"
 #include "image/file/FileImage.h"
 
 #include <boost/log/core.hpp>

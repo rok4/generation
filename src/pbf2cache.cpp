@@ -202,21 +202,21 @@ int main ( int argc, char **argv ) {
         case ContextType::SWIFTCONTEXT:
             BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Swift container ") + tray_name;
             curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::addContext(ContextType::SWIFTCONTEXT, tray_name);
+            context = StoragePool::get_context(ContextType::SWIFTCONTEXT, tray_name);
             break;
         case ContextType::CEPHCONTEXT:
             BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Ceph pool ") + tray_name;
-            context = StoragePool::addContext(ContextType::CEPHCONTEXT, tray_name);
+            context = StoragePool::get_context(ContextType::CEPHCONTEXT, tray_name);
             break;
         case ContextType::S3CONTEXT:
             BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the S3 bucket ") + tray_name;
             curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::addContext(ContextType::S3CONTEXT, tray_name);
+            context = StoragePool::get_context(ContextType::S3CONTEXT, tray_name);
             break;
 #endif
         case ContextType::FILECONTEXT:
             BOOST_LOG_TRIVIAL(debug) << "Output is a file in a file system";
-            context = StoragePool::addContext(ContextType::FILECONTEXT, "");
+            context = StoragePool::get_context(ContextType::FILECONTEXT, "");
             break;
         default:
             error("Output storage type is not handled.", -1);

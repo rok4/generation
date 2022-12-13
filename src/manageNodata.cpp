@@ -72,6 +72,7 @@
 using namespace std;
 
 #include "enums/Format.h"
+#include "utils/Cache.h"
 #include "image/file/TiffNodataManager.h"
 
 #include <boost/log/core.hpp>

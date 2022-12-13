@@ -65,6 +65,7 @@ namespace keywords = boost::log::keywords;
 #include "enums/Format.h"
 #include "math.h"
 #include "config.h"
+#include "utils/Cache.h"
 
 /** \~french Chemin du fichier de configuration des images */
 char imageListFilename[256];
