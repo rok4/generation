@@ -86,13 +86,13 @@ void error ( std::string message, int errorCode ) {
 
 /**
  ** \~french
- * \brief Fonction principale de l'outil createNodata
+ * \brief Fonction principale de l'outil checkWork
  * \details Tout est contenu dans cette fonction.
  * \param[in] argc nombre de paramètres
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 en cas de succès, -1 sinon
  ** \~english
- * \brief Main function for tool createNodata
+ * \brief Main function for tool checkWork
  * \details All instructions are in this function.
  * \param[in] argc parameters number
  * \param[in] argv parameters array
