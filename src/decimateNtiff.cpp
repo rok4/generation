@@ -62,13 +62,13 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "image/file/FileImage.h"
-#include "image/DecimatedImage.h"
-#include "image/ExtendedCompoundImage.h"
-#include "utils/Cache.h"
+#include <rok4/image/file/FileImage.h>
+#include <rok4/image/DecimatedImage.h>
+#include <rok4/image/ExtendedCompoundImage.h>
+#include <rok4/utils/Cache.h>
 
-#include "enums/Format.h"
-#include "math.h"
+#include <rok4/enums/Format.h>
+#include <math.h>
 #include "config.h"
 
 #ifndef __max

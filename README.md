@@ -1,76 +1,71 @@
-# Suite d'outils de génération de dalles raster et vecteur
+# Outils de génération de dalles raster et vecteur
 
-Les outils de génération font partie du projet open-source ROK4 (sous licence CeCILL-C) développé par les équipes du projet [Géoportail](https://www.geoportail.gouv.fr)([@Geoportail](https://twitter.com/Geoportail)) de l’[Institut National de l’Information Géographique et Forestière](https://ign.fr) ([@IGNFrance](https://twitter.com/IGNFrance)). Ils sont écrits en C++ et permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server).
+![ROK4 Logo](https://rok4.github.io/assets/images/rok4.png)
 
-Ces outils sont appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
+Ces outils permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server) et s'appuient essentiellement sur la [librairie C++ du projet](https://github.com/rok4/core-cpp)
 
-## Installation via le paquet debian
+Ces outils sont principalement appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-Télécharger les paquets sur GitHub :
-* (les outils de génération)[https://github.com/rok4/generation/releases/]
-* (les styles)[https://github.com/rok4/styles/releases/]
+- [Installer les outils (Debian)](#installer-les-outils-debian)
+- [Utiliser les outils](#utiliser-les-outils)
+    - [Variables d'environnement utilisées](#variables-denvironnement-utilisées)
+    - [CACHE2WORK](#cache2work)
+    - [CHECKWORK](#checkwork)
+    - [COMPOSENTIFF](#composentiff)
+    - [DECIMATENTIFF](#decimatentiff)
+    - [MANAGENODATA](#managenodata)
+    - [MERGE4TIFF](#merge4tiff)
+    - [MERGENTIFF](#mergentiff)
+    - [OVERLAYNTIFF](#overlayntiff)
+    - [PBF2CACHE](#pbf2cache)
+    - [WORK2CACHE](#work2cache)
+- [Compiler les outils (Debian)](#compiler-les-outils-debian)
+    - [Dépendances supplémentaires](#dépendances-supplémentaires)
+    - [Variables CMake](#variables-cmake)
+    - [Compilation, documentation et installation](#compilation-documentation-et-installation)
 
-```
-apt install ./rok4-styles-<version>-linux-all.deb
-apt install ./rok4-generation-<version>-ubuntu20.04-amd64.deb
-```
 
-## Installation depuis les sources
+## Installer les outils (Debian)
 
-### Récupération du projet
+Installations système requises (listées dans le paquet debian, installées avec l'applicatif lors du `apt install`) :
 
-`git clone --recursive https://github.com/rok4/generation`
+* `librok4-dev` (disponible sur [GitHub](https://github.com/rok4/core-cpp/releases/))
+* `libcurl4-openssl-dev`
+* `libproj-dev`
+* `libboost-log-dev`
+* `libboost-filesystem-dev`
+* `libboost-system-dev`
 
-### Variables CMake
+```bash
+### librok4-dev
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-base-x.y.z-ubuntu-20.04-amd64.deb
+# or, with ceph driver
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-ceph-x.y.z-ubuntu-20.04-amd64.deb
 
-* `CMAKE_INSTALL_PREFIX` : dossier d'installation du serveur. Valeur par défaut : `/usr/local`
-* `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
-* `OBJECT_ENABLED` : active la compilation des classes de gestion des stockages objet. Valeur par défaut : `0`, `1` pour activer.
-* `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000. Valeur par défaut : `0`, `1` pour activer.
-* `KDU_THREADING` : renseigne le niveau de parallélisation dans le cas de l'utilisation de Kakadu. Valeur par défaut : `0`
-* `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
+apt install ./librok4-dev.deb
 
-### Dépendances à la compilation
+### rok4-generation
+curl -o rok4-generation.deb https://github.com/rok4/generation/releases/download/x.y.z/rok4-generation-x.y.z-ubuntu-20.04-amd64.deb
 
-* Submodule GIT
-    * `https://github.com/rok4/core-cpp`
-* Paquets debian
-    * zlib1g-dev
-    * libcurl4-openssl-dev
-    * libproj-dev
-    * libssl-dev
-    * libturbojpeg0-dev
-    * libjpeg-dev
-    * libc6-dev
-    * libjson11-1-dev
-    * libboost-log-dev
-    * libboost-filesystem-dev
-    * libboost-system-dev
-    * libsqlite3-dev
-    * Si `KDU_ENABLED` à 0
-        * libopenjp2-7-dev
-    * libpng-dev
-    * libtiff5-dev
-    * Si `OBJECT_ENABLED` à 1
-        * librados-dev
+apt install ./rok4-generation.deb
 
-### Compilation et installation
+### installation des styles (si besoin dans les usages)
+curl -o styles.deb https://github.com/rok4/styles/releases/download/x.y.z/rok4-styles-x.y.z-linux-all.deb
 
-```shell
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=/ -DBUILD_VERSION=0.0.1 -DOBJECT_ENABLED=1 ..
-make
-make install
+apt install ./rok4-generation.deb
 ```
 
-## Variables d'environnement utilisées dans les librairies de core-cpp
+
+## Utiliser les outils
+
+Voici la légende utilisée pour identifié le format des images dans les documentations par commande :
+
+![Formats](./docs/images/formats.png)
+
+### Variables d'environnement utilisées
 
 Leur définition est contrôlée à l'usage.
 
-* Pour le stockage CEPH
-    - `ROK4_CEPH_CONFFILE`
-    - `ROK4_CEPH_USERNAME`
-    - `ROK4_CEPH_CLUSTERNAME`
 * Pour le stockage S3
     - `ROK4_S3_URL`
     - `ROK4_S3_KEY`
@@ -91,14 +86,10 @@ Leur définition est contrôlée à l'usage.
     - `HTTP_PROXY`
     - `HTTPS_PROXY`
     - `NO_PROXY`
-
-## Présentation des outils
-
-Écrits en C++.
-
-Voici la légende utilisée pour identifié le format des images dans les documentations par commande :
-
-![Formats](./docs/images/formats.png)
+* Pour le stockage CEPH
+    - `ROK4_CEPH_CONFFILE`
+    - `ROK4_CEPH_USERNAME`
+    - `ROK4_CEPH_CLUSTERNAME`
 
 ### CACHE2WORK
 
@@ -427,3 +418,32 @@ La compression PNG a la particularité de ne pas être un standard du TIFF. Une 
 * Stockage CEPH sans conversion : `work2cache input.tif -c png -t 256 256 ceph://PYRAMIDS/output.tif`
 * Stockage S3 sans conversion : `work2cache input.tif -c png -t 256 256 s3://PYRAMIDS/output.tif`
 * Stockage SWIFT sans conversion : `work2cache input.tif -c png -t 256 256 swift://PYRAMIDS/output.tif`
+
+
+## Compiler les outils (Debian)
+
+### Dépendances supplémentaires
+
+* `build-essential`
+* `cmake`
+* Pour la documentation
+    * `doxygen`
+    * `graphviz`
+
+`apt install build-essential cmake doxygen graphviz` 
+
+### Variables CMake
+
+* `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
+* `DOC_ENABLED` : active la compilation de la documentation. Valeur par défaut : `1`, `0` pour désactiver.
+* `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
+
+### Compilation, documentation et installation
+
+```bash
+mkdir build && cd build
+cmake -DBUILD_VERSION=4.1.0 -DCMAKE_INSTALL_PREFIX=/opt/rok4 ..
+make
+make doc
+make install
+```

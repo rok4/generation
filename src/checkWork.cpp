@@ -53,7 +53,7 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "image/file/FileImage.h"
+#include <rok4/image/file/FileImage.h>
 #include "config.h"
 
 /** \~french Message d'usage de la commande checkWork */

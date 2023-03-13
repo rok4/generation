@@ -67,27 +67,27 @@
 #include <string>
 #include <vector>
 
-#include "tiffio.h"
+#include <tiffio.h>
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "utils/CRS.h"
-#include "image/ExtendedCompoundImage.h"
-#include "image/file/FileImage.h"
-#include "enums/Format.h"
-#include "utils/Cache.h"
-#include "enums/Interpolation.h"
-#include "processors/PixelConverter.h"
-#include "image/ReprojectedImage.h"
-#include "image/ResampledImage.h"
-#include "math.h"
+#include <rok4/utils/CRS.h>
+#include <rok4/image/ExtendedCompoundImage.h>
+#include <rok4/image/file/FileImage.h>
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/enums/Interpolation.h>
+#include <rok4/processors/PixelConverter.h>
+#include <rok4/image/ReprojectedImage.h>
+#include <rok4/image/ResampledImage.h>
+#include <math.h>
 #include "config.h"
 
-#include "style/Style.h"
-#include "image/StyledImage.h"
-#include "image/EstompageImage.h"
-#include "image/PenteImage.h"
-#include "image/AspectImage.h"
+#include <rok4/style/Style.h>
+#include <rok4/image/StyledImage.h>
+#include <rok4/image/EstompageImage.h>
+#include <rok4/image/PenteImage.h>
+#include <rok4/image/AspectImage.h>
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */

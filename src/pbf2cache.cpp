@@ -45,8 +45,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string.h>
-#include "tiffio.h"
-#include "enums/Format.h"
+#include <tiffio.h>
+#include <rok4/enums/Format.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -55,17 +55,11 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "storage/FileContext.h"
-#include "image/file/FileImage.h"
-#include "utils/Cache.h"
-#include "image/file/Rok4Image.h"
+#include <rok4/storage/Context.h>
+#include <rok4/image/file/FileImage.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/Rok4Image.h>
 #include "config.h"
-
-#if OBJECT_ENABLED
-    #include "storage/object/SwiftContext.h"
-    #include "storage/object/S3Context.h"
-    #include "storage/object/CephPoolContext.h"
-#endif
 
 /** \~french Message d'usage de la commande pbf2cache */
 std::string help = std::string("\npbf2cache version ") + std::string(VERSION) + "\n\n"
@@ -197,31 +191,10 @@ int main ( int argc, char **argv ) {
     ContextType::split_path(fo_name, type, fo_name, tray_name);
 
     Context* context;
-    switch(type){
-#if OBJECT_ENABLED
-        case ContextType::SWIFTCONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Swift container ") + tray_name;
-            curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::get_context(ContextType::SWIFTCONTEXT, tray_name);
-            break;
-        case ContextType::CEPHCONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Ceph pool ") + tray_name;
-            context = StoragePool::get_context(ContextType::CEPHCONTEXT, tray_name);
-            break;
-        case ContextType::S3CONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the S3 bucket ") + tray_name;
-            curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::get_context(ContextType::S3CONTEXT, tray_name);
-            break;
-#endif
-        case ContextType::FILECONTEXT:
-            BOOST_LOG_TRIVIAL(debug) << "Output is a file in a file system";
-            context = StoragePool::get_context(ContextType::FILECONTEXT, "");
-            break;
-        default:
-            error("Output storage type is not handled.", -1);
-    }
+    curl_global_init(CURL_GLOBAL_ALL);
 
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    context = StoragePool::get_context(type, tray_name);
 
     Rok4ImageFactory R4IF;
     Rok4Image* rok4Image = R4IF.createRok4ImageToWrite( fo_name, tilePerWidth, tilePerHeight, context );

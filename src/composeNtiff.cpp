@@ -51,8 +51,8 @@
 #include <algorithm>
 #include <string>
 #include <fstream>
-#include "tiffio.h"
-#include "tiff.h"
+#include <tiffio.h>
+#include <tiff.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -61,11 +61,10 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "image/file/LibtiffImage.h"
-#include "image/CompoundImage.h"
-#include "enums/Format.h"
-#include "utils/Cache.h"
-#include "math.h"
+#include <rok4/image/file/FileImage.h>
+#include <rok4/image/CompoundImage.h>
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
 #include "config.h"
 
 /** \~french Nombre d'images dans le sens de la largeur */
