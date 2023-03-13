@@ -57,7 +57,7 @@ jobs:
             jq gettext build-essential cmake doxygen graphviz
 
           core_cpp_version=$(curl --silent "https://api.github.com/repos/rok4/core-cpp/releases/latest" | jq -r ".tag_name")
-          curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/${core_cpp_version}/librok4-base-${core_cpp_version}-${{ matrix.os }}-amd64.deb
+          curl -v -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/${core_cpp_version}/librok4-base-${core_cpp_version}-${{ matrix.os }}-amd64.deb
           sudo apt install ./librok4-dev.deb
 
       - name: Build packages
