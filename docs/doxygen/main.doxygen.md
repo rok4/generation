@@ -1,0 +1,1 @@
+Ces outils s'appuient sur la [librairie ROK4 C++](https://rok4.github.io/core-cpp/). Ils sont à la base du calcul des pyramides, format des données central du projet.

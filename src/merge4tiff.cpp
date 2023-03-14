@@ -43,11 +43,11 @@
  * \~ \image html merge4tiff.png
  */
 
-#include "tiffio.h"
-#include "image/Image.h"
-#include "enums/Format.h"
-#include "utils/Cache.h"
-#include "image/file/FileImage.h"
+#include <tiffio.h>
+#include <rok4/image/Image.h>
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/FileImage.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>

@@ -71,9 +71,9 @@
 
 using namespace std;
 
-#include "enums/Format.h"
-#include "utils/Cache.h"
-#include "image/file/TiffNodataManager.h"
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/TiffNodataManager.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>

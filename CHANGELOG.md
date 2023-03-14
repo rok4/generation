@@ -1,5 +1,3 @@
-# Outils de génération ROK4
-
 ## Summary
 
 Corrections de la gestion du style dans mergeNtiff et ajout d'includes manquants
@@ -15,6 +13,7 @@ Corrections de la gestion du style dans mergeNtiff et ajout d'includes manquants
 ### [Changed]
 
 * Prise en compte du nouveau nommage dans l'utilisation de l'annuaire de contexte de stockage
+* Compilation avec core-cpp en librairie dynamique
 
 <!-- 
 ### [Added]

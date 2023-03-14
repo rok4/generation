@@ -56,18 +56,17 @@ namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
 #include <curl/curl.h>
-#include "enums/Format.h"
-#include "utils/Cache.h"
-#include "image/file/Rok4Image.h"
-#include "storage/FileContext.h"
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/Rok4Image.h>
 #include "config.h"
-#include "image/file/FileImage.h"
+#include <rok4/image/file/FileImage.h>
 
 
 #if OBJECT_ENABLED
-#include "storage/object/CephPoolContext.h"
-#include "storage/object/SwiftContext.h"
-#include "storage/object/S3Context.h"
+#include <rok4/storage/object/CephPoolContext.h>
+#include <rok4/storage/object/SwiftContext.h>
+#include <rok4/storage/object/S3Context.h>
 #endif
 
 /** \~french Message d'usage de la commande cache2work */
@@ -205,31 +204,10 @@ int main ( int argc, char **argv )
     ContextType::split_path(fo_name, type, fo_name, tray_name);
 
     Context* context;
-    switch(type){
-#if OBJECT_ENABLED
-        case ContextType::SWIFTCONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Swift container ") + tray_name;
-            curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::get_context(ContextType::SWIFTCONTEXT, tray_name);
-            break;
-        case ContextType::CEPHCONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the Ceph pool ") + tray_name;
-            context = StoragePool::get_context(ContextType::CEPHCONTEXT, tray_name);
-            break;
-        case ContextType::S3CONTEXT:
-            BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is an object in the S3 bucket ") + tray_name;
-            curl_global_init(CURL_GLOBAL_ALL);
-            context = StoragePool::get_context(ContextType::S3CONTEXT, tray_name);
-            break;
-#endif
-        case ContextType::FILECONTEXT:
-            BOOST_LOG_TRIVIAL(debug) << "Input is a file in a file system";
-            context = StoragePool::get_context(ContextType::FILECONTEXT, "");
-            break;
-        default:
-            error("Input storage type is not handled.", -1);
-    }
+    curl_global_init(CURL_GLOBAL_ALL);
 
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    context = StoragePool::get_context(type, tray_name);
 
     // Problème lors de l'ajout ou de la récupération de ce contexte de stockage
     if (context == NULL) {
