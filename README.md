@@ -1,106 +1,71 @@
-# Suite d'outils de génération de dalles raster et vecteur
+# Outils de génération de dalles raster et vecteur
 
-Les outils de génération font partie du projet open-source ROK4 (sous licence CeCILL-C) développé par les équipes du projet [Géoportail](https://www.geoportail.gouv.fr)([@Geoportail](https://twitter.com/Geoportail)) de l’[Institut National de l’Information Géographique et Forestière](https://ign.fr) ([@IGNFrance](https://twitter.com/IGNFrance)). Ils sont écrits en C++ et permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server).
+![ROK4 Logo](https://rok4.github.io/assets/images/rok4.png)
 
-Ces outils sont appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
+Ces outils permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server) et s'appuient essentiellement sur la [librairie C++ du projet](https://github.com/rok4/core-cpp)
 
-- [Récupération du projet](#récupération-du-projet)
-- [Variables CMake](#variables-cmake)
-- [Dépendances à la compilation](#dépendances-à-la-compilation)
-- [Compilation et installation](#compilation-et-installation)
-- [Dépendances à l'exécution](#dépendances-à-lexécution)
-- [Variables d'environnement utilisées dans les librairies de core-cpp](#variables-denvironnement-utilisées-dans-les-librairies-de-core-cpp)
-- [Présentation des outils](#présentation-des-outils)
-  - [CACHE2WORK](#cache2work)
-    - [Usage](#usage)
-    - [Exemples](#exemples)
-  - [CHECKWORK](#checkwork)
-    - [Usage](#usage-1)
-    - [Exemple](#exemple)
-  - [COMPOSENTIFF](#composentiff)
-    - [Usage](#usage-2)
-    - [Exemple](#exemple-1)
-  - [DECIMATENTIFF](#decimatentiff)
-    - [Usage](#usage-3)
-    - [Exemple](#exemple-2)
-  - [MANAGENODATA](#managenodata)
-    - [Usage](#usage-4)
-    - [Exemples](#exemples-1)
-  - [MERGE4TIFF](#merge4tiff)
-    - [Usage](#usage-5)
-    - [Exemples](#exemples-2)
-  - [MERGENTIFF](#mergentiff)
-    - [Usage](#usage-6)
-    - [Exemples](#exemples-3)
-  - [OVERLAYNTIFF](#overlayntiff)
-    - [Usage](#usage-7)
-    - [Exemple](#exemple-3)
-  - [PBF2CACHE](#pbf2cache)
-    - [Usage](#usage-8)
-    - [Exemple](#exemple-4)
-  - [WORK2CACHE](#work2cache)
-    - [Usage](#usage-9)
-    - [Exemples](#exemples-4)
+Ces outils sont principalement appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-## Récupération du projet
+- [Installer les outils (Debian)](#installer-les-outils-debian)
+- [Utiliser les outils](#utiliser-les-outils)
+    - [Variables d'environnement utilisées](#variables-denvironnement-utilisées)
+    - [CACHE2WORK](#cache2work)
+    - [CHECKWORK](#checkwork)
+    - [COMPOSENTIFF](#composentiff)
+    - [DECIMATENTIFF](#decimatentiff)
+    - [MANAGENODATA](#managenodata)
+    - [MERGE4TIFF](#merge4tiff)
+    - [MERGENTIFF](#mergentiff)
+    - [OVERLAYNTIFF](#overlayntiff)
+    - [PBF2CACHE](#pbf2cache)
+    - [WORK2CACHE](#work2cache)
+- [Compiler les outils (Debian)](#compiler-les-outils-debian)
+    - [Dépendances supplémentaires](#dépendances-supplémentaires)
+    - [Variables CMake](#variables-cmake)
+    - [Compilation, documentation et installation](#compilation-documentation-et-installation)
 
-`git clone --recursive https://github.com/rok4/generation`
 
-## Variables CMake
+## Installer les outils (Debian)
 
-* `CMAKE_INSTALL_PREFIX` : dossier d'installation du serveur. Valeur par défaut : `/usr/local`
-* `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
-* `OBJECT_ENABLED` : active la compilation des classes de gestion des stockages objet. Valeur par défaut : `0`, `1` pour activer.
-* `KDU_ENABLED` : active la compilation avec le driver Kakadu pour la lecture des fichiers JPEG2000. Valeur par défaut : `0`, `1` pour activer.
-* `KDU_THREADING` : renseigne le niveau de parallélisation dans le cas de l'utilisation de Kakadu. Valeur par défaut : `0`
-* `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
+Installations système requises (listées dans le paquet debian, installées avec l'applicatif lors du `apt install`) :
 
-## Dépendances à la compilation
+* `librok4-dev` (disponible sur [GitHub](https://github.com/rok4/core-cpp/releases/))
+* `libcurl4-openssl-dev`
+* `libproj-dev`
+* `libboost-log-dev`
+* `libboost-filesystem-dev`
+* `libboost-system-dev`
 
-* Submodule GIT
-  * `https://github.com/rok4/core-cpp`
-* Paquets debian
-  * zlib1g-dev
-  * libcurl4-openssl-dev
-  * libproj-dev
-  * libssl-dev
-  * libturbojpeg0-dev
-  * libjpeg-dev
-  * libc6-dev
-  * libjson11-1-dev
-  * libboost-log-dev
-  * libboost-filesystem-dev
-  * libboost-system-dev
-  * libsqlite3-dev
-  * Si `KDU_ENABLED` à 0
-    * libopenjp2-7-dev
-  * libpng-dev
-  * libtiff5-dev
-  * Si `OBJECT_ENABLED` à 1
-    * librados-dev
+```bash
+### librok4-dev
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-base-x.y.z-ubuntu-20.04-amd64.deb
+# or, with ceph driver
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-ceph-x.y.z-ubuntu-20.04-amd64.deb
 
-## Compilation et installation
+apt install ./librok4-dev.deb
 
-```shell
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=/ -DBUILD_VERSION=0.0.1 -DOBJECT_ENABLED=1 ..
-make
-make install
+### rok4-generation
+curl -o rok4-generation.deb https://github.com/rok4/generation/releases/download/x.y.z/rok4-generation-x.y.z-ubuntu-20.04-amd64.deb
+
+apt install ./rok4-generation.deb
+
+### installation des styles (si besoin dans les usages)
+curl -o styles.deb https://github.com/rok4/styles/releases/download/x.y.z/rok4-styles-x.y.z-linux-all.deb
+
+apt install ./rok4-generation.deb
 ```
 
-## Dépendances à l'exécution
 
-* Dépôt GIT
-    * `https://github.com/rok4/styles` 
+## Utiliser les outils
 
-## Variables d'environnement utilisées dans les librairies de core-cpp
+Voici la légende utilisée pour identifié le format des images dans les documentations par commande :
+
+![Formats](./docs/images/formats.png)
+
+### Variables d'environnement utilisées
 
 Leur définition est contrôlée à l'usage.
 
-* Pour le stockage CEPH
-    - `ROK4_CEPH_CONFFILE`
-    - `ROK4_CEPH_USERNAME`
-    - `ROK4_CEPH_CLUSTERNAME`
 * Pour le stockage S3
     - `ROK4_S3_URL`
     - `ROK4_S3_KEY`
@@ -121,14 +86,10 @@ Leur définition est contrôlée à l'usage.
     - `HTTP_PROXY`
     - `HTTPS_PROXY`
     - `NO_PROXY`
-
-## Présentation des outils
-
-Écrits en C++.
-
-Voici la légende utilisée pour identifié le format des images dans les documentations par commande :
-
-![Formats](./docs/images/formats.png)
+* Pour le stockage CEPH
+    - `ROK4_CEPH_CONFFILE`
+    - `ROK4_CEPH_USERNAME`
+    - `ROK4_CEPH_CLUSTERNAME`
 
 ### CACHE2WORK
 
@@ -138,19 +99,16 @@ Cet outil lit une dalle ROK4 raster et la convertit en une image TIFF non tuilé
 
 #### Usage
 
-`cache2work -c <COMPRESSION> <INPUT FILE/OBJECT> <OUTPUT FILE> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-d]`
+`cache2work -c <COMPRESSION> <INPUT FILE/OBJECT> <OUTPUT FILE> [-d]`
 
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel lire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel lire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel lire la dalle
 * `-d` : activation des logs de niveau DEBUG
 
 
 #### Exemples
 
 * `cache2work -c zip /home/IGN/slab.tif /home/IGN/workimage.tif`
-* `cache2work -c zip -pool ign slab /home/IGN/workimage.tif`
+* `cache2work -c zip ceph://ign/slab /home/IGN/workimage.tif`
 
 ### CHECKWORK
 
@@ -369,11 +327,8 @@ Cet outil génère une image à partir de plusieurs images de même dimension et
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec les masques éventuels
 * `-m <METHOD>` : méthode de fusion des pixels (toutes tiennent compte des éventuels masques) :
     * `ALPHATOP` : fusion par alpha blending
-![alpha top](./docs/images/LIBIMAGE/merge_transparency.png)
     * `MULTIPLY` : fusion par multiplication des valeurs des canaux
-![alpha top](./docs/images/LIBIMAGE/merge_multiply.png)
     * `TOP` : seul le pixel de donnée du dessus est pris en compte
-![alpha top](./docs/images/LIBIMAGE/merge_mask.png)
 * `-b <COLOR>` : couleur de fond, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)
 * `-t <COLOR>` : couleur à considérer comme transparente, valeurs décimales pour chaque canal, séparées par des virgules
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
@@ -409,15 +364,12 @@ Cet outil écrit une dalle à partir des tuiles PBF rangées par coordonnées (`
 
 #### Usage
 
-`pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE/OBJECT> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-d]`
+`pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE/OBJECT>  [-d]`
 
 * `-r <DIRECTORY>` : dossier contenant l'arborescence de tuiles PBF
 * `-t <VAL> <VAL>` : nombre de tuiles dans une dalle, en largeur et en hauteur
 * `-ultile <VAL> <VAL>` : indice de la tuile en haut à gauche dans la dalle
 * `-d` : activation des logs de niveau DEBUG
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel écrire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel écrire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel écrire la dalle
 
 #### Exemple
 
@@ -445,13 +397,10 @@ La taille de tuile précisée doit être cohérente avec la taille totale de la 
 
 #### Usage
 
-`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-pool <POOL NAME>|-bucket <BUCKET NAME>|-container <CONTAINER NAME>] [-a <VAL> -s <VAL> -b <VAL>] [-crop]`
+`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-a <VAL> -s <VAL> -b <VAL>] [-crop]`
 
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb, png
 * `-t <INTEGER> <INTEGER>` : taille pixel d'une tuile, enlargeur et hauteur. Doit être un diviseur de la largeur et de la hauteur de l'image en entrée
-* `-pool <POOL NAME>` : précise le nom du pool CEPH dans lequel écrire la dalle
-* `-bucket <BUCKET NAME>` : précise le nom du bucket S3 dans lequel écrire la dalle
-* `-container <CONTAINER NAME>` : précise le nom du conteneur SWIFT dans lequel écrire la dalle
 * `-a <FORMAT>` : format des canaux : float, uint
 * `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
@@ -466,6 +415,35 @@ La compression PNG a la particularité de ne pas être un standard du TIFF. Une 
 
 * Stockage fichier sans conversion : `work2cache input.tif -c png -t 256 256 output.tif`
 * Stockage fichier avec conversion : `work2cache input.tif -c png -t 256 256 -a uint -b 8 -s 1 output.tif`
-* Stockage CEPH sans conversion : `work2cache input.tif -pool PYRAMIDS -c png -t 256 256 output.tif`
-* Stockage S3 sans conversion : `work2cache input.tif -bucket PYRAMIDS -c png -t 256 256 output.tif`
-* Stockage SWIFT sans conversion : `work2cache input.tif -container PYRAMIDS -c png -t 256 256 output.tif`
+* Stockage CEPH sans conversion : `work2cache input.tif -c png -t 256 256 ceph://PYRAMIDS/output.tif`
+* Stockage S3 sans conversion : `work2cache input.tif -c png -t 256 256 s3://PYRAMIDS/output.tif`
+* Stockage SWIFT sans conversion : `work2cache input.tif -c png -t 256 256 swift://PYRAMIDS/output.tif`
+
+
+## Compiler les outils (Debian)
+
+### Dépendances supplémentaires
+
+* `build-essential`
+* `cmake`
+* Pour la documentation
+    * `doxygen`
+    * `graphviz`
+
+`apt install build-essential cmake doxygen graphviz` 
+
+### Variables CMake
+
+* `BUILD_VERSION` : version des outils compilés. Valeur par défaut : `0.0.0`
+* `DOC_ENABLED` : active la compilation de la documentation. Valeur par défaut : `1`, `0` pour désactiver.
+* `DEBUG_BUILD` : active la compilation en mode debug. Valeur par défaut : `0`, `1` pour activer.
+
+### Compilation, documentation et installation
+
+```bash
+mkdir build && cd build
+cmake -DBUILD_VERSION=4.1.0 -DCMAKE_INSTALL_PREFIX=/opt/rok4 ..
+make
+make doc
+make install
+```

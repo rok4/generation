@@ -50,8 +50,8 @@
 #include <algorithm>
 #include <string>
 #include <fstream>
-#include "tiffio.h"
-#include "tiff.h"
+#include <tiffio.h>
+#include <tiff.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -60,11 +60,12 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "image/file/LibtiffImage.h"
-#include "image/MergeImage.h"
-#include "enums/Format.h"
-#include "math.h"
+#include <rok4/image/file/FileImage.h>
+#include <rok4/image/MergeImage.h>
+#include <rok4/enums/Format.h>
+#include <math.h>
 #include "config.h"
+#include <rok4/utils/Cache.h>
 
 /** \~french Chemin du fichier de configuration des images */
 char imageListFilename[256];

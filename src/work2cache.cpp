@@ -49,8 +49,8 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
-#include "tiffio.h"
-#include "enums/Format.h"
+#include <tiffio.h>
+#include <rok4/enums/Format.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -59,18 +59,12 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "storage/FileContext.h"
-#include "image/file/FileImage.h"
-#include "utils/Cache.h"
-#include "image/file/Rok4Image.h"
-#include "image/file/TiffNodataManager.h"
+#include <rok4/storage/Context.h>
+#include <rok4/image/file/FileImage.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/Rok4Image.h>
+#include <rok4/image/file/TiffNodataManager.h>
 #include "config.h"
-
-#if BUILD_OBJECT
-    #include "storage/object/SwiftContext.h"
-    #include "storage/object/S3Context.h"
-    #include "storage/object/CephPoolContext.h"
-#endif
 
 
 /** \~french Presque blanc, en RGBA. Utilisé pour supprimer le blanc pur des données quand l'option "crop" est active */
@@ -83,7 +77,7 @@ std::string help = std::string("\nwork2cache version ") + std::string(VERSION) +
 
     "Make image tiled and compressed, in TIFF format, respecting ROK4 specifications.\n\n"
 
-    "Usage: work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE> [-crop]\n\n"
+    "Usage: work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE / OBJECT> [-crop]\n\n"
 
     "Parameters:\n"
     "     -c output compression :\n"
@@ -96,9 +90,6 @@ std::string help = std::string("\nwork2cache version ") + std::string(VERSION) +
     "             zip     Deflate encoding\n"
     "             png     Non-official TIFF compression, each tile is an independant PNG image (with PNG header)\n"
     "     -t tile size : widthwise and heightwise. Have to be a divisor of the global image's size\n"
-    "     -pool Ceph pool where data is. Then OUTPUT FILE is interpreted as a Ceph object ID (ONLY IF OBJECT COMPILATION)\n"
-    "     -container Swift container where data is. Then OUTPUT FILE is interpreted as a Swift object name (ONLY IF OBJECT COMPILATION)\n"
-    "     -bucket S3 bucket where data is. Then OUTPUT FILE is interpreted as a S3 object name (ONLY IF OBJECT COMPILATION)\n"
     "     -crop : blocks (used by JPEG compression) wich contain a white pixel are filled with white\n"
     "     -a sample format : (float or uint)\n"
     "     -b bits per sample : (8 or 32)\n"
@@ -107,6 +98,8 @@ std::string help = std::string("\nwork2cache version ") + std::string(VERSION) +
 
     "If bitspersample, sampleformat or samplesperpixel are not provided, those 3 informations are read from the image sources (all have to own the same). If 3 are provided, conversion may be done.\n\n"
 
+    "Output file / object format : [ceph|s3|swift]://tray_name/object_name or [file|ceph|s3|swift]://file_name or file_name\n\n"
+    
     "Examples\n"
     "     - for orthophotography\n"
     "     work2cache input.tif -c png -t 256 256 output.tif\n"
@@ -165,7 +158,7 @@ int main ( int argc, char **argv ) {
     bool crop = false;
     bool debugLogger=false;
 
-#if BUILD_OBJECT
+#if OBJECT_ENABLED
     char *pool = 0, *container = 0, *bucket = 0;
     bool onCeph = false;
     bool onSwift = false;
@@ -187,30 +180,6 @@ int main ( int argc, char **argv ) {
             crop = true;
             continue;
         }
-
-#if BUILD_OBJECT
-        if ( !strcmp ( argv[i],"-pool" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -pool option", -1);
-            }
-            pool = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-bucket" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -bucket option", -1);
-            }
-            bucket = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-container" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -container option", -1);
-            }
-            container = argv[i];
-            continue;
-        }
-#endif
 
         if ( argv[i][0] == '-' ) {
             switch ( argv[i][1] ) {
@@ -300,44 +269,17 @@ int main ( int argc, char **argv ) {
         error ("Argument must specify one input file and one output file/object", -1);
     }
 
+    ContextType::eContextType type;
+    std::string fo_name = std::string(output);
+    std::string tray_name;
+
+    ContextType::split_path(fo_name, type, fo_name, tray_name);
+
     Context* context;
-
-#if BUILD_OBJECT
-
-    if ( pool != 0 ) {
-        onCeph = true;
-
-        BOOST_LOG_TRIVIAL(debug) << ( std::string("Output is an object in the Ceph pool ") + pool);
-        context = new CephPoolContext(pool);
-        context->setAttempts(10);
-    } else if (bucket != 0) {
-        onS3 = true;
-
-        curl_global_init(CURL_GLOBAL_ALL);
-
-        BOOST_LOG_TRIVIAL(debug) << ( std::string("Output is an object in the S3 bucket ") + bucket);
-        context = new S3Context(bucket);
-
-    } else if (container != 0) {
-        onSwift = true;
-
-        curl_global_init(CURL_GLOBAL_ALL);
-
-        BOOST_LOG_TRIVIAL(debug) << ( std::string("Output is an object in the Swift bucket ") + container);
-        context = new SwiftContext(container);
-    } else {
-#endif
-
-        BOOST_LOG_TRIVIAL(debug) << ("Output is a file in a file system");
-        context = new FileContext("");
-
-#if BUILD_OBJECT
-    }  
-#endif
-
-    if (! context->connection()) {
-        error("Unable to connect context", -1);
-    }
+    curl_global_init(CURL_GLOBAL_ALL);
+    
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    context = StoragePool::get_context(type, tray_name);
 
     FileImageFactory FIF;
 
@@ -402,7 +344,7 @@ int main ( int argc, char **argv ) {
 
     Rok4ImageFactory R4IF;
     Rok4Image* rok4Image = R4IF.createRok4ImageToWrite(
-        output, BoundingBox<double>(0.,0.,0.,0.), -1, -1, sourceImage->getWidth(), sourceImage->getHeight(), samplesperpixel,
+        fo_name, BoundingBox<double>(0.,0.,0.,0.), -1, -1, sourceImage->getWidth(), sourceImage->getHeight(), samplesperpixel,
         sampleformat, bitspersample, photometric, compression,
         tileWidth, tileHeight, context
     );
@@ -424,22 +366,14 @@ int main ( int argc, char **argv ) {
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  ( "Clean" );
-#if BUILD_OBJECT
-
-    if (onSwift || onS3) {
-        // Un environnement CURL a été créé et utilisé, il faut le nettoyer
-        CurlPool::cleanCurlPool();
-        curl_global_cleanup();
-    }
-
-#endif
-
 
     ProjPool::cleanProjPool();
     proj_cleanup();
+    CurlPool::cleanCurlPool();
+    curl_global_cleanup();
+    StoragePool::cleanStoragePool();
     delete sourceImage;
     delete rok4Image;
-    delete context;
 
     return 0;
 }

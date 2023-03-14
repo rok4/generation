@@ -45,8 +45,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <string.h>
-#include "tiffio.h"
-#include "enums/Format.h"
+#include <tiffio.h>
+#include <rok4/enums/Format.h>
 
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -55,33 +55,26 @@
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
 
-#include "storage/FileContext.h"
-#include "image/file/FileImage.h"
-#include "utils/Cache.h"
-#include "image/file/Rok4Image.h"
+#include <rok4/storage/Context.h>
+#include <rok4/image/file/FileImage.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/Rok4Image.h>
 #include "config.h"
-
-#if BUILD_OBJECT
-    #include "storage/object/SwiftContext.h"
-    #include "storage/object/S3Context.h"
-    #include "storage/object/CephPoolContext.h"
-#endif
 
 /** \~french Message d'usage de la commande pbf2cache */
 std::string help = std::string("\npbf2cache version ") + std::string(VERSION) + "\n\n"
 
     "Make image tiled and compressed, in TIFF format, respecting ROK4 specifications.\n\n"
 
-    "Usage: pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE/OBJECT> [-d]\n\n"
+    "Usage: pbf2cache -r <DIRECTORY> -t <VAL> <VAL> -ultile <VAL> <VAL> <OUTPUT FILE / OBJECT> [-d]\n\n"
 
     "Parameters:\n"
     "     -r directory containing the PBF tiles : tile I,J is stored to path <DIRECTORY>/I/J.pbf\n"
     "     -t number of tiles in the slab : widthwise and heightwise.\n"
     "     -ultile upper left tile indices\n"
-    "     -pool Ceph pool where data is. INPUT FILE is interpreted as a Ceph object (ONLY IF OBJECT COMPILATION)\n"
-    "     -container Swift container where data is. Then OUTPUT FILE is interpreted as a Swift object name (ONLY IF OBJECT COMPILATION)\n"
-    "     -bucket S3 bucket where data is. Then OUTPUT FILE is interpreted as a S3 object name (ONLY IF OBJECT COMPILATION)\n"
-    "     -d debug logger activation\n\n";
+    "     -d debug logger activation\n\n"
+
+    "Output file / object format : [ceph|s3|swift]://tray_name/object_name or [file|ceph|s3|swift]://file_name or file_name\n\n";
 
 /**
  * \~french
@@ -124,15 +117,7 @@ int main ( int argc, char **argv ) {
     int ulCol = -1;
     int ulRow = -1;
 
-
     bool debugLogger=false;
-
-#if BUILD_OBJECT
-    char *pool = 0, *container = 0, *bucket = 0;
-    bool onCeph = false;
-    bool onSwift = false;
-    bool onS3 = false;
-#endif
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -146,29 +131,6 @@ int main ( int argc, char **argv ) {
     // Récupération des paramètres
     for ( int i = 1; i < argc; i++ ) {
 
-#if BUILD_OBJECT
-        if ( !strcmp ( argv[i],"-pool" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -pool option", -1);
-            }
-            pool = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-bucket" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -bucket option", -1);
-            }
-            bucket = argv[i];
-            continue;
-        }
-        if ( !strcmp ( argv[i],"-container" ) ) {
-            if ( ++i == argc ) {
-                error("Error in -container option", -1);
-            }
-            container = argv[i];
-            continue;
-        }
-#endif
         if ( !strcmp ( argv[i],"-ultile" ) ) {
             if ( i+2 >= argc ) { error("Error in -ultile option", -1 ); }
             ulCol = atoi ( argv[++i] );
@@ -222,48 +184,20 @@ int main ( int argc, char **argv ) {
         error ("Upper left tile indices have to be provided (with option -ultile)", -1);
     }
 
+    ContextType::eContextType type;
+    std::string fo_name = std::string(output);
+    std::string tray_name;
+
+    ContextType::split_path(fo_name, type, fo_name, tray_name);
+
     Context* context;
+    curl_global_init(CURL_GLOBAL_ALL);
 
-#if BUILD_OBJECT
-
-    if ( pool != 0 ) {
-        onCeph = true;
-
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Ceph pool ") + pool;
-        context = new CephPoolContext(pool);
-
-    } else if (bucket != 0) {
-        onS3 = true;
-
-        curl_global_init(CURL_GLOBAL_ALL);
-
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the S3 bucket ") + bucket;
-        context = new S3Context(bucket);
-
-    } else if (container != 0) {
-        onSwift = true;
-
-        curl_global_init(CURL_GLOBAL_ALL);
-
-        BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is an object in the Swift bucket ") + container;
-        context = new SwiftContext(container);
-    } else {
-#endif
-
-        BOOST_LOG_TRIVIAL(debug) << "Output is a file in a file system";
-        context = new FileContext("");
-
-#if BUILD_OBJECT
-    }  
-#endif
-
-    if (! context->connection()) {
-        error("Unable to connect context", -1);
-    }
-
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    context = StoragePool::get_context(type, tray_name);
 
     Rok4ImageFactory R4IF;
-    Rok4Image* rok4Image = R4IF.createRok4ImageToWrite( output, tilePerWidth, tilePerHeight, context );
+    Rok4Image* rok4Image = R4IF.createRok4ImageToWrite( fo_name, tilePerWidth, tilePerHeight, context );
     
     if (rok4Image == NULL) {
         error("Cannot create the ROK4 image to write", -1);
@@ -280,18 +214,13 @@ int main ( int argc, char **argv ) {
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
-#if BUILD_OBJECT
-    if (onSwift || onS3) {
-        // Un environnement CURL a été créé et utilisé, il faut le nettoyer
-        CurlPool::cleanCurlPool();
-        curl_global_cleanup();
-    }
-#endif
 
     ProjPool::cleanProjPool();
     proj_cleanup();
+    CurlPool::cleanCurlPool();
+    curl_global_cleanup();
+    StoragePool::cleanStoragePool();
     delete rok4Image;
-    delete context;
 
     return 0;
 }
