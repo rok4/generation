@@ -52,7 +52,7 @@ apt install ./rok4-generation.deb
 ### installation des styles (si besoin dans les usages)
 curl -o styles.deb https://github.com/rok4/styles/releases/download/x.y.z/rok4-styles-x.y.z-linux-all.deb
 
-apt install ./rok4-generation.deb
+apt install ./styles.deb
 ```
 
 
@@ -276,6 +276,7 @@ Les informations sur les canaux (nombre, taille en bits et format) peuvent :
 `mergeNtiff -f <FILE> [-r <DIR>] -c <VAL> -i <VAL> -n <VAL> [-a <VAL> -s <VAL> -b <VAL>]`
 
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels
+* `-g` : la première image en entrée dans le fichier est une image de fond. Il ne faudra pas lui appliquer l'éventuel style fourni.
 * `-r <DIRECTORY>` : dossier racine à utiliser pour les images dont le chemin commence par un `?` dans le fichier de configuration. Le chemin du dossier doit finir par un `/`
 * `-p <FILE>` : fichier de style à appliquer aux images avant reprojection ou réechantillonnage
 * `-i <INTERPOLATION>` : interpolation à utiliser pour les reprojections et le réechantillonnage : nn (plus proche voisin), linear, bicubic, lanzos
