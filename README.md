@@ -6,25 +6,6 @@ Ces outils permettent le calcul des dalles de données composant les pyramides e
 
 Ces outils sont principalement appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-- [Installer les outils (Debian)](#installer-les-outils-debian)
-- [Utiliser les outils](#utiliser-les-outils)
-    - [Variables d'environnement utilisées](#variables-denvironnement-utilisées)
-    - [CACHE2WORK](#cache2work)
-    - [CHECKWORK](#checkwork)
-    - [COMPOSENTIFF](#composentiff)
-    - [DECIMATENTIFF](#decimatentiff)
-    - [MANAGENODATA](#managenodata)
-    - [MERGE4TIFF](#merge4tiff)
-    - [MERGENTIFF](#mergentiff)
-    - [OVERLAYNTIFF](#overlayntiff)
-    - [PBF2CACHE](#pbf2cache)
-    - [WORK2CACHE](#work2cache)
-- [Compiler les outils (Debian)](#compiler-les-outils-debian)
-    - [Dépendances supplémentaires](#dépendances-supplémentaires)
-    - [Variables CMake](#variables-cmake)
-    - [Compilation, documentation et installation](#compilation-documentation-et-installation)
-
-
 ## Installer les outils (Debian)
 
 Installations système requises (listées dans le paquet debian, installées avec l'applicatif lors du `apt install`) :
@@ -448,3 +429,7 @@ make
 make doc
 make install
 ```
+
+## Contribuer
+
+Consulter les [directives de contribution](./CONTRIBUTING.md)
