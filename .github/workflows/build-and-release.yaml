@@ -111,7 +111,7 @@ jobs:
 
       - name: Copy version elements to final location
         run: |
-          mkdir -p docs/versions/${{ github.ref_name }}/docs docs/versions/${{ github.ref_name }}/config
+          mkdir -p docs/versions/${{ github.ref_name }}/docs
           cp -r artifact/html docs/versions/${{ github.ref_name }}/
           cp -r artifact/images docs/versions/${{ github.ref_name }}/docs/
 
