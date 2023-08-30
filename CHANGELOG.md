@@ -1,3 +1,9 @@
+## 4.1.5
+
+### [Fixed]
+
+* Outil `mergeNtiff` : correction du cas mergeNtiff + image de fond + style. L'image de fond provient d'une pyramide, donc est déjà au format cible. Il ne faut pas lui appliquer de style.
+
 ## 4.1.4
 
 ### [Fixed]
