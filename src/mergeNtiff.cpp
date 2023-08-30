@@ -116,6 +116,8 @@ Compression::eCompression compression = Compression::NONE;
 /** \~french Interpolation utilisée pour le réechantillonnage ou la reprojection */
 Interpolation::KernelType interpolation = Interpolation::CUBIC;
 
+/** \~french A-t-on précisé une image de fond */
+bool backgroundProvided = false;
 /** \~french A-t-on précisé un style */
 bool styleProvided = false;
 /** \~french Chemin du fichier de style à appliquer */
@@ -138,6 +140,7 @@ std::string help = std::string("\nmergeNtiff version ") + std::string(VERSION) +
 
                    "Parameters:\n"
                    "    -f configuration file : list of output and source images and masks\n"
+                   "    -g : first input is a background image\n"
                    "    -r output root : root directory for output files, have to end with a '/'\n"
                    "    -c output compression :\n"
                    "            raw     no compression\n"
@@ -207,6 +210,9 @@ int parseCommandLine(int argc, char** argv) {
                     exit(0);
                 case 'd':  // debug logs
                     debugLogger = true;
+                    break;
+                case 'g':  // background
+                    backgroundProvided = true;
                     break;
                 case 'f':  // fichier de liste des images source
                     if (i++ >= argc) {
@@ -591,7 +597,7 @@ int loadImages(FileImage** ppImageOut, FileImage** ppMaskOut, std::vector<FileIm
             return -1;
         }
 
-        // Le style peut modifier 
+        // Le style peut modifier les caractéristiques
         bitspersample = style->getBitsPerSample(bitspersample);
         samplesperpixel = style->getChannels(samplesperpixel);
         sampleformat = style->getSampleFormat(sampleformat);
@@ -1030,7 +1036,8 @@ int mergeTabImages(FileImage *pImageOut,                          // Sortie
             BOOST_LOG_TRIVIAL(debug) << "\t is compatible";
             /* les images sources et finale ont la meme resolution et la meme phase
              * on aura donc pas besoin de reechantillonnage.*/
-            if (styleProvided) {
+            if (styleProvided && ! (i == 0 && backgroundProvided)) {
+                // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
                 Image* pStyled = NULL;
                 
                 if (style->isEstompage()) {

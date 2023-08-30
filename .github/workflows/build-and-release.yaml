@@ -19,13 +19,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref_name }} 
-          release_name: Release ${{ github.ref_name }} 
-          body_path: CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          generateReleaseNotes: true
           draft: false
           prerelease: false
 
@@ -80,7 +79,7 @@ jobs:
           cd build
           make doc
           cd ..
-          cp README.md CHANGELOG.md dist/
+          cp -r README.md CHANGELOG.md docs/images dist/
 
       - name: Upload documentation
         if: "matrix.os == 'ubuntu-20.04'"
@@ -112,21 +111,24 @@ jobs:
 
       - name: Copy version elements to final location
         run: |
-          mkdir -p docs/versions/${{ github.ref_name }}
+          mkdir -p docs/versions/${{ github.ref_name }}/docs
           cp -r artifact/html docs/versions/${{ github.ref_name }}/
+          cp -r artifact/images docs/versions/${{ github.ref_name }}/docs/
+
 
       - name: Add pages from templates
         run: |
-          sed "s#__version__#${{ github.ref_name }}#" templates/DOCUMENTATION.template.md >docs/versions/${{ github.ref_name }}/DOCUMENTATION.md
-          sed "s#__version__#${{ github.ref_name }}#" templates/CHANGELOG.template.md >docs/versions/${{ github.ref_name }}/CHANGELOG.md
-          cat artifact/CHANGELOG.md >>docs/versions/${{ github.ref_name }}/CHANGELOG.md
-          sed "s#__version__#${{ github.ref_name }}#" templates/README.template.md >docs/versions/${{ github.ref_name }}/README.md
-          cat artifact/README.md >>docs/versions/${{ github.ref_name }}/README.md
-          sed -i "s#x.y.z#${{ github.ref_name }}#g" docs/versions/${{ github.ref_name }}/README.md
-          sed "s#__version__#${{ github.ref_name }}#" templates/index.template.md >docs/index.md
-          echo "# Versions" >docs/versions.md
-          echo "" >>docs/versions.md
-          for v in `ls -t docs/versions`; do sed "s#__version__#$v#" templates/versions.template.md >>docs/versions.md; done
+          sed "s#__version__#${{ github.ref_name }}#" templates/mkdocs.template.yml >mkdocs.yml
+
+          sed "s#__version__#${{ github.ref_name }}#" templates/documentation.template.md >docs/versions/${{ github.ref_name }}/documentation.md
+
+          sed "s#__version__#${{ github.ref_name }}#" templates/index-version.template.md >docs/version s/${{ github.ref_name }}/index.md
+          cat artifact/README.md >>docs/versions/${{ github.ref_name }}/index.md
+          sed -i "s#x.y.z#${{ github.ref_name }}#g" docs/versions/${{ github.ref_name }}/index.md
+
+          cp templates/index-versions.template.md docs/versions/index.md
+          sed "s/^## \(.*\)$/## \1 \n\n[➔ Lien vers la documentation](\1\/index.md) /" artifact/CHANGELOG.md >>docs/versions/index.md
+
           sed "s#__version__#${{ github.ref_name }}#" templates/latest.template.html >docs/versions/latest/index.html
           rm -r artifact
 

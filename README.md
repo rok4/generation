@@ -6,25 +6,6 @@ Ces outils permettent le calcul des dalles de données composant les pyramides e
 
 Ces outils sont principalement appelés dans les scripts générés par les outils de [prégénération](https://github.com/rok4/pregeneration).
 
-- [Installer les outils (Debian)](#installer-les-outils-debian)
-- [Utiliser les outils](#utiliser-les-outils)
-    - [Variables d'environnement utilisées](#variables-denvironnement-utilisées)
-    - [CACHE2WORK](#cache2work)
-    - [CHECKWORK](#checkwork)
-    - [COMPOSENTIFF](#composentiff)
-    - [DECIMATENTIFF](#decimatentiff)
-    - [MANAGENODATA](#managenodata)
-    - [MERGE4TIFF](#merge4tiff)
-    - [MERGENTIFF](#mergentiff)
-    - [OVERLAYNTIFF](#overlayntiff)
-    - [PBF2CACHE](#pbf2cache)
-    - [WORK2CACHE](#work2cache)
-- [Compiler les outils (Debian)](#compiler-les-outils-debian)
-    - [Dépendances supplémentaires](#dépendances-supplémentaires)
-    - [Variables CMake](#variables-cmake)
-    - [Compilation, documentation et installation](#compilation-documentation-et-installation)
-
-
 ## Installer les outils (Debian)
 
 Installations système requises (listées dans le paquet debian, installées avec l'applicatif lors du `apt install`) :
@@ -52,7 +33,7 @@ apt install ./rok4-generation.deb
 ### installation des styles (si besoin dans les usages)
 curl -o styles.deb https://github.com/rok4/styles/releases/download/x.y.z/rok4-styles-x.y.z-linux-all.deb
 
-apt install ./rok4-generation.deb
+apt install ./styles.deb
 ```
 
 
@@ -276,6 +257,7 @@ Les informations sur les canaux (nombre, taille en bits et format) peuvent :
 `mergeNtiff -f <FILE> [-r <DIR>] -c <VAL> -i <VAL> -n <VAL> [-a <VAL> -s <VAL> -b <VAL>]`
 
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels
+* `-g` : la première image en entrée dans le fichier est une image de fond. Il ne faudra pas lui appliquer l'éventuel style fourni.
 * `-r <DIRECTORY>` : dossier racine à utiliser pour les images dont le chemin commence par un `?` dans le fichier de configuration. Le chemin du dossier doit finir par un `/`
 * `-p <FILE>` : fichier de style à appliquer aux images avant reprojection ou réechantillonnage
 * `-i <INTERPOLATION>` : interpolation à utiliser pour les reprojections et le réechantillonnage : nn (plus proche voisin), linear, bicubic, lanzos
@@ -447,3 +429,7 @@ make
 make doc
 make install
 ```
+
+## Contribuer
+
+Consulter les [directives de contribution](./CONTRIBUTING.md)
