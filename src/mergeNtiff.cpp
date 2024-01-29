@@ -1300,6 +1300,9 @@ int main(int argc, char** argv) {
     delete pMaskOut;
     ProjPool::cleanProjPool();
     proj_cleanup();
+    StoragePool::cleanStoragePool();
+    CurlPool::cleanCurlPool();
+    curl_global_cleanup();
 
     return 0;
 }
