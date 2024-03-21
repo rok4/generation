@@ -1,3 +1,12 @@
+## 4.2.0
+
+### [Added]
+
+* Stockage objet (S3, Swift et Ceph) 
+    * Possibilité de définir un nombre de tentatives pour les lectures (1 par défaut) : variable d'environnement `ROK4_OBJECT_READ_ATTEMPTS` 
+    * Possibilité de définir un nombre de tentatives pour les écritures (1 par défaut) : variable d'environnement `ROK4_OBJECT_WRITE_ATTEMPTS` 
+    * Possibilité de définir un temps d'attente, en secondes, entre les tentatives (5 par défaut) : variable d'environnement `ROK4_OBJECT_ATTEMPTS_WAIT`
+
 ## 4.1.5
 
 ### [Fixed]

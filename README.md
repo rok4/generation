@@ -36,7 +36,6 @@ curl -o styles.deb https://github.com/rok4/styles/releases/download/x.y.z/rok4-s
 apt install ./styles.deb
 ```
 
-
 ## Utiliser les outils
 
 Voici la légende utilisée pour identifié le format des images dans les documentations par commande :
@@ -47,6 +46,10 @@ Voici la légende utilisée pour identifié le format des images dans les docume
 
 Leur définition est contrôlée à l'usage.
 
+* Pour le stockage objet
+    - `ROK4_OBJECT_READ_ATTEMPTS` : nombre de tentatives pour les lectures
+    - `ROK4_OBJECT_WRITE_ATTEMPTS` : nombre de tentatives pour les écritures
+    - `ROK4_OBJECT_ATTEMPTS_WAIT` : temps d'attente en secondes entre les tentatives
 * Pour le stockage S3
     - `ROK4_S3_URL`
     - `ROK4_S3_KEY`
