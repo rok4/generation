@@ -1,0 +1,559 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <meta name="generator" content="Doxygen 1.8.17" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Outils de manipulation raster ROK4</title>
+    <link href="tabs.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="dynsections.js"></script>
+    <link href="navtree.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="resize.js"></script>
+    <script type="text/javascript" src="navtreedata.js"></script>
+    <script type="text/javascript" src="navtree.js"></script>
+    <link href="search/search.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="search/searchdata.js"></script>
+    <script type="text/javascript" src="search/search.js"></script>
+    <link href="doxygen.css" rel="stylesheet" type="text/css" />
+    <link href="doxygen-awesome.css" rel="stylesheet" type="text/css" />
+</head>
+<body><!-- Généré par Doxygen 1.8.17 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Recherche');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Recherche');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(document).ready(function(){initNavTree('overlayNtiff_8cpp.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Fonctions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Référence du fichier overlayNtiff.cpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Fusion de N images aux mêmes dimensions, selon différentes méthodes.  
+<a href="#details">Plus de détails...</a></p>
+<div class="textblock"><code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;tiffio.h&gt;</code><br />
+<code>#include &lt;tiff.h&gt;</code><br />
+<code>#include &lt;boost/log/core.hpp&gt;</code><br />
+<code>#include &lt;boost/log/trivial.hpp&gt;</code><br />
+<code>#include &lt;boost/log/utility/setup/common_attributes.hpp&gt;</code><br />
+<code>#include &lt;boost/log/utility/setup/console.hpp&gt;</code><br />
+<code>#include &lt;rok4/image/file/FileImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/MergeImage.h&gt;</code><br />
+<code>#include &lt;rok4/enums/Format.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &quot;config.h&quot;</code><br />
+<code>#include &lt;rok4/utils/Cache.h&gt;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Fonctions</h2></td></tr>
+<tr class="memitem:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a2ef30c42cbc289d899a8be5d2d8f77d0">usage</a> ()</td></tr>
+<tr class="memdesc:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Affiche l'utilisation et les différentes options de la commande overlayNtiff <a class="el" href="overlayNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a>.  <a href="overlayNtiff_8cpp.html#a2ef30c42cbc289d899a8be5d2d8f77d0">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3743d1ffdcedd6d873578928ca0b690a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a3743d1ffdcedd6d873578928ca0b690a">error</a> (std::string message, int errorCode)</td></tr>
+<tr class="memdesc:a3743d1ffdcedd6d873578928ca0b690a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Affiche un message d'erreur, l'utilisation de la commande et sort en erreur.  <a href="overlayNtiff_8cpp.html#a3743d1ffdcedd6d873578928ca0b690a">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a3743d1ffdcedd6d873578928ca0b690a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae25773de1be12d152bb05b67566cd483"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#ae25773de1be12d152bb05b67566cd483">parseCommandLine</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:ae25773de1be12d152bb05b67566cd483"><td class="mdescLeft">&#160;</td><td class="mdescRight">Récupère les valeurs passées en paramètres de la commande, et les stocke dans les variables globales.  <a href="overlayNtiff_8cpp.html#ae25773de1be12d152bb05b67566cd483">Plus de détails...</a><br /></td></tr>
+<tr class="separator:ae25773de1be12d152bb05b67566cd483"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e1cb53d9fa7649bf3fd4d5684963089"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a6e1cb53d9fa7649bf3fd4d5684963089">readFileLine</a> (std::ifstream &amp;file, char *imageFileName, bool *hasMask, char *maskFileName)</td></tr>
+<tr class="memdesc:a6e1cb53d9fa7649bf3fd4d5684963089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lit une ligne du fichier de configuration.  <a href="overlayNtiff_8cpp.html#a6e1cb53d9fa7649bf3fd4d5684963089">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a6e1cb53d9fa7649bf3fd4d5684963089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89f8115bb6a4b6e19872a7e7ec553cbf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a89f8115bb6a4b6e19872a7e7ec553cbf">loadImages</a> (FileImage **ppImageOut, FileImage **ppMaskOut, MergeImage **ppMergeIn)</td></tr>
+<tr class="memdesc:a89f8115bb6a4b6e19872a7e7ec553cbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Charge les images en entrée et en sortie depuis le fichier de configuration.  <a href="overlayNtiff_8cpp.html#a89f8115bb6a4b6e19872a7e7ec553cbf">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a89f8115bb6a4b6e19872a7e7ec553cbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fonction principale de l'outil overlayNtiff.  <a href="overlayNtiff_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a272663721ae25c3694894f9d2dda9dd1"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a272663721ae25c3694894f9d2dda9dd1">imageListFilename</a> [256]</td></tr>
+<tr class="separator:a272663721ae25c3694894f9d2dda9dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a69b73601b508dd6658c226f42cb1b4"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a9a69b73601b508dd6658c226f42cb1b4">samplesperpixel</a> = 0</td></tr>
+<tr class="separator:a9a69b73601b508dd6658c226f42cb1b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16b312f6164a2698d26519cbf955f4c0"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a16b312f6164a2698d26519cbf955f4c0">bitspersample</a></td></tr>
+<tr class="separator:a16b312f6164a2698d26519cbf955f4c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1953f88f170fc37a3149ec6a40db2a98"><td class="memItemLeft" align="right" valign="top">SampleFormat::eSampleFormat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a1953f88f170fc37a3149ec6a40db2a98">sampleformat</a></td></tr>
+<tr class="separator:a1953f88f170fc37a3149ec6a40db2a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a359c6187cecc9f7ec9abc9c638eff616"><td class="memItemLeft" align="right" valign="top">Photometric::ePhotometric&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a359c6187cecc9f7ec9abc9c638eff616">photometric</a> = Photometric::RGB</td></tr>
+<tr class="separator:a359c6187cecc9f7ec9abc9c638eff616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527676d008d5ab68518a5cb08bdea98f"><td class="memItemLeft" align="right" valign="top">Compression::eCompression&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#a527676d008d5ab68518a5cb08bdea98f">compression</a> = Compression::NONE</td></tr>
+<tr class="separator:a527676d008d5ab68518a5cb08bdea98f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb28a07dccafd4d9f1fc972f31049247"><td class="memItemLeft" align="right" valign="top">Merge::eMergeType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#adb28a07dccafd4d9f1fc972f31049247">mergeMethod</a> = Merge::UNKNOWN</td></tr>
+<tr class="separator:adb28a07dccafd4d9f1fc972f31049247"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab4091cd8a9f13ac3c416008bebf8595"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#aab4091cd8a9f13ac3c416008bebf8595">transparent</a></td></tr>
+<tr class="separator:aab4091cd8a9f13ac3c416008bebf8595"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3a40d8b820e4275e424e2418dd9525b"><td class="memItemLeft" align="right" valign="top">int *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#af3a40d8b820e4275e424e2418dd9525b">background</a></td></tr>
+<tr class="separator:af3a40d8b820e4275e424e2418dd9525b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf1a0a045ba3ce38295c06136a4508a9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#aaf1a0a045ba3ce38295c06136a4508a9">debugLogger</a> =false</td></tr>
+<tr class="separator:aaf1a0a045ba3ce38295c06136a4508a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecfcd8d5595d8ba1a38ef3c624d1186a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="overlayNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a></td></tr>
+<tr class="separator:aecfcd8d5595d8ba1a38ef3c624d1186a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Description détaillée</h2>
+<div class="textblock"><p>Fusion de N images aux mêmes dimensions, selon différentes méthodes. </p>
+<dl class="section author"><dt>Auteur</dt><dd>Institut national de l'information géographique et forestière </dd></dl>
+</div><h2 class="groupheader">Documentation des fonctions</h2>
+<a id="a3743d1ffdcedd6d873578928ca0b690a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3743d1ffdcedd6d873578928ca0b690a">&#9670;&nbsp;</a></span>error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void error </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>message</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>errorCode</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Affiche un message d'erreur, l'utilisation de la commande et sort en erreur. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">message</td><td>message d'erreur </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">errorCode</td><td>code de retour </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a89f8115bb6a4b6e19872a7e7ec553cbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89f8115bb6a4b6e19872a7e7ec553cbf">&#9670;&nbsp;</a></span>loadImages()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int loadImages </td>
+          <td>(</td>
+          <td class="paramtype">FileImage **&#160;</td>
+          <td class="paramname"><em>ppImageOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FileImage **&#160;</td>
+          <td class="paramname"><em>ppMaskOut</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">MergeImage **&#160;</td>
+          <td class="paramname"><em>ppMergeIn</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Charge les images en entrée et en sortie depuis le fichier de configuration. </p>
+<p>On va récupérer toutes les informations de toutes les images et masques présents dans le fichier de configuration et créer les objets LibtiffImage correspondant. Toutes les images ici manipulées sont de vraies images (physiques) dans ce sens où elles sont des fichiers soit lus, soit qui seront écrits.</p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">ppImageOut</td><td>image résultante de l'outil </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ppMaskOut</td><td>masque résultat de l'outil, si demandé </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">pImageIn</td><td>ensemble des images en entrée </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="a3c04138a5bfe5d72780bb7e82a18e627"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&nbsp;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fonction principale de l'outil overlayNtiff. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">argc</td><td>nombre de paramètres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">argv</td><td>tableau des paramètres </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="ae25773de1be12d152bb05b67566cd483"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae25773de1be12d152bb05b67566cd483">&#9670;&nbsp;</a></span>parseCommandLine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int parseCommandLine </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Récupère les valeurs passées en paramètres de la commande, et les stocke dans les variables globales. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">argc</td><td>nombre de paramètres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">argv</td><td>tableau des paramètres </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="a6e1cb53d9fa7649bf3fd4d5684963089"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e1cb53d9fa7649bf3fd4d5684963089">&#9670;&nbsp;</a></span>readFileLine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int readFileLine </td>
+          <td>(</td>
+          <td class="paramtype">std::ifstream &amp;&#160;</td>
+          <td class="paramname"><em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>imageFileName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>hasMask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>maskFileName</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Lit une ligne du fichier de configuration. </p>
+<p>Une ligne contient le chemin vers une image, potentiellement suivi du chemin vers le masque associé. </p><dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">file</td><td>flux de lecture vers le fichier de configuration </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">imageFileName</td><td>chemin de l'image lu dans le fichier de configuration </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">hasMask</td><td>précise si l'image possède un masque </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">maskFileName</td><td>chemin du masque lu dans le fichier de configuration </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 en cas de succès, -1 si la fin du fichier est atteinte, 1 en cas d'erreur </dd></dl>
+
+</div>
+</div>
+<a id="a2ef30c42cbc289d899a8be5d2d8f77d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ef30c42cbc289d899a8be5d2d8f77d0">&#9670;&nbsp;</a></span>usage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void usage </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Affiche l'utilisation et les différentes options de la commande overlayNtiff <a class="el" href="overlayNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a>. </p>
+<p>L'affichage se fait dans le niveau de logger INFO </p>
+
+</div>
+</div>
+<h2 class="groupheader">Documentation des variables</h2>
+<a id="af3a40d8b820e4275e424e2418dd9525b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3a40d8b820e4275e424e2418dd9525b">&#9670;&nbsp;</a></span>background</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int* background</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Couleur à utiliser comme fond. Doit comporter autant de valeur qu'on veut de canaux dans l'image finale. Si un canal alpha est présent, il ne doit pas être prémultiplié aux autres canaux </p>
+
+</div>
+</div>
+<a id="a16b312f6164a2698d26519cbf955f4c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16b312f6164a2698d26519cbf955f4c0">&#9670;&nbsp;</a></span>bitspersample</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t bitspersample</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nombre de bits occupé par un canal </p>
+
+</div>
+</div>
+<a id="a527676d008d5ab68518a5cb08bdea98f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a527676d008d5ab68518a5cb08bdea98f">&#9670;&nbsp;</a></span>compression</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Compression::eCompression compression = Compression::NONE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compression de l'image de sortie </p>
+
+</div>
+</div>
+<a id="aaf1a0a045ba3ce38295c06136a4508a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf1a0a045ba3ce38295c06136a4508a9">&#9670;&nbsp;</a></span>debugLogger</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool debugLogger =false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Activation du niveau de log debug. Faux par défaut </p>
+
+</div>
+</div>
+<a id="aecfcd8d5595d8ba1a38ef3c624d1186a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecfcd8d5595d8ba1a38ef3c624d1186a">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string help</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Message d'usage de la commande overlayNtiff </p>
+
+</div>
+</div>
+<a id="a272663721ae25c3694894f9d2dda9dd1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a272663721ae25c3694894f9d2dda9dd1">&#9670;&nbsp;</a></span>imageListFilename</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char imageListFilename[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Chemin du fichier de configuration des images </p>
+
+</div>
+</div>
+<a id="adb28a07dccafd4d9f1fc972f31049247"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb28a07dccafd4d9f1fc972f31049247">&#9670;&nbsp;</a></span>mergeMethod</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Merge::eMergeType mergeMethod = Merge::UNKNOWN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mode de fusion des images </p>
+
+</div>
+</div>
+<a id="a359c6187cecc9f7ec9abc9c638eff616"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a359c6187cecc9f7ec9abc9c638eff616">&#9670;&nbsp;</a></span>photometric</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Photometric::ePhotometric photometric = Photometric::RGB</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Photométrie (rgb, gray), pour les images en sortie </p>
+
+</div>
+</div>
+<a id="a1953f88f170fc37a3149ec6a40db2a98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1953f88f170fc37a3149ec6a40db2a98">&#9670;&nbsp;</a></span>sampleformat</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SampleFormat::eSampleFormat sampleformat</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Format du canal (entier, flottant, signé ou non...), dans les images en entrée et celle en sortie </p>
+
+</div>
+</div>
+<a id="a9a69b73601b508dd6658c226f42cb1b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a69b73601b508dd6658c226f42cb1b4">&#9670;&nbsp;</a></span>samplesperpixel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t samplesperpixel = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nombre de canaux par pixel de l'image en sortie </p>
+
+</div>
+</div>
+<a id="aab4091cd8a9f13ac3c416008bebf8595"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab4091cd8a9f13ac3c416008bebf8595">&#9670;&nbsp;</a></span>transparent</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int* transparent</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Couleur à considérer comme transparent dans le images en entrée. Vrai couleur (sur 3 canaux). Peut ne pas être définie </p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="overlayNtiff_8cpp.html">overlayNtiff.cpp</a></li>
+    <li class="footer">Généré par
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.17 </li>
+  </ul>
+</div>
+</body>
+</html>

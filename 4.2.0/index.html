@@ -1,0 +1,1797 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://rok4.github.io/generation/4.2.0/">
+      
+      
+      
+        <link rel="next" href="documentation/">
+      
+      
+      <link rel="icon" href="https://rok4.github.io/assets/images/rok4-carre.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
+    
+    
+      
+        <title>Projet ROK4 - Outils de génération de dalles raster et vecteur</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.10ba22f1.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://rok4.github.io/assets/css/commun.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#outils-de-generation-de-dalles-raster-et-vecteur" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  🚨 Vous êtes sur la documentation d'une ancienne version. 🚨
+  <a href="../."> 
+    <strong>Cliquez ici pour aller sur la dernière version.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="https://rok4.github.io" title="Projet ROK4 - Outils de génération de dalles raster et vecteur" class="md-header__button md-logo" aria-label="Projet ROK4 - Outils de génération de dalles raster et vecteur" data-md-component="logo">
+      
+  <img src="https://rok4.github.io/assets/images/rok4-carre.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Projet ROK4 - Outils de génération de dalles raster et vecteur
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Accueil
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="documentation/" class="md-tabs__link">
+        
+  
+    
+  
+  Documentation technique
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="CHANGELOG/" class="md-tabs__link">
+        
+  
+    
+  
+  Historique des versions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="CONTRIBUTING/" class="md-tabs__link">
+        
+  
+    
+  
+  Contribuer
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://rok4.github.io" title="Projet ROK4 - Outils de génération de dalles raster et vecteur" class="md-nav__button md-logo" aria-label="Projet ROK4 - Outils de génération de dalles raster et vecteur" data-md-component="logo">
+      
+  <img src="https://rok4.github.io/assets/images/rok4-carre.png" alt="logo">
+
+    </a>
+    Projet ROK4 - Outils de génération de dalles raster et vecteur
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Accueil
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Accueil
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installer-les-outils-debian" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installer les outils (Debian)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utiliser-les-outils" class="md-nav__link">
+    <span class="md-ellipsis">
+      Utiliser les outils
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Utiliser les outils">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variables-denvironnement-utilisees" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables d'environnement utilisées
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache2work" class="md-nav__link">
+    <span class="md-ellipsis">
+      CACHE2WORK
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CACHE2WORK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checkwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      CHECKWORK
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CHECKWORK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      COMPOSENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="COMPOSENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decimatentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      DECIMATENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DECIMATENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managenodata" class="md-nav__link">
+    <span class="md-ellipsis">
+      MANAGENODATA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MANAGENODATA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge4tiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      MERGE4TIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MERGE4TIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mergentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      MERGENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MERGENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlayntiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      OVERLAYNTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OVERLAYNTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pbf2cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      PBF2CACHE
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PBF2CACHE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#work2cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      WORK2CACHE
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WORK2CACHE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-les-outils-debian" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compiler les outils (Debian)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compiler les outils (Debian)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependances-supplementaires" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dépendances supplémentaires
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables CMake
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compilation-documentation-et-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compilation, documentation et installation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contribuer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contribuer
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="documentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation technique
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Historique des versions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CONTRIBUTING/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribuer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installer-les-outils-debian" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installer les outils (Debian)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utiliser-les-outils" class="md-nav__link">
+    <span class="md-ellipsis">
+      Utiliser les outils
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Utiliser les outils">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variables-denvironnement-utilisees" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables d'environnement utilisées
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cache2work" class="md-nav__link">
+    <span class="md-ellipsis">
+      CACHE2WORK
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CACHE2WORK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checkwork" class="md-nav__link">
+    <span class="md-ellipsis">
+      CHECKWORK
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CHECKWORK">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      COMPOSENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="COMPOSENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decimatentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      DECIMATENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DECIMATENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managenodata" class="md-nav__link">
+    <span class="md-ellipsis">
+      MANAGENODATA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MANAGENODATA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge4tiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      MERGE4TIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MERGE4TIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mergentiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      MERGENTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MERGENTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlayntiff" class="md-nav__link">
+    <span class="md-ellipsis">
+      OVERLAYNTIFF
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OVERLAYNTIFF">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-fichier-de-configuration_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Le fichier de configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pbf2cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      PBF2CACHE
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PBF2CACHE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemple_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemple
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#work2cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      WORK2CACHE
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="WORK2CACHE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemples_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exemples
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compiler-les-outils-debian" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compiler les outils (Debian)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Compiler les outils (Debian)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependances-supplementaires" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dépendances supplémentaires
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables-cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables CMake
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compilation-documentation-et-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compilation, documentation et installation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contribuer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contribuer
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="outils-de-generation-de-dalles-raster-et-vecteur">Outils de génération de dalles raster et vecteur</h1>
+<p><img alt="ROK4 Logo" src="https://rok4.github.io/assets/images/rok4.png" /></p>
+<p>Ces outils permettent le calcul des dalles de données composant les pyramides exploitées par le <a href="https://github.com/rok4/server">serveur</a> et s'appuient essentiellement sur la <a href="https://github.com/rok4/core-cpp">librairie C++ du projet</a></p>
+<p>Ces outils sont principalement appelés dans les scripts générés par les outils de <a href="https://github.com/rok4/pregeneration">prégénération</a>.</p>
+<h2 id="installer-les-outils-debian">Installer les outils (Debian)</h2>
+<p>Installations système requises (listées dans le paquet debian, installées avec l'applicatif lors du <code>apt install</code>) :</p>
+<ul>
+<li><code>librok4-dev</code> (disponible sur <a href="https://github.com/rok4/core-cpp/releases/">GitHub</a>)</li>
+<li><code>libcurl4-openssl-dev</code></li>
+<li><code>libproj-dev</code></li>
+<li><code>libboost-log-dev</code></li>
+<li><code>libboost-filesystem-dev</code></li>
+<li><code>libboost-system-dev</code></li>
+</ul>
+<pre><code class="language-bash">### librok4-dev
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/4.2.0/librok4-base-4.2.0-ubuntu-20.04-amd64.deb
+# or, with ceph driver
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/4.2.0/librok4-ceph-4.2.0-ubuntu-20.04-amd64.deb
+
+apt install ./librok4-dev.deb
+
+### rok4-generation
+curl -o rok4-generation.deb https://github.com/rok4/generation/releases/download/4.2.0/rok4-generation-4.2.0-ubuntu-20.04-amd64.deb
+
+apt install ./rok4-generation.deb
+
+### installation des styles (si besoin dans les usages)
+curl -o styles.deb https://github.com/rok4/styles/releases/download/4.2.0/rok4-styles-4.2.0-linux-all.deb
+
+apt install ./styles.deb
+</code></pre>
+<h2 id="utiliser-les-outils">Utiliser les outils</h2>
+<p>Voici la légende utilisée pour identifié le format des images dans les documentations par commande :</p>
+<p><img alt="Formats" src="images/formats.png" /></p>
+<h3 id="variables-denvironnement-utilisees">Variables d'environnement utilisées</h3>
+<p>Leur définition est contrôlée à l'usage.</p>
+<ul>
+<li>Pour le stockage objet<ul>
+<li><code>ROK4_OBJECT_READ_ATTEMPTS</code> : nombre de tentatives pour les lectures</li>
+<li><code>ROK4_OBJECT_WRITE_ATTEMPTS</code> : nombre de tentatives pour les écritures</li>
+<li><code>ROK4_OBJECT_ATTEMPTS_WAIT</code> : temps d'attente en secondes entre les tentatives</li>
+</ul>
+</li>
+<li>Pour le stockage S3<ul>
+<li><code>ROK4_S3_URL</code></li>
+<li><code>ROK4_S3_KEY</code></li>
+<li><code>ROK4_S3_SECRETKEY</code></li>
+</ul>
+</li>
+<li>Pour le stockage SWIFT<ul>
+<li><code>ROK4_SWIFT_AUTHURL</code></li>
+<li><code>ROK4_SWIFT_USER</code></li>
+<li><code>ROK4_SWIFT_PASSWD</code></li>
+<li><code>ROK4_SWIFT_PUBLICURL</code></li>
+<li>Si authentification via Swift<ul>
+<li><code>ROK4_SWIFT_ACCOUNT</code></li>
+</ul>
+</li>
+<li>Si connection via keystone (présence de <code>ROK4_KEYSTONE_DOMAINID</code>)<ul>
+<li><code>ROK4_KEYSTONE_DOMAINID</code></li>
+<li><code>ROK4_KEYSTONE_PROJECTID</code></li>
+</ul>
+</li>
+<li><code>ROK4_SWIFT_TOKEN_FILE</code> afin de sauvegarder le token d'accès, et ne pas le demander si ce fichier en contient un</li>
+</ul>
+</li>
+<li>Pour configurer l'usage de libcurl (intéraction SWIFT et S3)<ul>
+<li><code>ROK4_SSL_NO_VERIFY</code></li>
+<li><code>HTTP_PROXY</code></li>
+<li><code>HTTPS_PROXY</code></li>
+<li><code>NO_PROXY</code></li>
+</ul>
+</li>
+<li>Pour le stockage CEPH<ul>
+<li><code>ROK4_CEPH_CONFFILE</code></li>
+<li><code>ROK4_CEPH_USERNAME</code></li>
+<li><code>ROK4_CEPH_CLUSTERNAME</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="cache2work">CACHE2WORK</h3>
+<p><img alt="cache2work" src="images/cache2work.png" /></p>
+<p>Cet outil lit une dalle ROK4 raster et la convertit en une image TIFF non tuilée, dont on peut choisir la compression.</p>
+<h4 id="usage">Usage</h4>
+<p><code>cache2work -c &lt;COMPRESSION&gt; &lt;INPUT FILE/OBJECT&gt; &lt;OUTPUT FILE&gt; [-d]</code></p>
+<ul>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<h4 id="exemples">Exemples</h4>
+<ul>
+<li><code>cache2work -c zip /home/IGN/slab.tif /home/IGN/workimage.tif</code></li>
+<li><code>cache2work -c zip ceph://ign/slab /home/IGN/workimage.tif</code></li>
+</ul>
+<h3 id="checkwork">CHECKWORK</h3>
+<p>Cet outil prend seulement une image en entrée et tente de la lire. Cela permet de détecter d'éventuelles erreurs.</p>
+<h4 id="usage_1">Usage</h4>
+<p><code>checkWork &lt;INPUT FILE&gt; [-h]</code></p>
+<ul>
+<li><code>-h</code> : Affiche l'aide</li>
+</ul>
+<h4 id="exemple">Exemple</h4>
+<ul>
+<li><code>checkWork /home/IGN/source.tif</code></li>
+</ul>
+<h3 id="composentiff">COMPOSENTIFF</h3>
+<p><img alt="composeNtiff" src="images/composeNtiff.png" /></p>
+<p>Cet outil fusionne plusieurs images disposées en un dallage régulier en une seule. Il est utilisé lorsqu'une image est moissonnée en plusieurs fois à cause de sa taille, pour recomposer l'image désirée. Toutes les images en entrée doivent voir les même dimensions et les même caractéristiques.</p>
+<h4 id="usage_2">Usage</h4>
+<p><code>composeNtiff -s &lt;DIRECTORY&gt; -g &lt;VAL&gt; &lt;VAL&gt; -c &lt;VAL&gt; &lt;OUTPUT FILE&gt; [-d]</code></p>
+<ul>
+<li><code>-s</code> : dossier contenant toutes les images du quadrillage. Elles sont lues dans l'ordre alpha-numérique. Si il a plus d'images que nécessaires, les dernières ne sont pas utilisées</li>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-g &lt;INTEGER&gt; &lt;INTEGER&gt;</code> : largeur et hauteur de la grille en nombre d'images</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<h4 id="exemple_1">Exemple</h4>
+<ul>
+<li><code>composeNtiff -c zip -s /home/IGN/tiles/ -g 4 4 /home/IGN/workimage.tif</code></li>
+</ul>
+<h3 id="decimatentiff">DECIMATENTIFF</h3>
+<p><img alt="decimateNtiff" src="images/decimateNtiff.png" /></p>
+<p>Cet outil génère une image à partir de plusieurs image en phase entre elles (même résolution et même décalage) en ne gardant qu'un pixel sur N. Cet outil est utilisé pour générer une dalle d'un niveau à partir de dalles d'un niveau inférieur dans le cas d'une pyramide utilisant un TileMatrixSet "plus proche voisin" (une valeur de la donnée source n'est pas interpolée et se retrouve dans les niveaux supérieurs). Le centre d'un pixel de l'image de sortie doit être aligné avec un pixel d'une image en entrée. Le niveau de décimation (N) est déduit de la différence de résolution entre les entrées et la sortie.</p>
+<p>Les informations sur les canaux (nombre, taille en bits et format) peuvent :</p>
+<ul>
+<li>être fournies et des conversions à la volée seront potentiellement faites sur les images n'ayant pas les mêmes</li>
+<li>ne pas être fournies, auquel cas toutes les images en entrée doivent avoir les même caractéristiques</li>
+</ul>
+<h4 id="usage_3">Usage</h4>
+<p><code>decimateNtiff -c &lt;COMPRESSION&gt; &lt;INPUT FILE&gt; &lt;OUTPUT FILE&gt;  [-d]</code></p>
+<ul>
+<li><code>-f &lt;FILE&gt;</code> : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels</li>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-n &lt;COLOR&gt;</code> : couleur de nodata, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)</li>
+<li><code>-a &lt;FORMAT&gt;</code> : format des canaux : float, uint</li>
+<li><code>-b &lt;INTEGER&gt;</code> : nombre de bits pour un canal : 8, 32</li>
+<li><code>-s &lt;INTEGER&gt;</code> : nombre de canaux : 1, 2, 3, 4</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<p>Les options a, b et s doivent être toutes fournies ou aucune.</p>
+<h5 id="le-fichier-de-configuration">Le fichier de configuration</h5>
+<p>Une ligne du fichier de configuration a la forme suivante : <code>IMG &lt;CHEMIN&gt; &lt;XMIN&gt; &lt;YMAX&gt; &lt;XMAX&gt; &lt;YMIN&gt; &lt;RESX&gt; &lt;RESY&gt;</code> pour une image de donnée ou <code>MSK &lt;CHEMIN&gt;</code> pour une image de masque.</p>
+<p>Par exemple : <code>IMG /home/IGN/image.tif 10 150 110 50 0.5 0.5</code>. Si  on veut associer à cette image un masque, on mettra sur la ligne suivante <code>MSK /home/IGN/masque.tif</code>. Une ligne de masque doit toujours suivre une ligne d'image.</p>
+<p>La première image listée sera la sortie (avec éventuellement son masque). Les suivantes sont les images en entrée. La première entrée peut être une image de fond, compatible avec celle de sortie et non avec les autres images en entrée (qui seront décimées). Seulement dans ce cas nous avons une entrée non compatible avec les autres.</p>
+<p>Exemple de configuration :</p>
+<pre><code>IMG /home/IGN/IMAGE.tif -499    1501    1501    -499    2       2
+MSK /home/IGN/MASK.tif
+IMG /home/IGN/sources/imagefond.tif -499    1501    1501    -499    2       2
+MSK /home/IGN/sources/maskfond.tif
+IMG /home/IGN/sources/image1.tif 0       1000    1000    0       1       1
+IMG /home/IGN/sources/image2.tif 500     1500    1500    500     1       1
+MSK /home/IGN/sources/mask2.tif
+</code></pre>
+<p>L'image <code>/home/IGN/IMAGE.tif</code> sera écrite ainsi que son masque associé <code>/home/IGN/MASK.tif</code></p>
+<h4 id="exemple_2">Exemple</h4>
+<ul>
+<li><code>decimateNtiff -f conf.txt -c zip -n -99999</code></li>
+</ul>
+<h3 id="managenodata">MANAGENODATA</h3>
+<p><img alt="manageNodata" src="images/manageNodata.png" /></p>
+<p>Cet outil permet d'identifier et de modifier une couleur dans une image considérée comme du nodata. Il permet également d'écrire le masque associé à l'image sur la base de cette valeur de nodata, et de réserver cette valeur au nodata (modification des pixels de données de cette couleur en une autre). Dans ce dernier cas, un pixel de nodata est un pixel de la couleur cible "relié au bord" (on proprage le nodata depuis les pixels de la couleur cible en bord d'image).</p>
+<h4 id="usage_4">Usage</h4>
+<p><code>manageNodata -target &lt;VAL&gt; [-tolerance &lt;VAL&gt;] [-touch-edges] -format &lt;VAL&gt; [-nodata &lt;VAL&gt;] [-data &lt;VAL&gt;] &lt;INPUT FILE&gt; [&lt;OUTPUT FILE&gt;] [-mask-out &lt;VAL&gt;] [-d]</code></p>
+<ul>
+<li><code>-target &lt;COLOR&gt;</code> : couleur cible, permettant d'identifier le nodata</li>
+<li><code>-tolerance &lt;INTEGER&gt;</code> : delta de tolérance autour de la couleur cible</li>
+<li><code>-touche-edges</code> : précise que le nodata a la couleur cible et "est relié au bord".</li>
+<li><code>-data &lt;COLOR&gt;</code> : nouvelle couleur pour la donnée, afin de réserver la couleur cible au nodata. N'a de sens qu'avec l'option -touch-edges</li>
+<li><code>-nodata &lt;COLOR&gt;</code> : nouvelle couleur pour le nodata</li>
+<li><code>-mask-out &lt;FILE&gt;</code> : chemin vers le masque à écrire, associé à l'image en entrée. Si aucun pixel de nodata n'est trouvé, le masque n'est pas écrit</li>
+<li><code>-format &lt;FORMAT&gt;</code> : format des canaux : uint8, float32</li>
+<li><code>-channels &lt;INTEGER&gt;</code> : nombre de canaux</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<p>L'image en entrée n'est modifiée que si une nouvelle couleur de donnée ou de nodata différente de la couleur cible est précisée, et qu'aucune image en sortie n'est précisée.</p>
+<h4 id="exemples_1">Exemples</h4>
+<ul>
+<li><code>manageNodata -target 255,255,255 -touch-edges -data 254,254,254 input_image.tif output_image.tif -channels 3 -format uint8</code></li>
+<li><code>manageNodata -target -99999 -tolerance 10 input_image.tif -mask-out mask.tif -channels 1 -format float32</code></li>
+</ul>
+<h3 id="merge4tiff">MERGE4TIFF</h3>
+<p><img alt="merg4tiff" src="images/merge4tiff.png" /></p>
+<p>Cet outil génère une image à partir 4 images de même dimension disposées en carré, en moyennant les pixels 4 par 4. L'image en sortie a les dimensions des images en entrée. Une image à utiliser comme fond peut être donnée. Il est possible de préciser une valeur de gamma pour exagérer les contrastes. Cet outil est utilisé pour générer une dalle d'un niveau à partir du niveau inférieur dans le cas d'une pyramide utilisant un TileMatrixSet de type Quad Tree.</p>
+<p>Les informations sur les canaux (nombre, taille en bits et format) peuvent :</p>
+<ul>
+<li>être fournies et des conversions à la volée seront potentiellement faites sur les images n'ayant pas les mêmes</li>
+<li>ne pas être fournies, auquel cas toutes les images en entrée doivent avoir les même caractéristiques</li>
+</ul>
+<h4 id="usage_5">Usage</h4>
+<p><code>merge4tiff [-g &lt;VAL&gt;] -n &lt;VAL&gt; [-c &lt;VAL&gt;] [-iX &lt;FILE&gt; [-mX&lt;FILE&gt;]] -io &lt;FILE&gt; [-mo &lt;FILE&gt;]</code></p>
+<ul>
+<li><code>-g &lt;FLOAT&gt;</code> : valeur de gamma permettant d'augmenter les contrastes (si inférieur à 1) ou de les réduire (si supérieur à 1)</li>
+<li><code>-n &lt;COLOR&gt;</code> : couleur de nodata, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)</li>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-io &lt;FILE&gt;</code> : chemin de l'image de sortie</li>
+<li><code>-mo &lt;FILE&gt;</code> : chemin du masque de sortie associé (optionnel)</li>
+<li><code>-iX &lt;FILE&gt;</code> : chemin d'une image en entrée<ul>
+<li>X = [1..4] : position de l'image</li>
+</ul>
+</li>
+</ul>
+<pre><code>image1 | image2
+-------+-------
+image3 | image4
+</code></pre>
+<pre><code>* X = b : image de fond
+</code></pre>
+<ul>
+<li><code>-mX &lt;FILE&gt;</code> : X = [1..4] ou b, masque associé à l'image en entrée</li>
+<li><code>-a &lt;FORMAT&gt;</code> : format des canaux : float, uint</li>
+<li><code>-b &lt;INTEGER&gt;</code> : nombre de bits pour un canal : 8, 32</li>
+<li><code>-s &lt;INTEGER&gt;</code> : nombre de canaux : 1, 2, 3, 4</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<p>Les options a, b et s doivent être toutes fournies ou aucune.</p>
+<h4 id="exemples_2">Exemples</h4>
+<ul>
+<li><code>merge4tiff -g 1 -n 255,255,255 -c zip -ib backgroundImage.tif -i1 image1.tif -i3 image3.tif -io imageOut.tif</code></li>
+<li><code>merge4tiff -g 1 -n 255,255,255 -c zip -i1 image1.tif -m1 mask1.tif -i3 image3.tif -m3 mask3.tif -mo maskOut.tif  -io imageOut.tif</code></li>
+</ul>
+<h3 id="mergentiff">MERGENTIFF</h3>
+<p><img alt="mergeNtiff" src="images/mergeNtiff.png" /></p>
+<p>Cet outil génère une image, définie par son rectangle englobant, sa projection et la résolution pixel, à partir d'images géoréférencées. Ces dernières peuvent avoir des projections et des résolutions différentes, se recouvrir, ne pas recouvrir l'intégralité de l'image en sortie, avoir des caractéristiques différentes. Cet outil est utilisé pour générer le niveau le mieux résolu dans une pyramide à partir des images en entrée.</p>
+<p>Les informations sur les canaux (nombre, taille en bits et format) peuvent :</p>
+<ul>
+<li>être fournies et des conversions à la volée seront potentiellement faites sur les images n'ayant pas les mêmes</li>
+<li>ne pas être fournies, auquel cas toutes les images en entrée doivent avoir les même caractéristiques</li>
+</ul>
+<h4 id="usage_6">Usage</h4>
+<p><code>mergeNtiff -f &lt;FILE&gt; [-r &lt;DIR&gt;] -c &lt;VAL&gt; -i &lt;VAL&gt; -n &lt;VAL&gt; [-a &lt;VAL&gt; -s &lt;VAL&gt; -b &lt;VAL&gt;]</code></p>
+<ul>
+<li><code>-f &lt;FILE&gt;</code> : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels</li>
+<li><code>-g</code> : la première image en entrée dans le fichier est une image de fond. Il ne faudra pas lui appliquer l'éventuel style fourni.</li>
+<li><code>-r &lt;DIRECTORY&gt;</code> : dossier racine à utiliser pour les images dont le chemin commence par un <code>?</code> dans le fichier de configuration. Le chemin du dossier doit finir par un <code>/</code></li>
+<li><code>-p &lt;FILE&gt;</code> : fichier de style à appliquer aux images avant reprojection ou réechantillonnage</li>
+<li><code>-i &lt;INTERPOLATION&gt;</code> : interpolation à utiliser pour les reprojections et le réechantillonnage : nn (plus proche voisin), linear, bicubic, lanzos</li>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-n &lt;COLOR&gt;</code> : couleur de nodata, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence). Si un style est fourni, cette valeur de nodata est celle dans les données source. Le nodata dans l'image en sortie est déduit du style (ou est égal à celui en entrée si le style ne modifie pas le format des données).</li>
+<li><code>-a &lt;FORMAT&gt;</code> : format des canaux : float, uint</li>
+<li><code>-b &lt;INTEGER&gt;</code> : nombre de bits pour un canal : 8, 32</li>
+<li><code>-s &lt;INTEGER&gt;</code> : nombre de canaux : 1, 2, 3, 4</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<p>Les options a, b et s doivent être toutes fournies ou aucune.</p>
+<h5 id="le-fichier-de-configuration_1">Le fichier de configuration</h5>
+<p>Une ligne du fichier de configuration a la forme suivante : <code>IMG &lt;CHEMIN&gt; &lt;CRS&gt; &lt;XMIN&gt; &lt;YMAX&gt; &lt;XMAX&gt; &lt;YMIN&gt; &lt;RESX&gt; &lt;RESY&gt;</code> pour une image de donnée ou <code>MSK &lt;CHEMIN&gt;</code> pour une image de masque.</p>
+<p>Par exemple : <code>IMG /home/IGN/image.tif EPSG:1234 10 150 110 50 0.5 0.5</code>. Si  on veut associer à cette image un masque, on mettra sur la ligne suivante <code>MSK /home/IGN/masque.tif</code>. Une ligne de masque doit toujours suivre une ligne d'image. Si on souhaite préciser un chemin relatif à la racine passée via l'option <code>-r</code>, on mettra le chemin <code>MSK ?masque.tif</code></p>
+<p>La première image listée sera la sortie (avec éventuellement son masque). Les suivantes sont les images en entrée.</p>
+<p>Exemple de configuration :</p>
+<pre><code>IMG /home/IGN/IMAGE.tif EPSG:1234 -499    1501    1501    -499    2       2
+MSK /home/IGN/MASK.tif
+IMG /home/IGN/sources/imagefond.tif EPSG:1234  -499    1501    1501    -499    2       2
+MSK /home/IGN/sources/maskfond.tif
+IMG /home/IGN/sources/image1.tif EPSG:4567  0       1000    1000    0       1       1
+IMG /home/IGN/sources/image2.tif EPSG:4567  500     1500    1500    500     1       1
+MSK /home/IGN/sources/mask2.tif
+</code></pre>
+<p>L'image <code>/home/IGN/IMAGE.tif</code> sera écrite ainsi que son masque associé <code>/home/IGN/MASK.tif</code></p>
+<h4 id="exemples_3">Exemples</h4>
+<ul>
+<li><code>mergeNtiff -f conf.txt -c zip -i bicubic -n 255,255,255</code></li>
+<li><code>mergeNtiff -f conf.txt -c zip -i nn -s 1 -b 32 -p gray -a float -n -99999</code></li>
+</ul>
+<h3 id="overlayntiff">OVERLAYNTIFF</h3>
+<p><img alt="overlayNtiff" src="images/overlayNtiff.png" /></p>
+<p>Cet outil génère une image à partir de plusieurs images de même dimension et format de canal (entier non signé sur 8 bits ou flottant sur 32 bits) par superposition. Le calcul est fait pixel par pixel à partir de ceux sources avec le choix du mode : par transparence, par multiplication, en tenant compte des masques associés... Cet outil est utilisé lors de générations JOINCACHE lorsque plusieurs dalles de différentes pyramides sont trouvées pour une même dalle en sortie. Les images en entrée peuvent avoir un nombre de canaux différent.</p>
+<h4 id="usage_7">Usage</h4>
+<p><code>overlayNtiff -f &lt;FILE&gt; -m &lt;VAL&gt; -c &lt;VAL&gt; -s &lt;VAL&gt; -p &lt;VAL [-n &lt;VAL&gt;] -b &lt;VAL&gt;</code></p>
+<ul>
+<li><code>-f &lt;FILE&gt;</code> : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec les masques éventuels</li>
+<li><code>-m &lt;METHOD&gt;</code> : méthode de fusion des pixels (toutes tiennent compte des éventuels masques) :<ul>
+<li><code>ALPHATOP</code> : fusion par alpha blending</li>
+<li><code>MULTIPLY</code> : fusion par multiplication des valeurs des canaux</li>
+<li><code>TOP</code> : seul le pixel de donnée du dessus est pris en compte</li>
+</ul>
+</li>
+<li><code>-b &lt;COLOR&gt;</code> : couleur de fond, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)</li>
+<li><code>-t &lt;COLOR&gt;</code> : couleur à considérer comme transparente, valeurs décimales pour chaque canal, séparées par des virgules</li>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb</li>
+<li><code>-s &lt;INTEGER&gt;</code> : nombre de canaux : 1, 2, 3, 4</li>
+<li><code>-p &lt;PHOTOMETRIC&gt;</code> : photométrie : gray, rgb</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<h5 id="le-fichier-de-configuration_2">Le fichier de configuration</h5>
+<p>Une ligne du fichier de configuration a la forme suivante : <code>&lt;CHEMIN DE L'IMAGE&gt; [&lt;CHEMIN DU MASQUE ASSOCIÉ&gt;]</code>.</p>
+<p>La première image listée sera la sortie (avec éventuellement son masque). Les suivantes sont les images en entrée. L'ordre a de l'importance, les premières images sources seront considérées comme allant en dessous, quelque soit la méthode utilisée pour la fusion.</p>
+<p>Exemple de configuration :</p>
+<pre><code>/home/IGN/IMAGE.tif  /home/IGN/MASK.tif
+/home/IGN/sources/imagefond.tif
+/home/IGN/sources/image1.tif
+/home/IGN/sources/image2.tif /home/IGN/sources/mask2.tif
+</code></pre>
+<p>L'image <code>/home/IGN/IMAGE.tif</code> sera écrite ainsi que son masque associé <code>/home/IGN/MASK.tif</code></p>
+<h4 id="exemple_3">Exemple</h4>
+<ul>
+<li><code>overlayNtiff -f conf.txt -m ALPHATOP -s 1 -c zip -p gray -t 255,255,255 -b 0</code></li>
+</ul>
+<h3 id="pbf2cache">PBF2CACHE</h3>
+<p><img alt="pbf2cache" src="images/pbf2cache.png" /></p>
+<p>Cet outil écrit une dalle à partir des tuiles PBF rangées par coordonnées (<code>&lt;dossier racine&gt;/x/y.pbf</code>). La dalle écrite est au format ROK4, c'est-à-dire un fichier TIFF, dont les données sont tuilées : le TIFF ne sert que de conteneurs pour regrouper les tuiles PBF. L'en-tête est de taille fixe (2048 octets).</p>
+<h4 id="usage_8">Usage</h4>
+<p><code>pbf2cache -r &lt;DIRECTORY&gt; -t &lt;VAL&gt; &lt;VAL&gt; -ultile &lt;VAL&gt; &lt;VAL&gt; &lt;OUTPUT FILE/OBJECT&gt;  [-d]</code></p>
+<ul>
+<li><code>-r &lt;DIRECTORY&gt;</code> : dossier contenant l'arborescence de tuiles PBF</li>
+<li><code>-t &lt;VAL&gt; &lt;VAL&gt;</code> : nombre de tuiles dans une dalle, en largeur et en hauteur</li>
+<li><code>-ultile &lt;VAL&gt; &lt;VAL&gt;</code> : indice de la tuile en haut à gauche dans la dalle</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<h4 id="exemple_4">Exemple</h4>
+<p>Avec la commande suivante : <code>pbf2cache -r /home/IGN/pbfs -t 3 2 -ultile 17 36 /home/IGN/output.tif</code> (on veut 3x2 tuiles dans une dalle, et l'indice de la tuile en haut à gauche est (17,36)), les fichiers suivants seront cherchés et intégrés à la dalle fichier <code>/home/IGN/output.tif</code> si présents dans cet ordre :</p>
+<ul>
+<li><code>/home/IGN/pbfs/17/36.pbf</code></li>
+<li><code>/home/IGN/pbfs/18/36.pbf</code></li>
+<li><code>/home/IGN/pbfs/19/36.pbf</code></li>
+<li><code>/home/IGN/pbfs/17/37.pbf</code></li>
+<li><code>/home/IGN/pbfs/18/37.pbf</code></li>
+<li><code>/home/IGN/pbfs/19/37.pbf</code></li>
+</ul>
+<p>Si une tuile est absente (cela arrive si elle ne devait pas contenir d'objets), on précise dans la dalle que l'on a une tuile de taille 0.</p>
+<h3 id="work2cache">WORK2CACHE</h3>
+<p><img alt="work2cache" src="images/work2cache.png" /></p>
+<p>Cette commande va produire une image TIFF, tuilée, avec une en-tête de taille fixe de 2048 octets afin que ROK4SERVER puisse ne pas la lire (toutes les informations lui sont déjà connues grâce au descripteur de pyramide).</p>
+<p>Par défaut, on ne précise pas les caractéristique de l'image en sortie (nombre de canaux, format des canaux...) mais on peut préciser l'ensemble pour réaliser une conversion (passage en noir et blanc par exemple).</p>
+<p>La taille de tuile précisée doit être cohérente avec la taille totale de la dalle (doit être un diviseur des dimensions totales).</p>
+<h4 id="usage_9">Usage</h4>
+<p><code>work2cache -c &lt;VAL&gt; -t &lt;VAL&gt; &lt;VAL&gt; &lt;INPUT FILE&gt; &lt;OUTPUT FILE/OBJECT&gt; [-a &lt;VAL&gt; -s &lt;VAL&gt; -b &lt;VAL&gt;] [-crop]</code></p>
+<ul>
+<li><code>-c &lt;COMPRESSION&gt;</code> : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb, png</li>
+<li><code>-t &lt;INTEGER&gt; &lt;INTEGER&gt;</code> : taille pixel d'une tuile, enlargeur et hauteur. Doit être un diviseur de la largeur et de la hauteur de l'image en entrée</li>
+<li><code>-a &lt;FORMAT&gt;</code> : format des canaux : float, uint</li>
+<li><code>-b &lt;INTEGER&gt;</code> : nombre de bits pour un canal : 8, 32</li>
+<li><code>-s &lt;INTEGER&gt;</code> : nombre de canaux : 1, 2, 3, 4</li>
+<li><code>-crop</code> : dans le cas d'une compression des données en JPEG, un bloc (16x16 pixels, base d'application de la compression) qui contient un pixel blanc est complètement rempli de blanc</li>
+<li><code>-d</code> : activation des logs de niveau DEBUG</li>
+</ul>
+<p>Les options a, b et s doivent être toutes fournies ou aucune.</p>
+<p>La compression PNG a la particularité de ne pas être un standard du TIFF. Une image dans ce format, propre à ROK4, contient des tuiles qui sont des images PNG indépendantes, avec les en-têtes PNG. Cela permet de renvoyer sans traitement une tuile au format PNG. Ce fonctionnement est calqué sur le format JPEG.</p>
+<h4 id="exemples_4">Exemples</h4>
+<ul>
+<li>Stockage fichier sans conversion : <code>work2cache input.tif -c png -t 256 256 output.tif</code></li>
+<li>Stockage fichier avec conversion : <code>work2cache input.tif -c png -t 256 256 -a uint -b 8 -s 1 output.tif</code></li>
+<li>Stockage CEPH sans conversion : <code>work2cache input.tif -c png -t 256 256 ceph://PYRAMIDS/output.tif</code></li>
+<li>Stockage S3 sans conversion : <code>work2cache input.tif -c png -t 256 256 s3://PYRAMIDS/output.tif</code></li>
+<li>Stockage SWIFT sans conversion : <code>work2cache input.tif -c png -t 256 256 swift://PYRAMIDS/output.tif</code></li>
+</ul>
+<h2 id="compiler-les-outils-debian">Compiler les outils (Debian)</h2>
+<h3 id="dependances-supplementaires">Dépendances supplémentaires</h3>
+<ul>
+<li><code>build-essential</code></li>
+<li><code>cmake</code></li>
+<li>Pour la documentation<ul>
+<li><code>doxygen</code></li>
+<li><code>graphviz</code></li>
+</ul>
+</li>
+</ul>
+<p><code>apt install build-essential cmake doxygen graphviz</code> </p>
+<h3 id="variables-cmake">Variables CMake</h3>
+<ul>
+<li><code>BUILD_VERSION</code> : version des outils compilés. Valeur par défaut : <code>0.0.0</code></li>
+<li><code>DOC_ENABLED</code> : active la compilation de la documentation. Valeur par défaut : <code>1</code>, <code>0</code> pour désactiver.</li>
+<li><code>DEBUG_BUILD</code> : active la compilation en mode debug. Valeur par défaut : <code>0</code>, <code>1</code> pour activer.</li>
+</ul>
+<h3 id="compilation-documentation-et-installation">Compilation, documentation et installation</h3>
+<pre><code class="language-bash">mkdir build &amp;&amp; cd build
+cmake -DBUILD_VERSION=4.1.0 -DCMAKE_INSTALL_PREFIX=/opt/rok4 ..
+make
+make doc
+make install
+</code></pre>
+<h2 id="contribuer">Contribuer</h2>
+<p>Consulter les <a href="CONTRIBUTING/">directives de contribution</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.bd41221c.min.js"></script>
+      
+    
+  </body>
+</html>
