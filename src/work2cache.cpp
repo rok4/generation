@@ -63,21 +63,14 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/file/FileImage.h>
 #include <rok4/utils/Cache.h>
 #include <rok4/image/file/Rok4Image.h>
-#include <rok4/image/file/TiffNodataManager.h>
 #include "config.h"
-
-
-/** \~french Presque blanc, en RGBA. Utilisé pour supprimer le blanc pur des données quand l'option "crop" est active */
-int fastWhite[4] = {254,254,254,255};
-/** \~french Blanc, en RGBA. Utilisé pour supprimer le blanc pur des données quand l'option "crop" est active */
-int white[4] = {255,255,255,255};
 
 /** \~french Message d'usage de la commande work2cache */
 std::string help = std::string("\nwork2cache version ") + std::string(VERSION) + "\n\n"
 
     "Make image tiled and compressed, in TIFF format, respecting ROK4 specifications.\n\n"
 
-    "Usage: work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE / OBJECT> [-crop]\n\n"
+    "Usage: work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE / OBJECT>\n\n"
 
     "Parameters:\n"
     "     -c output compression :\n"
@@ -90,13 +83,11 @@ std::string help = std::string("\nwork2cache version ") + std::string(VERSION) +
     "             zip     Deflate encoding\n"
     "             png     Non-official TIFF compression, each tile is an independant PNG image (with PNG header)\n"
     "     -t tile size : widthwise and heightwise. Have to be a divisor of the global image's size\n"
-    "     -crop : blocks (used by JPEG compression) wich contain a white pixel are filled with white\n"
     "     -a sample format : (float or uint)\n"
-    "     -b bits per sample : (8 or 32)\n"
     "     -s samples per pixel : (1, 2, 3 or 4)\n"
     "     -d : debug logger activation\n\n"
 
-    "If bitspersample, sampleformat or samplesperpixel are not provided, those 3 informations are read from the image sources (all have to own the same). If 3 are provided, conversion may be done.\n\n"
+    "If sampleformat or samplesperpixel are not provided, those informations are read from the image sources (all have to own the same). If all are provided, conversion may be done.\n\n"
 
     "Output file / object format : [ceph|s3|swift]://tray_name/object_name or [file|ceph|s3|swift]://file_name or file_name\n\n"
     
@@ -124,20 +115,19 @@ void usage() {
 void error ( std::string message, int errorCode ) {
     BOOST_LOG_TRIVIAL(error) <<  ( message );
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
 /**
  ** \~french
  * \brief Fonction principale de l'outil work2cache
- * \details Tout est contenu dans cette fonction. Le "cropage" se fait grâce à la classe TiffNodataManager, et le tuilage / compression est géré Rok4Image
+ * \details Tout est contenu dans cette fonction. Le tuilage / compression est géré Rok4Image
  * \param[in] argc nombre de paramètres
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 en cas de succès, -1 sinon
  ** \~english
  * \brief Main function for tool work2cache
- * \details All instructions are in this function. the crop is handled by the class TiffNodataManager and Rok4Image make image tiled and compressed.
+ * \details All instructions are in this function. Rok4Image make image tiled and compressed.
  * \param[in] argc parameters number
  * \param[in] argv parameters array
  * \return return code, 0 if success, -1 otherwise
@@ -145,25 +135,16 @@ void error ( std::string message, int errorCode ) {
 int main ( int argc, char **argv ) {
 
     char* input = 0, *output = 0;
-    int tileWidth = 256, tileHeight = 256;
+    int tile_width = 256, tile_height = 256;
     Compression::eCompression compression = Compression::NONE;
 
-    bool outputProvided = false;
+    bool output_format_provided = false;
     uint16_t samplesperpixel = 0;
-    uint16_t bitspersample = 0;
     SampleFormat::eSampleFormat sampleformat = SampleFormat::UNKNOWN;
 
     Photometric::ePhotometric photometric;
 
-    bool crop = false;
-    bool debugLogger=false;
-
-#if OBJECT_ENABLED
-    char *pool = 0, *container = 0, *bucket = 0;
-    bool onCeph = false;
-    bool onSwift = false;
-    bool onS3 = false;
-#endif
+    bool debug_logger=false;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -176,10 +157,6 @@ int main ( int argc, char **argv ) {
 
     // Récupération des paramètres
     for ( int i = 1; i < argc; i++ ) {
-        if ( !strcmp ( argv[i],"-crop" ) ) {
-            crop = true;
-            continue;
-        }
 
         if ( argv[i][0] == '-' ) {
             switch ( argv[i][1] ) {
@@ -187,7 +164,7 @@ int main ( int argc, char **argv ) {
                     usage();
                     exit ( 0 );
                 case 'd': // debug logs
-                    debugLogger = true;
+                    debug_logger = true;
                     break;
                 case 'c': // compression
                     if ( ++i == argc ) { error ( "Error in -c option", -1 ); }
@@ -206,13 +183,13 @@ int main ( int argc, char **argv ) {
                     } else if ( strncmp ( argv[i], "pkb",3 ) == 0 ) {
                         compression = Compression::PACKBITS;
                     } else {
-                        error ( "Unknown compression : " + string(argv[i]), -1 );
+                        error ( "Unknown compression : " + std::string(argv[i]), -1 );
                     }
                     break;
                 case 't':
                     if ( i+2 >= argc ) { error("Error in -t option", -1 ); }
-                    tileWidth = atoi ( argv[++i] );
-                    tileHeight = atoi ( argv[++i] );
+                    tile_width = atoi ( argv[++i] );
+                    tile_height = atoi ( argv[++i] );
                     break;
 
                 /****************** OPTIONNEL, POUR FORCER DES CONVERSIONS **********************/
@@ -225,33 +202,23 @@ int main ( int argc, char **argv ) {
                     else if ( strncmp ( argv[i], "3",1 ) == 0 ) samplesperpixel = 3 ;
                     else if ( strncmp ( argv[i], "4",1 ) == 0 ) samplesperpixel = 4 ;
                     else {
-                        error ( "Unknown value for option -s : " + string(argv[i]), -1 );
-                    }
-                    break;
-                case 'b': // bitspersample
-                    if ( i++ >= argc ) {
-                        error ( "Error in option -b", -1 );
-                    }
-                    if ( strncmp ( argv[i], "8",1 ) == 0 ) bitspersample = 8 ;
-                    else if ( strncmp ( argv[i], "32",2 ) == 0 ) bitspersample = 32 ;
-                    else {
-                        error ( "Unknown value for option -b : " + string(argv[i]), -1 );
+                        error ( "Unknown value for option -s : " + std::string(argv[i]), -1 );
                     }
                     break;
                 case 'a': // sampleformat
                     if ( i++ >= argc ) {
                         error ( "Error in option -a", -1 );
                     }
-                    if ( strncmp ( argv[i],"uint",4 ) == 0 ) sampleformat = SampleFormat::UINT ;
-                    else if ( strncmp ( argv[i],"float",5 ) == 0 ) sampleformat = SampleFormat::FLOAT;
+                    if ( strncmp ( argv[i],"uint8",5 ) == 0 ) sampleformat = SampleFormat::UINT8 ;
+                    else if ( strncmp ( argv[i],"float32",7 ) == 0 ) sampleformat = SampleFormat::FLOAT32;
                     else {
-                        error ( "Unknown value for option -a : " + string(argv[i]), -1 );
+                        error ( "Unknown value for option -a : " + std::string(argv[i]), -1 );
                     }
                     break;
                 /*******************************************************************************/
 
                 default:
-                    error ( "Unknown option : " + string(argv[i]) ,-1 );
+                    error ( "Unknown option : " + std::string(argv[i]) ,-1 );
             }
         } else {
             if ( input == 0 ) input = argv[i];
@@ -260,7 +227,7 @@ int main ( int argc, char **argv ) {
         }
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         // le niveau debug du logger est activé
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
@@ -278,45 +245,18 @@ int main ( int argc, char **argv ) {
     Context* context;
     curl_global_init(CURL_GLOBAL_ALL);
     
-    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::to_string(type) + " storage in the tray ") + tray_name;
     context = StoragePool::get_context(type, tray_name);
 
-    FileImageFactory FIF;
-
-    if (crop && compression != Compression::JPEG) {
-        BOOST_LOG_TRIVIAL(warning) << ("Crop option is reserved for JPEG compression");
-        crop = false;
-    }
-
-    // For jpeg compression with crop option, we have to remove white pixel, to avoid empty bloc in data
-    if ( crop ) {
-        BOOST_LOG_TRIVIAL(debug) <<  ( "Open image to read" );
-        // On récupère les informations nécessaires pour appeler le nodata manager
-        FileImage* tmpSourceImage = FIF.createImageToRead(input);
-        int spp = tmpSourceImage->getChannels();
-        int bps = tmpSourceImage->getBitsPerSample();
-        SampleFormat::eSampleFormat sf = tmpSourceImage->getSampleFormat();
-        delete tmpSourceImage;
-
-        if ( bps == 8 && sf == SampleFormat::UINT ) {
-            TiffNodataManager<uint8_t> TNM ( spp, white, true, fastWhite,white );
-            if ( ! TNM.treatNodata ( input,input ) ) {
-                error ( "Unable to treat white pixels in this image : " + string(input), -1 );
-            }
-        } else {
-            BOOST_LOG_TRIVIAL(warning) << "Crop option ignored (only for 8-bit integer images) for the image : " << input;
-        }
-    }
-
     BOOST_LOG_TRIVIAL(debug) <<  ( "Open image to read" );
-    FileImage* sourceImage = FIF.createImageToRead(input);
-    if (sourceImage == NULL) {
+    FileImage* source_image = FileImage::create_to_read(input);
+    if (source_image == NULL) {
         error("Cannot read the source image", -1);
     }
 
     // On regarde si on a tout précisé en sortie, pour voir si des conversions sont demandées et possibles
-    if (sampleformat != SampleFormat::UNKNOWN && bitspersample != 0 && samplesperpixel !=0) {
-        outputProvided = true;
+    if (sampleformat != SampleFormat::UNKNOWN && samplesperpixel !=0) {
+        output_format_provided = true;
         // La photométrie est déduite du nombre de canaux
         if (samplesperpixel == 1) {
             photometric = Photometric::GRAY;
@@ -326,42 +266,40 @@ int main ( int argc, char **argv ) {
             photometric = Photometric::RGB;
         }
 
-        if (! sourceImage->addConverter ( sampleformat, bitspersample, samplesperpixel ) ) {
-            error ( "Cannot add converter to the input FileImage " + string(input), -1 );
+        if (! source_image->add_converter ( sampleformat, samplesperpixel ) ) {
+            error ( "Cannot add converter to the input FileImage " + std::string(input), -1 );
         }
     } else {
         // On n'a pas précisé de format de sortie
         // La sortie aura ce format
-        bitspersample = sourceImage->getBitsPerSample();
-        photometric = sourceImage->getPhotometric();
-        sampleformat = sourceImage->getSampleFormat();
-        samplesperpixel = sourceImage->getChannels();
+        photometric = source_image->get_photometric();
+        sampleformat = source_image->get_sample_format();
+        samplesperpixel = source_image->get_channels();
     }
     
-    if (debugLogger) {
-        sourceImage->print();
+    if (debug_logger) {
+        source_image->print();
     }
 
-    Rok4ImageFactory R4IF;
-    Rok4Image* rok4Image = R4IF.createRok4ImageToWrite(
-        fo_name, BoundingBox<double>(0.,0.,0.,0.), -1, -1, sourceImage->getWidth(), sourceImage->getHeight(), samplesperpixel,
-        sampleformat, bitspersample, photometric, compression,
-        tileWidth, tileHeight, context
+    Rok4Image* rok4Image = Rok4Image::create_to_write(
+        fo_name, BoundingBox<double>(0.,0.,0.,0.), -1, -1, source_image->get_width(), source_image->get_height(), samplesperpixel,
+        sampleformat, photometric, compression,
+        tile_width, tile_height, context
     );
     
     if (rok4Image == NULL) {
         error("Cannot create the ROK4 image to write", -1);
     }
 
-    rok4Image->setExtraSample(sourceImage->getExtraSample());
+    rok4Image->set_extra_sample(source_image->get_extra_sample());
 
-    if (debugLogger) {
+    if (debug_logger) {
         rok4Image->print();
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  ( "Write" );
 
-    if (rok4Image->writeImage(sourceImage, crop) < 0) {
+    if (rok4Image->write_image(source_image) < 0) {
         error("Cannot write ROK4 image", -1);
     }
 
@@ -372,7 +310,7 @@ int main ( int argc, char **argv ) {
     CurlPool::cleanCurlPool();
     curl_global_cleanup();
     StoragePool::cleanStoragePool();
-    delete sourceImage;
+    delete source_image;
     delete rok4Image;
 
     return 0;

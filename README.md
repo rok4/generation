@@ -145,8 +145,7 @@ Les informations sur les canaux (nombre, taille en bits et format) peuvent :
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
 * `-n <COLOR>` : couleur de nodata, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence)
-* `-a <FORMAT>` : format des canaux : float, uint
-* `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
+* `-a <FORMAT>` : format des canaux : float32, uint8
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
 * `-d` : activation des logs de niveau DEBUG
 
@@ -232,8 +231,7 @@ image3 | image4
 ```
     * X = b : image de fond
 * `-mX <FILE>` : X = [1..4] ou b, masque associé à l'image en entrée
-* `-a <FORMAT>` : format des canaux : float, uint
-* `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
+* `-a <FORMAT>` : format des canaux : float32, uint8
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
 * `-d` : activation des logs de niveau DEBUG
 
@@ -257,7 +255,7 @@ Les informations sur les canaux (nombre, taille en bits et format) peuvent :
 
 #### Usage
 
-`mergeNtiff -f <FILE> [-r <DIR>] -c <VAL> -i <VAL> -n <VAL> [-a <VAL> -s <VAL> -b <VAL>]`
+`mergeNtiff -f <FILE> [-r <DIR>] -c <VAL> -i <VAL> -n <VAL> [-a <VAL> -s <VAL>]`
 
 * `-f <FILE>` : fichier de configuration contenant l'image en sortie et la liste des images en entrée, avec leur géoréférencement et les masques éventuels
 * `-g` : la première image en entrée dans le fichier est une image de fond. Il ne faudra pas lui appliquer l'éventuel style fourni.
@@ -266,8 +264,7 @@ Les informations sur les canaux (nombre, taille en bits et format) peuvent :
 * `-i <INTERPOLATION>` : interpolation à utiliser pour les reprojections et le réechantillonnage : nn (plus proche voisin), linear, bicubic, lanzos
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb
 * `-n <COLOR>` : couleur de nodata, valeurs décimales pour chaque canal, séparées par des virgules (exemple : 255,255,255 pour du blanc sans transparence). Si un style est fourni, cette valeur de nodata est celle dans les données source. Le nodata dans l'image en sortie est déduit du style (ou est égal à celui en entrée si le style ne modifie pas le format des données).
-* `-a <FORMAT>` : format des canaux : float, uint
-* `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
+* `-a <FORMAT>` : format des canaux : float32, uint8
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
 * `-d` : activation des logs de niveau DEBUG
 
@@ -297,7 +294,7 @@ L'image `/home/IGN/IMAGE.tif` sera écrite ainsi que son masque associé `/home/
 #### Exemples
 
 * `mergeNtiff -f conf.txt -c zip -i bicubic -n 255,255,255`
-* `mergeNtiff -f conf.txt -c zip -i nn -s 1 -b 32 -p gray -a float -n -99999`
+* `mergeNtiff -f conf.txt -c zip -i nn -s 1 -p gray -a float32 -n -99999`
 
 ### OVERLAYNTIFF
 
@@ -382,14 +379,12 @@ La taille de tuile précisée doit être cohérente avec la taille totale de la 
 
 #### Usage
 
-`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-a <VAL> -s <VAL> -b <VAL>] [-crop]`
+`work2cache -c <VAL> -t <VAL> <VAL> <INPUT FILE> <OUTPUT FILE/OBJECT> [-a <VAL> -s <VAL>]`
 
 * `-c <COMPRESSION>` : compression des données dans l'image TIFF en sortie : jpg, jpg90, raw (défaut), zip, lzw, pkb, png
 * `-t <INTEGER> <INTEGER>` : taille pixel d'une tuile, enlargeur et hauteur. Doit être un diviseur de la largeur et de la hauteur de l'image en entrée
-* `-a <FORMAT>` : format des canaux : float, uint
-* `-b <INTEGER>` : nombre de bits pour un canal : 8, 32
+* `-a <FORMAT>` : format des canaux : float32, uint8
 * `-s <INTEGER>` : nombre de canaux : 1, 2, 3, 4
-* `-crop` : dans le cas d'une compression des données en JPEG, un bloc (16x16 pixels, base d'application de la compression) qui contient un pixel blanc est complètement rempli de blanc
 * `-d` : activation des logs de niveau DEBUG
 
 Les options a, b et s doivent être toutes fournies ou aucune.
@@ -399,7 +394,7 @@ La compression PNG a la particularité de ne pas être un standard du TIFF. Une 
 #### Exemples
 
 * Stockage fichier sans conversion : `work2cache input.tif -c png -t 256 256 output.tif`
-* Stockage fichier avec conversion : `work2cache input.tif -c png -t 256 256 -a uint -b 8 -s 1 output.tif`
+* Stockage fichier avec conversion : `work2cache input.tif -c png -t 256 256 -a uint8 -s 1 output.tif`
 * Stockage CEPH sans conversion : `work2cache input.tif -c png -t 256 256 ceph://PYRAMIDS/output.tif`
 * Stockage S3 sans conversion : `work2cache input.tif -c png -t 256 256 s3://PYRAMIDS/output.tif`
 * Stockage SWIFT sans conversion : `work2cache input.tif -c png -t 256 256 swift://PYRAMIDS/output.tif`

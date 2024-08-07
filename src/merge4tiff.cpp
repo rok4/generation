@@ -92,12 +92,10 @@ uint32_t height;
 /** \~french Compression de l'image de sortie */
 Compression::eCompression compression = Compression::NONE;
 
-/** \~french A-t-on précisé le format en sortie, c'est à dire les 3 informations samplesperpixel, bitspersample et sampleformat */
-bool outputProvided = false;
+/** \~french A-t-on précisé le format en sortie, c'est à dire les 3 informations samplesperpixel et sampleformat */
+bool output_format_provided = false;
 /** \~french Nombre de canaux par pixel, pour l'image en sortie */
 uint16_t samplesperpixel = 0;
-/** \~french Nombre de bits occupé par un canal, pour l'image en sortie */
-uint16_t bitspersample = 0;
 /** \~french Format du canal (entier, flottant, signé ou non...), pour l'image en sortie */
 SampleFormat::eSampleFormat sampleformat = SampleFormat::UNKNOWN;
 
@@ -105,7 +103,7 @@ SampleFormat::eSampleFormat sampleformat = SampleFormat::UNKNOWN;
 Photometric::ePhotometric photometric;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
-bool debugLogger=false;
+bool debug_logger=false;
 
 /** \~french Message d'usage de la commande merge4tiff */
 std::string help = std::string("\ncache2work version ") + std::string(VERSION) + "\n\n"
@@ -141,11 +139,10 @@ std::string help = std::string("\ncache2work version ") + std::string(VERSION) +
     "     -mX input associated masks (optionnal)\n"
     "             X = [1..4] or X = b\n"
     "     -a sample format : (float or uint)\n"
-    "     -b bits per sample : (8 or 32)\n"
     "     -s samples per pixel : (1, 2, 3 or 4)\n"
     "     -d debug logger activation\n\n"
 
-    "If bitspersample, sampleformat or samplesperpixel are not provided, those 3 informations are read from the image sources (all have to own the same). If 3 are provided, conversion may be done.\n\n"
+    "If sampleformat or samplesperpixel are not provided, those informations are read from the image sources (all have to own the same). If all are provided, conversion may be done.\n\n"
 
     "Examples\n"
     "     - without mask, with background image\n"
@@ -172,7 +169,6 @@ void usage() {
 void error ( std::string message, int errorCode ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
@@ -183,7 +179,7 @@ void error ( std::string message, int errorCode ) {
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int parseCommandLine ( int argc, char* argv[] ) {
+int parse_command_line ( int argc, char* argv[] ) {
     // Initialisation
     gammaM4t = 1.;
     strnodata = 0;
@@ -204,7 +200,7 @@ int parseCommandLine ( int argc, char* argv[] ) {
                 usage();
                 exit ( 0 );
             case 'd': // debug logs
-                debugLogger = true;
+                debug_logger = true;
                 break;
             case 'g': // gamma
                 if ( ++i == argc ) {
@@ -316,25 +312,13 @@ int parseCommandLine ( int argc, char* argv[] ) {
                     return -1;
                 }
                 break;
-            case 'b': // bitspersample
-                if ( i++ >= argc ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Error in option -b" ;
-                    return -1;
-                }
-                if ( strncmp ( argv[i], "8",1 ) == 0 ) bitspersample = 8 ;
-                else if ( strncmp ( argv[i], "32",2 ) == 0 ) bitspersample = 32 ;
-                else {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unknown value for option -b : " << argv[i] ;
-                    return -1;
-                }
-                break;
             case 'a': // sampleformat
                 if ( i++ >= argc ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error in option -a" ;
                     return -1;
                 }
-                if ( strncmp ( argv[i],"uint",4 ) == 0 ) sampleformat = SampleFormat::UINT ;
-                else if ( strncmp ( argv[i],"float",5 ) == 0 ) sampleformat = SampleFormat::FLOAT;
+                if ( strncmp ( argv[i],"uint8",5 ) == 0 ) sampleformat = SampleFormat::UINT8 ;
+                else if ( strncmp ( argv[i],"float32",7 ) == 0 ) sampleformat = SampleFormat::FLOAT32;
                 else {
                     BOOST_LOG_TRIVIAL(error) <<  "Unknown value for option -a : " << argv[i] ;
                     return -1;
@@ -376,22 +360,21 @@ int parseCommandLine ( int argc, char* argv[] ) {
 int checkComponents ( FileImage* image, FileImage* mask) {
 
     if ( width == 0 ) { // read the parameters of the first input file
-        width = image->getWidth();
-        height = image->getHeight();
+        width = image->get_width();
+        height = image->get_height();
         
         if ( width%2 || height%2 ) {
             BOOST_LOG_TRIVIAL(error) <<  "Sorry : only even dimensions for input images are supported" ;
             return -1;
         }
 
-        if (! outputProvided) {
+        if (! output_format_provided) {
             // On n'a pas précisé de format de sortie
             // Toutes les images en entrée doivent avoir le même format
             // La sortie aura ce format
-            bitspersample = image->getBitsPerSample();
-            photometric = image->getPhotometric();
-            sampleformat = image->getSampleFormat();
-            samplesperpixel = image->getChannels();
+            photometric = image->get_photometric();
+            sampleformat = image->get_sample_format();
+            samplesperpixel = image->get_channels();
         } else {
             // La photométrie est déduite du nombre de canaux
             if (samplesperpixel == 1) {
@@ -403,46 +386,44 @@ int checkComponents ( FileImage* image, FileImage* mask) {
             }
         }
 
-        if ( ! (( bitspersample == 32 && sampleformat == SampleFormat::FLOAT ) || ( bitspersample == 8 && sampleformat == SampleFormat::UINT )) ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unknown sample type (sample format + bits per sample)" ;
+        if ( sampleformat == SampleFormat::UNKNOWN ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Unknown sample format" ;
             return -1;
         }
     } else {
 
-        if ( image->getWidth() != width || image->getHeight() != height) {
-            BOOST_LOG_TRIVIAL(error) <<  "Error : all input image must have the same dimensions (width, height) : " << image->getFilename();
+        if ( image->get_width() != width || image->get_height() != height) {
+            BOOST_LOG_TRIVIAL(error) <<  "Error : all input image must have the same dimensions (width, height) : " << image->get_filename();
             return -1;
         }
 
-        if (! outputProvided) {
-            if ( image->getBitsPerSample() != bitspersample || image->getSampleFormat() != sampleformat ||
-                 image->getPhotometric() != photometric || image->getChannels() != samplesperpixel
-            ) {
-                BOOST_LOG_TRIVIAL(error) << "Error : output format is not provided, so all input image must have the same format (bits per sample, channels, etc...) : " <<  image->getFilename();
+        if (! output_format_provided) {
+            if (image->get_sample_format() != sampleformat || image->get_photometric() != photometric || image->get_channels() != samplesperpixel) {
+                BOOST_LOG_TRIVIAL(error) << "Error : output format is not provided, so all input image must have the same format (sample format, channels, etc...) : " <<  image->get_filename();
                 return -1;
             }
         }
     }
 
     if (mask != NULL) {
-        if ( ! ( mask->getWidth() == width && mask->getHeight() == height && mask->getBitsPerSample() == 8 &&
-                mask->getSampleFormat() == SampleFormat::UINT && mask->getPhotometric() == Photometric::GRAY && mask->getChannels() == 1 ) ) {
+        if ( ! ( mask->get_width() == width && mask->get_height() == height && mask->get_sample_format() == SampleFormat::UINT8 && 
+                mask->get_photometric() == Photometric::GRAY && mask->get_channels() == 1 ) ) {
 
-            BOOST_LOG_TRIVIAL(error) <<  "Error : all input masks must have the same parameters (width, height, etc...) : " << mask->getFilename();
+            BOOST_LOG_TRIVIAL(error) <<  "Error : all input masks must have the same parameters (width, height, etc...) : " << mask->get_filename();
             return -1;
         }
 
-        if ( ! image->setMask(mask) ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Cannot add associated mask to the input FileImage " << image->getFilename() ;
+        if ( ! image->set_mask(mask) ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Cannot add associated mask to the input FileImage " << image->get_filename() ;
             return -1;
         }
         
     }
 
-    if (outputProvided) {
-        bool ok = image->addConverter ( sampleformat, bitspersample, samplesperpixel );
+    if (output_format_provided) {
+        bool ok = image->add_converter ( sampleformat, samplesperpixel );
         if (! ok ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Cannot add converter to the input FileImage " << image->getFilename() ;
+            BOOST_LOG_TRIVIAL(error) <<  "Cannot add converter to the input FileImage " << image->get_filename() ;
             return -1;
         }
     }
@@ -461,7 +442,6 @@ int checkComponents ( FileImage* image, FileImage* mask) {
  */
 int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI, FileImage*& OUTPUTM) {
     width = 0;
-    FileImageFactory FIF;
 
     for ( int i = 0; i < 4; i++ ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Place " << i ;
@@ -473,7 +453,7 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
         }
 
         // Image en entrée
-        FileImage* inputi = FIF.createImageToRead(inputImages[i]);
+        FileImage* inputi = FileImage::create_to_read(inputImages[i]);
         if ( inputi == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Unable to open input image: " + std::string ( inputImages[i] ) ;
             return -1;
@@ -483,7 +463,7 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
         // Eventuelle masque associé
         FileImage* inputm = NULL;
         if ( inputMasks[i] != 0 ) {
-            inputm = FIF.createImageToRead(inputMasks[i]);
+            inputm = FileImage::create_to_read(inputMasks[i]);
             if ( inputm == NULL ) {
                 BOOST_LOG_TRIVIAL(error) <<  "Unable to open input mask: " << std::string ( inputMasks[i] ) ;
                 return -1;
@@ -507,7 +487,7 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
         backgroundImage=0;
 
     if ( backgroundImage ) {
-        BGI = FIF.createImageToRead(backgroundImage);
+        BGI = FileImage::create_to_read(backgroundImage);
         if ( BGI == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Unable to open background image: " + std::string ( backgroundImage ) ;
             return -1;
@@ -516,7 +496,7 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
         FileImage* BGM = NULL;
 
         if ( backgroundMask ) {
-            BGM = FIF.createImageToRead(backgroundMask);
+            BGM = FileImage::create_to_read(backgroundMask);
             if ( BGM == NULL ) {
                 BOOST_LOG_TRIVIAL(error) <<  "Unable to open background mask: " + std::string ( backgroundMask ) ;
                 return -1;
@@ -535,22 +515,22 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
     OUTPUTI = NULL;
     OUTPUTM = NULL;
 
-    OUTPUTI = FIF.createImageToWrite(outputImage, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
-                                     samplesperpixel, sampleformat, bitspersample, photometric, compression);
+    OUTPUTI = FileImage::create_to_write(outputImage, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
+                                     samplesperpixel, sampleformat, photometric, compression);
     if ( OUTPUTI == NULL ) {
         BOOST_LOG_TRIVIAL(error) <<  "Unable to open output image: " + std::string ( outputImage ) ;
         return -1;
     }
 
     if ( outputMask ) {
-        OUTPUTM = FIF.createImageToWrite(outputMask, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
-                                                   1, SampleFormat::UINT, 8, Photometric::MASK, Compression::DEFLATE);
+        OUTPUTM = FileImage::create_to_write(outputMask, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
+                                                   1, SampleFormat::UINT8, Photometric::MASK, Compression::DEFLATE);
         if ( OUTPUTM == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Unable to open output mask: " + std::string ( outputMask ) ;
             return -1;
         }
 
-        OUTPUTI->setMask(OUTPUTM);
+        OUTPUTI->set_mask(OUTPUTM);
     }
 
     return 0;
@@ -570,10 +550,10 @@ int checkImages ( FileImage* INPUTI[2][2], FileImage*& BGI, FileImage*& OUTPUTI,
  */
 template <typename T>
 int fillBgLine ( FileImage* BGI, T* image, uint8_t* mask, int line, T* nodata ) {
-    if ( BGI->getline( image, line ) == 0 ) return 1;
+    if ( BGI->get_line( image, line ) == 0 ) return 1;
 
-    if ( BGI->getMask() != NULL ) {
-        if ( BGI->getMask()->getline( mask, line ) == 0 ) return 1;
+    if ( BGI->get_mask() != NULL ) {
+        if ( BGI->get_mask()->get_line( mask, line ) == 0 ) return 1;
         for ( int w = 0; w < width; w++ ) {
             if ( mask[w] == 0 ) {
                 memcpy ( image + w*samplesperpixel, nodata,samplesperpixel*sizeof ( T ) );
@@ -645,12 +625,12 @@ int merge ( FileImage* BGI, FileImage* INPUTI[2][2], FileImage* OUTPUTI, FileIma
 
             if ( left == right ) {
                 // On n'a pas d'image en entrée pour cette ligne, on stocke le fond et on passe à la suivante
-                if ( OUTPUTI->writeLine( line_bgI, line ) == -1 ) {
+                if ( OUTPUTI->write_line( line_bgI, line ) == -1 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to write image's line " << line ;
                     return -1;
                 }
                 if ( OUTPUTM )
-                    if ( OUTPUTM->writeLine( line_bgM, line ) == -1 ) {
+                    if ( OUTPUTM->write_line( line_bgM, line ) == -1 ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Unable to write mask's line " << line ;
                         return -1;
                     }
@@ -668,21 +648,21 @@ int merge ( FileImage* BGI, FileImage* INPUTI[2][2], FileImage* OUTPUTI, FileIma
             // ----------------- les images -----------------
             // ------ et les éventuels masques --------------
             if ( INPUTI[y][0] ) {
-                if ( INPUTI[y][0]->getline( line_1I, 2*h ) == 0 ) {
+                if ( INPUTI[y][0]->get_line( line_1I, 2*h ) == 0 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                     return -1;
                 }
-                if ( INPUTI[y][0]->getline( line_2I, 2*h+1 ) == 0 ) {
+                if ( INPUTI[y][0]->get_line( line_2I, 2*h+1 ) == 0 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                     return -1;
                 }
 
-                if ( INPUTI[y][0]->getMask() ) {
-                    if ( INPUTI[y][0]->getMask()->getline( line_1M, 2*h ) == 0 ) {
+                if ( INPUTI[y][0]->get_mask() ) {
+                    if ( INPUTI[y][0]->get_mask()->get_line( line_1M, 2*h ) == 0 ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                         return -1;
                     }
-                    if ( INPUTI[y][0]->getMask()->getline( line_2M, 2*h+1 ) == 0 ) {
+                    if ( INPUTI[y][0]->get_mask()->get_line( line_2M, 2*h+1 ) == 0 ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                         return -1;
                     }
@@ -691,21 +671,21 @@ int merge ( FileImage* BGI, FileImage* INPUTI[2][2], FileImage* OUTPUTI, FileIma
 
 
             if ( INPUTI[y][1] ) {
-                if ( INPUTI[y][1]->getline( line_1I + nbsamples, 2*h ) == 0 ) {
+                if ( INPUTI[y][1]->get_line( line_1I + nbsamples, 2*h ) == 0 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                     return -1;
                 }
-                if ( INPUTI[y][1]->getline( line_2I + nbsamples, 2*h+1 ) == 0 ) {
+                if ( INPUTI[y][1]->get_line( line_2I + nbsamples, 2*h+1 ) == 0 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                     return -1;
                 }
 
-                if ( INPUTI[y][1]->getMask() ) {
-                    if ( INPUTI[y][1]->getMask()->getline( line_1M + width, 2*h ) == 0 ) {
+                if ( INPUTI[y][1]->get_mask() ) {
+                    if ( INPUTI[y][1]->get_mask()->get_line( line_1M + width, 2*h ) == 0 ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                         return -1;
                     }
-                    if ( INPUTI[y][1]->getMask()->getline( line_2M + width, 2*h+1 ) == 0 ) {
+                    if ( INPUTI[y][1]->get_mask()->get_line( line_2M + width, 2*h+1 ) == 0 ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
                         return -1;
                     }
@@ -750,12 +730,12 @@ int merge ( FileImage* BGI, FileImage* INPUTI[2][2], FileImage* OUTPUTI, FileIma
                 }
             }
 
-            if ( OUTPUTI->writeLine( line_outI, line ) == -1 ) {
+            if ( OUTPUTI->write_line( line_outI, line ) == -1 ) {
                 BOOST_LOG_TRIVIAL(error) <<  "Unable to write image" ;
                 return -1;
             }
             if ( OUTPUTM )
-                if ( OUTPUTM->writeLine( line_outM, line ) == -1 ) {
+                if ( OUTPUTM->write_line( line_outM, line ) == -1 ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unable to write mask" ;
                     return -1;
                 }
@@ -796,18 +776,18 @@ int main ( int argc, char* argv[] ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Parse" ;
     // Lecture des parametres de la ligne de commande
-    if ( parseCommandLine ( argc, argv ) < 0 ) {
+    if ( parse_command_line ( argc, argv ) < 0 ) {
         error ( "Echec lecture ligne de commande",-1 );
     }
 
     // On sait maintenant si on doit activer le niveau de log DEBUG
-    if (debugLogger) {
+    if (debug_logger) {
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
 
     // On regarde si on a tout précisé en sortie, pour voir si des conversions sont possibles
-    if (sampleformat != SampleFormat::UNKNOWN && bitspersample != 0 && samplesperpixel !=0) {
-        outputProvided = true;
+    if (sampleformat != SampleFormat::UNKNOWN && samplesperpixel != 0) {
+        output_format_provided = true;
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Check images" ;
@@ -841,14 +821,14 @@ int main ( int argc, char* argv[] ) {
     }
 
     // Cas MNT
-    if ( bitspersample == 32 && sampleformat == SampleFormat::FLOAT ) {
+    if ( sampleformat == SampleFormat::FLOAT32 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Merge images (float)" ;
         float nodata[samplesperpixel];
         for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( float ) nodataInt[i];
         if ( merge<float> ( BGI, INPUTI, OUTPUTI, OUTPUTM, nodata ) < 0 ) error ( "Unable to merge float images",-1 );
     }
     // Cas images
-    else if ( bitspersample == 8 && sampleformat == SampleFormat::UINT ) {
+    else if ( sampleformat == SampleFormat::UINT8 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Merge images (uint8_t)" ;
         uint8_t nodata[samplesperpixel];
         for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( uint8_t ) nodataInt[i];

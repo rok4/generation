@@ -1,0 +1,3 @@
+* Le format des canaux contient la taille en bits
+* Passage en snake case
+* Suppression de l'option crop dans work2cache

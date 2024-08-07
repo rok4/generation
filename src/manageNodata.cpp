@@ -130,7 +130,6 @@ void usage() {
 void error ( std::string message, int errorCode = -1 ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
@@ -159,11 +158,11 @@ int main ( int argc, char* argv[] ) {
     char* strNewData = 0;
 
     int channels = 0;
-    uint16_t bitspersample = 0, sampleformat = 0;
+    SampleFormat::eSampleFormat sample_format = SampleFormat::UNKNOWN;
 
-    bool touchEdges = false;
+    bool touch_edges = false;
     int tolerance = 0;
-    bool debugLogger=false;
+    bool debug_logger=false;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -182,12 +181,12 @@ int main ( int argc, char* argv[] ) {
         }
         
         if ( !strcmp ( argv[i],"-d" ) ) { // debug logs
-            debugLogger = true;
+            debug_logger = true;
             break;
         }
 
         if ( !strcmp ( argv[i],"-touch-edges" ) ) {
-            touchEdges = true;
+            touch_edges = true;
             continue;
 
         } else if ( !strcmp ( argv[i],"-tolerance" ) ) {
@@ -214,11 +213,9 @@ int main ( int argc, char* argv[] ) {
         } else if ( !strcmp ( argv[i],"-format" ) ) {
             if ( i++ >= argc ) error ( "Error with option -format",-1 );
             if ( strncmp ( argv[i], "uint8", 5 ) == 0 ) {
-                bitspersample = 8;
-                sampleformat = SampleFormat::UINT;
+                sample_format = SampleFormat::UINT8;
             } else if ( strncmp ( argv[i], "float32", 7 ) == 0 ) {
-                bitspersample = 32;
-                sampleformat = SampleFormat::FLOAT;
+                sample_format = SampleFormat::FLOAT32;
             } else error ( "Unknown value for option -format : " + string ( argv[i] ), -1 );
             continue;
 
@@ -243,7 +240,7 @@ int main ( int argc, char* argv[] ) {
         }
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         // le niveau debug du logger est activé
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
@@ -261,7 +258,7 @@ int main ( int argc, char* argv[] ) {
     }
 
     if ( ! channels ) error ( "Missing number of samples per pixel",-1 );
-    if ( ! bitspersample ) error ( "Missing sample format",-1 );
+    if ( sample_format == SampleFormat::UNKNOWN ) error ( "Missing sample format",-1 );
 
     if ( ! strTargetValue )
         error ( "How to identify the nodata in the input image ? Provide a target color (-target)",-1 );
@@ -269,7 +266,7 @@ int main ( int argc, char* argv[] ) {
     if ( ! strNewNodata && ! strNewData && ! outputMask )
         error ( "What have we to do with the target color ? Precise a new nodata or data color, or a mask to write",-1 );
 
-    int* targetValue = new int[channels];
+    int* target_value = new int[channels];
     int* newNodata = new int[channels];
     int* newData = new int[channels];
 
@@ -281,13 +278,13 @@ int main ( int argc, char* argv[] ) {
     if ( charValue == NULL ) {
         error ( "Error with option -target : integer values seperated by comma",-1 );
     }
-    targetValue[0] = atoi ( charValue );
+    target_value[0] = atoi ( charValue );
     for ( int i = 1; i < channels; i++ ) {
         charValue = strtok ( NULL, "," );
         if ( charValue == NULL ) {
             error ( "Error with option -oldValue : integer values seperated by comma",-1 );
         }
-        targetValue[i] = atoi ( charValue );
+        target_value[i] = atoi ( charValue );
     }
 
     // New nodata
@@ -306,7 +303,7 @@ int main ( int argc, char* argv[] ) {
         }
     } else {
         // On ne précise pas de nouvelle couleur de non-donnée, elle est la même que la couleur cible.
-        memcpy ( newNodata, targetValue, channels*sizeof ( int ) );
+        memcpy ( newNodata, target_value, channels*sizeof ( int ) );
     }
 
     // New data
@@ -325,21 +322,21 @@ int main ( int argc, char* argv[] ) {
         }
     } else {
         // Pas de nouvelle couleur pour la donnée : elle a la valeur de la couleur cible
-        memcpy ( newData, targetValue, channels*sizeof ( int ) );
+        memcpy ( newData, target_value, channels*sizeof ( int ) );
     }
 
     /******************* APPEL A LA CLASSE TIFFNODATAMANAGER *******************/
 
-    if ( bitspersample == 32 && sampleformat == SampleFormat::FLOAT ) {
+    if ( sample_format == SampleFormat::FLOAT32 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Target color treatment (uint8)" ;
-        TiffNodataManager<float> TNM ( channels, targetValue, touchEdges, newData, newNodata, tolerance );
-        if ( ! TNM.treatNodata ( inputImage, outputImage, outputMask ) ) {
+        TiffNodataManager<float> TNM ( channels, target_value, touch_edges, newData, newNodata, tolerance );
+        if ( ! TNM.process_nodata ( inputImage, outputImage, outputMask ) ) {
             error ( "Error : unable to treat nodata for this 32-bit float image : " + string ( inputImage ), -1 );
         }
-    } else if ( bitspersample == 8 && sampleformat == SampleFormat::UINT ) {
+    } else if ( sample_format == SampleFormat::UINT8 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Target color treatment (float)" ;
-        TiffNodataManager<uint8_t> TNM ( channels, targetValue, touchEdges, newData, newNodata, tolerance );
-        if ( ! TNM.treatNodata ( inputImage, outputImage, outputMask ) ) {
+        TiffNodataManager<uint8_t> TNM ( channels, target_value, touch_edges, newData, newNodata, tolerance );
+        if ( ! TNM.process_nodata ( inputImage, outputImage, outputMask ) ) {
             error ( "Error : unable to treat nodata for this 8-bit integer float image : " + string ( inputImage ), -1 );
         }
     }
@@ -347,7 +344,7 @@ int main ( int argc, char* argv[] ) {
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
     ProjPool::cleanProjPool();
     proj_cleanup();
-    delete[] targetValue;
+    delete[] target_value;
     if (overwrite) delete[] outputImage;
     delete[] newData;
     delete[] newNodata;

@@ -82,7 +82,7 @@ char* inputDir = 0;
 char* outputImage = 0;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
-bool debugLogger=false;
+bool debug_logger=false;
 
 /** \~french Message d'usage de la commande pbf2cache */
 std::string help = std::string("\ncomposeNtiff version ") + std::string(VERSION) + "\n\n"
@@ -126,7 +126,6 @@ void error ( std::string message, int errorCode ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     BOOST_LOG_TRIVIAL(error) <<  "Source directory : " << inputDir ;
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
@@ -137,7 +136,7 @@ void error ( std::string message, int errorCode ) {
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int parseCommandLine ( int argc, char** argv ) {
+int parse_command_line ( int argc, char** argv ) {
     
     for ( int i = 1; i < argc; i++ ) {
         if ( argv[i][0] == '-' ) {
@@ -146,7 +145,7 @@ int parseCommandLine ( int argc, char** argv ) {
                 usage();
                 exit ( 0 );
             case 'd': // debug logs
-                debugLogger = true;
+                debug_logger = true;
                 break;
             case 's': // Input directory
                 if ( i++ >= argc ) {
@@ -229,7 +228,7 @@ int parseCommandLine ( int argc, char** argv ) {
  * \param[out] ppCompoundIn ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
+int load_images ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
 
     std::vector< std::string > imagesNames;
     
@@ -242,12 +241,9 @@ int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
     for ( int i = 0; i < heightwiseImage; i++ ) for ( int j = 0; j < widthwiseImage; j++ ) imagesIn[i][j] = NULL;
 
     int width, height;
-    int samplesperpixel, bitspersample;
-    SampleFormat::eSampleFormat sampleformat;
+    int samplesperpixel;
+    SampleFormat::eSampleFormat sample_format;
     Photometric::ePhotometric photometric;
-
-    FileImageFactory FIF;
-
 
     /********* Parcours du dossier ************/
 
@@ -296,7 +292,7 @@ int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
         memset(filename, 0, 256);
         memcpy(filename, str.c_str(), str.length());
 
-        FileImage* pImage = FIF.createImageToRead (filename, BoundingBox<double>(0,0,0,0), -1., -1. );
+        FileImage* pImage = FileImage::create_to_read (filename, BoundingBox<double>(0,0,0,0), -1., -1. );
         if ( pImage == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Cannot create a FileImage from the file " << filename ;
             return -1;
@@ -304,20 +300,18 @@ int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
 
         if ( i == 0 && j == 0 ) {
             // C'est notre première image en entrée, on mémorise les caractéristiques
-            bitspersample = pImage->getBitsPerSample();
-            sampleformat = pImage->getSampleFormat();
-            photometric = pImage->getPhotometric();
-            samplesperpixel = pImage->getChannels();
-            width = pImage->getWidth();
-            height = pImage->getHeight();
+            sample_format = pImage->get_sample_format();
+            photometric = pImage->get_photometric();
+            samplesperpixel = pImage->get_channels();
+            width = pImage->get_width();
+            height = pImage->get_height();
         } else {
             // Toutes les images en entrée doivent avoir certaines caractéristiques en commun
-            if ( bitspersample != pImage->getBitsPerSample() ||
-                 sampleformat != pImage->getSampleFormat() ||
-                 photometric != pImage->getPhotometric() ||
-                 samplesperpixel != pImage->getChannels() ||
-                 width != pImage->getWidth() ||
-                 height != pImage->getHeight() )
+            if ( sample_format != pImage->get_sample_format() ||
+                 photometric != pImage->get_photometric() ||
+                 samplesperpixel != pImage->get_channels() ||
+                 width != pImage->get_width() ||
+                 height != pImage->get_height() )
             {
                 delete pImage;
                 for ( int ii = 0; ii < heightwiseImage; ii++ ) for ( int jj = 0; jj < widthwiseImage; jj++ ) delete imagesIn[ii][jj];
@@ -326,7 +320,7 @@ int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
             }
         }
 
-        pImage->setBbox(BoundingBox<double>(j * width, (heightwiseImage - i - 1) * height, (j+1) * width, (heightwiseImage - i) * height));
+        pImage->set_bbox(BoundingBox<double>(j * width, (heightwiseImage - i - 1) * height, (j+1) * width, (heightwiseImage - i) * height));
         
         imagesIn[i][j] = pImage;
         
@@ -335,9 +329,9 @@ int loadImages ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
     *ppCompoundIn = new CompoundImage(imagesIn);
 
     // Création de l'image de sortie
-    *ppImageOut = FIF.createImageToWrite (
+    *ppImageOut = FileImage::create_to_write (
         outputImage, BoundingBox<double>(0., 0., 0., 0.), -1., -1., width*widthwiseImage, height*heightwiseImage, samplesperpixel,
-        sampleformat, bitspersample, photometric,compression
+        sample_format, photometric,compression
     );
 
     if ( *ppImageOut == NULL ) {
@@ -375,18 +369,18 @@ int main ( int argc, char **argv ) {
     );
 
     // Lecture des parametres de la ligne de commande
-    if ( parseCommandLine ( argc,argv ) < 0 ) {
+    if ( parse_command_line ( argc,argv ) < 0 ) {
         error ( "Cannot parse command line",-1 );
     }
 
     // On sait maintenant si on doit activer le niveau de log DEBUG
-    if (debugLogger) {
+    if (debug_logger) {
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Load" ;
     // Chargement des images
-    if ( loadImages ( &pImageOut, &pCompoundIn ) < 0 ) {
+    if ( load_images ( &pImageOut, &pCompoundIn ) < 0 ) {
         if ( pCompoundIn ) {
             delete pCompoundIn;
         }
@@ -398,7 +392,7 @@ int main ( int argc, char **argv ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Save image" ;
     // Enregistrement de l'image fusionnée
-    if ( pImageOut->writeImage ( pCompoundIn ) < 0 ) {
+    if ( pImageOut->write_image ( pCompoundIn ) < 0 ) {
         error ( "Cannot write the compound image",-1 );
     }
 

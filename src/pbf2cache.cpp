@@ -94,7 +94,6 @@ void usage() {
 void error ( std::string message, int errorCode ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
@@ -117,7 +116,7 @@ int main ( int argc, char **argv ) {
     int ulCol = -1;
     int ulRow = -1;
 
-    bool debugLogger=false;
+    bool debug_logger=false;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -144,7 +143,7 @@ int main ( int argc, char **argv ) {
                     usage();
                     exit ( 0 );
                 case 'd': // debug logs
-                    debugLogger = true;
+                    debug_logger = true;
                     break;
                 case 'r': // root directory
                     if ( i++ >= argc ) {
@@ -168,7 +167,7 @@ int main ( int argc, char **argv ) {
         }
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         // le niveau debug du logger est activé
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
@@ -193,17 +192,16 @@ int main ( int argc, char **argv ) {
     Context* context;
     curl_global_init(CURL_GLOBAL_ALL);
 
-    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::to_string(type) + " storage in the tray ") + tray_name;
     context = StoragePool::get_context(type, tray_name);
 
-    Rok4ImageFactory R4IF;
-    Rok4Image* rok4Image = R4IF.createRok4ImageToWrite( fo_name, tilePerWidth, tilePerHeight, context );
+    Rok4Image* rok4Image = Rok4Image::create_to_write( fo_name, tilePerWidth, tilePerHeight, context );
     
     if (rok4Image == NULL) {
         error("Cannot create the ROK4 image to write", -1);
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         rok4Image->print();
     }
 

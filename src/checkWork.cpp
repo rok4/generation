@@ -80,7 +80,6 @@ void usage() {
 void error ( std::string message, int errorCode ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
     exit ( errorCode );
 }
 
@@ -133,9 +132,7 @@ int main ( int argc, char **argv )
         error ("Argument must specify one input file", -1);
     }
 
-    FileImageFactory FIF;
-
-    FileImage* image = FIF.createImageToRead(input);
+    FileImage* image = FileImage::create_to_read(input);
     int ret;
     if (image == NULL) {
         BOOST_LOG_TRIVIAL(error) << "Image NOK";

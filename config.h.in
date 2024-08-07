@@ -40,8 +40,5 @@
 
 // Variable issues du cmake
 #cmakedefine VERSION "@VERSION@"
-#cmakedefine OBJECT_ENABLED @OBJECT_ENABLED@
-#cmakedefine KDU_ENABLED @KDU_ENABLED@
-#cmakedefine KDU_THREADING @KDU_THREADING@
 
 #endif
