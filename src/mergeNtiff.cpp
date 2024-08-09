@@ -91,7 +91,7 @@ namespace keywords = boost::log::keywords;
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
-char configuration_file[256];
+char configuration_path[256];
 /** \~french Racine pour les images de sortie */
 char images_root[256];
 
@@ -181,13 +181,13 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error(std::string message, int errorCode) {
+void error(std::string message, int error_code) {
     BOOST_LOG_TRIVIAL(error) << message;
-    BOOST_LOG_TRIVIAL(error) << "Configuration file : " << configuration_file;
+    BOOST_LOG_TRIVIAL(error) << "Configuration file : " << configuration_path;
     usage();
-    exit(errorCode);
+    exit(error_code);
 }
 
 /**
@@ -215,7 +215,7 @@ int parse_command_line(int argc, char** argv) {
                         BOOST_LOG_TRIVIAL(error) << "Error in option -f";
                         return -1;
                     }
-                    strcpy(configuration_file, argv[i]);
+                    strcpy(configuration_path, argv[i]);
                     break;
                 case 'r':  // racine pour le fichier de configuration
                     if (i++ >= argc) {
@@ -324,7 +324,7 @@ int parse_command_line(int argc, char** argv) {
         }
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "mergeNtiff -f " << configuration_file;
+    BOOST_LOG_TRIVIAL(debug) << "mergeNtiff -f " << configuration_path;
 
     return 0;
 }
@@ -354,9 +354,9 @@ bool load_configuration(
     std::ifstream file;
     int rootLength = strlen(images_root);
 
-    file.open(configuration_file);
+    file.open(configuration_path);
     if (!file.is_open()) {
-        BOOST_LOG_TRIVIAL(error) << "Impossible d'ouvrir le fichier " << configuration_file;
+        BOOST_LOG_TRIVIAL(error) << "Impossible d'ouvrir le fichier " << configuration_path;
         return false;
     }
 
@@ -423,7 +423,7 @@ bool load_configuration(
         file.close();
         return true;
     } else {
-        BOOST_LOG_TRIVIAL(error) << "Failure reading the configuration file " << configuration_file;
+        BOOST_LOG_TRIVIAL(error) << "Failure reading the configuration file " << configuration_path;
         file.close();
         return false;
     }
@@ -434,7 +434,7 @@ bool load_configuration(
  * \brief Charge les images en entrée et en sortie depuis le fichier de configuration
  * \details On va récupérer toutes les informations de toutes les images et masques présents dans le fichier de configuration et créer les objets FileImage correspondant. Toutes les images ici manipulées sont de vraies images (physiques) dans ce sens où elles sont des fichiers soit lus, soit qui seront écrits.
  *
- * Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_file et images_root va être concaténer au chemin vers les fichiers de sortie.
+ * Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_path et images_root va être concaténer au chemin vers les fichiers de sortie.
  * \param[out] output_image image résultante de l'outil
  * \param[out] output_mask masque résultat de l'outil, si demandé
  * \param[out] sorted_input_images ensemble des images en entrée
@@ -449,13 +449,13 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
     std::vector<double> resys;
 
     if (! load_configuration(&masks, &paths, &srss, &bboxes, &resxs, &resys)) {
-        BOOST_LOG_TRIVIAL(error) << "Cannot load configuration file " << configuration_file;
+        BOOST_LOG_TRIVIAL(error) << "Cannot load configuration file " << configuration_path;
         return -1;
     }
 
     // On doit avoir au moins deux lignes, trois si on a un masque de sortie
     if (masks.size() < 2 || (masks.size() == 2 && masks.back())) {
-        BOOST_LOG_TRIVIAL(error) << "We have no input images in configuration file " << configuration_file;
+        BOOST_LOG_TRIVIAL(error) << "We have no input images in configuration file " << configuration_path;
         return -1;
     }
 
@@ -479,7 +479,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
             return -1;
         }
 
-        CRS *crs = new CRS(srss.at(i));
+        CRS* crs = new CRS(srss.at(i));
 
         if (! crs->is_define()) {
             BOOST_LOG_TRIVIAL(error) << "Input CRS unknown: " << srss.at(i);
@@ -489,7 +489,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
             bboxes.at(i).crs = crs->get_request_code();
         }
 
-        if (! bboxes.at(i).isInAreaOfCRS(crs)) {
+        if (! bboxes.at(i).is_in_crs_area(crs)) {
             BOOST_LOG_TRIVIAL(debug) << "Warning : the input image's (" << paths.at(i) << ") bbox is not included in the srs (" << srss.at(i) << ") definition extent";
             BOOST_LOG_TRIVIAL(debug) << bboxes.at(i).to_string() << " not included in " << crs->get_native_crs_definition_area().to_string();
         }
@@ -505,7 +505,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
         if (i + 1 < masks.size() && masks.at(i + 1)) {
             FileImage* input_mask = FileImage::create_to_read(paths.at(i + 1), bboxes.at(i), resxs.at(i), resys.at(i));
             if (input_mask == NULL) {
-                BOOST_LOG_TRIVIAL(error) << "Impossible de creer un masque a partir de " << paths.at(i);
+                BOOST_LOG_TRIVIAL(error) << "Impossible de creer un masque a partir de " << paths.at(i + 1);
                 return -1;
             }
             input_mask->set_crs(crs);
@@ -550,7 +550,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
     }
 
     if (input_images->size() == 0) {
-        BOOST_LOG_TRIVIAL(error) << "Erreur lecture du fichier de parametres '" << configuration_file << "' : pas de données en entrée.";
+        BOOST_LOG_TRIVIAL(error) << "Erreur lecture du fichier de parametres '" << configuration_path << "' : pas de données en entrée.";
         return -1;
     } else {
         BOOST_LOG_TRIVIAL(debug) << input_count << " image(s) en entrée";
@@ -561,13 +561,13 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
     if (style_provided) {
         BOOST_LOG_TRIVIAL(debug) << "Load style";
         style = new Style(style_file);
-        if ( ! style->isOk() ) {
-            BOOST_LOG_TRIVIAL(error) << style->getErrorMessage();
+        if ( ! style->is_ok() ) {
+            BOOST_LOG_TRIVIAL(error) << style->get_error_message();
             BOOST_LOG_TRIVIAL(error) << "Cannot load style";
             return -1;
         }
 
-        if ( ! style->youCan(samplesperpixel) ) {
+        if ( ! style->handle(samplesperpixel) ) {
             BOOST_LOG_TRIVIAL(error) << "Cannot apply this style for this channels number";
             return -1;
         }
@@ -668,7 +668,7 @@ int add_converters(std::vector<FileImage*> input_images) {
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int sort_images(std::vector<FileImage*> input_images, std::vector<std::vector<Image*> >* sorted_input_images) {
-    std::vector<Image*> tmp;
+    std::vector<Image*> current_pack;
     std::vector<FileImage*>::iterator current_input_images_iterator = input_images.begin();
 
     /* we create consistent images' vectors (X/Y resolution and X/Y phases)
@@ -677,16 +677,16 @@ int sort_images(std::vector<FileImage*> input_images, std::vector<std::vector<Im
     for (std::vector<FileImage*>::iterator input_images_iterator = input_images.begin(); input_images_iterator < input_images.end() - 1; input_images_iterator++) {
         if (!(*input_images_iterator)->compatible(*(input_images_iterator + 1))) {
             // two following images are not compatible, we split images' vector
-            tmp.assign(current_input_images_iterator, input_images_iterator + 1);
+            current_pack.assign(current_input_images_iterator, input_images_iterator + 1);
             current_input_images_iterator = input_images_iterator + 1;
-            sorted_input_images->push_back(tmp);
+            sorted_input_images->push_back(current_pack);
         }
     }
 
     // we don't forget to store last images in sorted_input_images
     // images
-    tmp.assign(current_input_images_iterator, input_images.end());
-    sorted_input_images->push_back(tmp);
+    current_pack.assign(current_input_images_iterator, input_images.end());
+    sorted_input_images->push_back(current_pack);
 
     return 0;
 }
@@ -703,7 +703,7 @@ int sort_images(std::vector<FileImage*> input_images, std::vector<std::vector<Im
 bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_images, ResampledImage** resampled_image) {
     double resx_dst = output_image->get_resx(), resy_dst = output_image->get_resy();
 
-    const Kernel& kernel = Kernel::getInstance(interpolation);
+    const Kernel& kernel = Kernel::get_instance(interpolation);
 
     // Ajout des miroirs
     // Valeurs utilisées pour déterminer la taille des miroirs en pixel (taille optimale en fonction du noyau utilisé)
@@ -807,12 +807,12 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     double resx_dst = output_image->get_resx(), resy_dst = output_image->get_resy();
     double resx_src = input_images->get_resx(), resy_src = input_images->get_resy();
 
-    const Kernel& kernel = Kernel::getInstance(interpolation);
+    const Kernel& kernel = Kernel::get_instance(interpolation);
 
     /******** Conversion de la bbox source dans le srs de sortie ********/
     /******************* et calcul des ratios des résolutions ***********/
 
-    BoundingBox<double> tmp_bbox = input_images->get_bbox().cropToAreaOfCRS(input_images->get_crs());
+    BoundingBox<double> tmp_bbox = input_images->get_bbox().crop_to_crs_area(input_images->get_crs());
 
     int crop_width = ceil((tmp_bbox.xmax - tmp_bbox.xmin) / resx_src);
     int crop_height = ceil((tmp_bbox.ymax - tmp_bbox.ymin) / resy_src);
@@ -822,7 +822,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
         return false;
     }
 
-    /* On valcule les résolutions de l'image source "équivalente" dans le SRS de destination, pour pouvoir calculer le ratio
+    /* On calcule les résolutions de l'image source "équivalente" dans le SRS de destination, pour pouvoir calculer le ratio
      * des résolutions pour la taille des miroirs */
     double resx_calc = (tmp_bbox.xmax - tmp_bbox.xmin) / double(crop_width);
     double resy_calc = (tmp_bbox.ymax - tmp_bbox.ymin) / double(crop_height);
@@ -832,9 +832,9 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     /* On fait particulièrement attention à ne considérer que la partie valide de la bbox finale
      * c'est à dire la partie incluse dans l'espace de définition du SRS
      * On va donc la "croper" */
-    BoundingBox<double> croped_output_bbox = output_image->get_bbox().cropToAreaOfCRS(output_image->get_crs());
+    BoundingBox<double> croped_output_bbox = output_image->get_bbox().crop_to_crs_area(output_image->get_crs());
 
-    BoundingBox<double> bbox_dst = croped_output_bbox.getIntersection(tmp_bbox);
+    BoundingBox<double> bbox_dst = croped_output_bbox.get_intersection(tmp_bbox);
 
     BOOST_LOG_TRIVIAL(debug) << "        BBOX dst (srs destination) : " << bbox_dst.to_string();
 
@@ -918,7 +918,6 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
             styled_image = new EstompageImage (input_images, style->get_estompage());
         }
         else if (style->pente_defined()) {
-            BOOST_LOG_TRIVIAL(debug) << "--------------- On ajoute la pente";
             styled_image = new PenteImage (input_images, style->get_pente());
         }
         else if (style->aspect_defined()) {
@@ -927,7 +926,6 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
 
         if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
             if (styled_image != NULL) {
-                BOOST_LOG_TRIVIAL(debug) << "--------------- On ajoute la palette sur la pente";
                 input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
             } else {
                 input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
@@ -935,22 +933,25 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
         } else {
             input_to_reproject = styled_image;
         }
-    }
 
-    input_to_reproject->set_crs(input_images->get_crs());
-    input_to_reproject->print();
+        input_to_reproject->set_crs(input_images->get_crs());
+    }
 
     /*************************** Image reprojetée ***********************/
 
     // On  reprojete le masque : TOUJOURS EN PPV, sans utilisation de masque pour l'interpolation
-    ReprojectedImage* reprojected_mask = new ReprojectedImage(input_images->Image::get_mask(), bbox_dst, resx_dst, resy_dst, grid,
-                                                    Interpolation::NEAREST_NEIGHBOUR, false);
+    ReprojectedImage* reprojected_mask = new ReprojectedImage(
+        input_images->Image::get_mask(), bbox_dst, resx_dst, resy_dst, grid,
+        Interpolation::NEAREST_NEIGHBOUR, false
+    );
     reprojected_mask->set_crs(output_image->get_crs());
 
     // Reprojection de l'image
 
     *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
     (*reprojected_image)->set_crs(output_image->get_crs());
+
+    (*reprojected_image)->print();
 
     if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
@@ -1172,7 +1173,7 @@ int main(int argc, char** argv) {
         if (merged_image) delete merged_image;
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
-        ProjPool::cleanProjPool();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec chargement des images", -1);
     }
@@ -1183,7 +1184,7 @@ int main(int argc, char** argv) {
         if (merged_image) delete merged_image;
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
-        ProjPool::cleanProjPool();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec ajout des convertisseurs", -1);
     }
@@ -1201,7 +1202,7 @@ int main(int argc, char** argv) {
             if (merged_image) delete merged_image;
             if (output_image) delete output_image;
             if (output_mask) delete output_mask;
-            ProjPool::cleanProjPool();
+            ProjPool::clean_projs();
             proj_cleanup();
             error("Error with option -n : a value for nodata is missing", -1);
         }
@@ -1213,7 +1214,7 @@ int main(int argc, char** argv) {
                 if (merged_image) delete merged_image;
                 if (output_image) delete output_image;
                 if (output_mask) delete output_mask;
-                ProjPool::cleanProjPool();
+                ProjPool::clean_projs();
                 proj_cleanup();
                 error("Error with option -n : one value per sample, separate with comma", -1);
             }
@@ -1228,7 +1229,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec tri des images", -1);
     }
@@ -1240,7 +1241,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec fusion des paquets d images", -1);
     }
@@ -1252,7 +1253,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec enregistrement de l image finale", -1);
     }
@@ -1265,7 +1266,7 @@ int main(int argc, char** argv) {
             if (output_image) delete output_image;
             if (output_mask) delete output_mask;
             delete[] nodata;
-            ProjPool::cleanProjPool();
+            ProjPool::clean_projs();
             proj_cleanup();
             error("Echec enregistrement du masque final", -1);
         }
@@ -1282,10 +1283,10 @@ int main(int argc, char** argv) {
     delete merged_image;
     delete output_image;
     delete output_mask;
-    ProjPool::cleanProjPool();
+    ProjPool::clean_projs();
     proj_cleanup();
-    StoragePool::cleanStoragePool();
-    CurlPool::cleanCurlPool();
+    StoragePool::clean_storages();
+    CurlPool::clean_curls();
     curl_global_cleanup();
 
     return 0;

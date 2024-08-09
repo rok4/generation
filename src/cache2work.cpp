@@ -99,12 +99,12 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -206,40 +206,40 @@ int main ( int argc, char **argv )
         error("Unable to connect context", -1);
     }
 
-    Rok4Image* rok4image = Rok4Image::create_to_read(fo_name, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
-    if (rok4image == NULL) {
-        StoragePool::cleanStoragePool();
+    Rok4Image* rok4_image = Rok4Image::create_to_read(fo_name, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
+    if (rok4_image == NULL) {
+        StoragePool::clean_storages();
         error (std::string("Cannot create ROK4 image to read ") + input, 1);
     }
 
-    FileImage* outputImage = FileImage::create_to_write(
-        output, rok4image->get_bbox(), rok4image->get_resx(), rok4image->get_resy(), rok4image->get_width(), rok4image->get_height(),
-        rok4image->get_channels(), rok4image->get_sample_format(), rok4image->get_photometric(), compression
+    FileImage* output_image = FileImage::create_to_write(
+        output, rok4_image->get_bbox(), rok4_image->get_resx(), rok4_image->get_resy(), rok4_image->get_width(), rok4_image->get_height(),
+        rok4_image->get_channels(), rok4_image->get_sample_format(), rok4_image->get_photometric(), compression
     );
 
-    if (outputImage == NULL) {
-        delete rok4image;
-        StoragePool::cleanStoragePool();
+    if (output_image == NULL) {
+        delete rok4_image;
+        StoragePool::clean_storages();
         error (std::string("Cannot create image to write ") + output, -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Write" ;
-    if (outputImage->write_image(rok4image) < 0) {
-        delete rok4image;
-        delete outputImage;
-        StoragePool::cleanStoragePool();
+    if (output_image->write_image(rok4_image) < 0) {
+        delete rok4_image;
+        delete output_image;
+        StoragePool::clean_storages();
         error("Cannot write image", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
     
-    delete rok4image;
-    delete outputImage;
-    ProjPool::cleanProjPool();
+    delete rok4_image;
+    delete output_image;
+    ProjPool::clean_projs();
     proj_cleanup();
-    CurlPool::cleanCurlPool();
+    CurlPool::clean_curls();
     curl_global_cleanup();
-    StoragePool::cleanStoragePool();
+    StoragePool::clean_storages();
 
     return 0;
 }

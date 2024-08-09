@@ -68,18 +68,18 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 /** \~french Nombre d'images dans le sens de la largeur */
-int widthwiseImage = 0;
+int images_widthwise = 0;
 /** \~french Nombre d'images dans le sens de la hauteur */
-int heightwiseImage = 0;
+int images_heightwise = 0;
 
 /** \~french Compression de l'image de sortie */
 Compression::eCompression compression = Compression::NONE;
 
 /** \~french Dossier des images sources */
-char* inputDir = 0;
+char* input_directory_path = 0;
 
 /** \~french Chemin de l'image en sortie */
-char* outputImage = 0;
+char* output_image_path = 0;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
 bool debug_logger=false;
@@ -120,13 +120,13 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
-    BOOST_LOG_TRIVIAL(error) <<  "Source directory : " << inputDir ;
+    BOOST_LOG_TRIVIAL(error) <<  "Source directory : " << input_directory_path ;
     usage();
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -152,7 +152,7 @@ int parse_command_line ( int argc, char** argv ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error id -s option" ;
                     return -1;
                 }
-                inputDir = argv[i];
+                input_directory_path = argv[i];
                 break;
             case 'c': // compression
                 if ( ++i == argc ) {
@@ -181,15 +181,15 @@ int parse_command_line ( int argc, char** argv ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error in -g option" ;
                     return -1;
                 }
-                widthwiseImage = atoi ( argv[++i] );
-                heightwiseImage = atoi ( argv[++i] );
+                images_widthwise = atoi ( argv[++i] );
+                images_heightwise = atoi ( argv[++i] );
                 break;
             default:
                 BOOST_LOG_TRIVIAL(error) <<  "Unknown option : " << argv[i] ;
                 return -1;
             }
         } else {
-            if ( outputImage == 0 ) outputImage = argv[i];
+            if ( output_image_path == 0 ) output_image_path = argv[i];
             else {
                 BOOST_LOG_TRIVIAL(error) <<  "Argument must specify just ONE output file" ;
                 return -1;
@@ -198,19 +198,19 @@ int parse_command_line ( int argc, char** argv ) {
     }
 
     // Input directory control
-    if ( inputDir == 0 ) {
+    if ( input_directory_path == 0 ) {
         BOOST_LOG_TRIVIAL(error) <<  "We need to have a source images' directory (option -s)" ;
         return -1;
     }
 
     // Output file control
-    if ( outputImage == 0 ) {
+    if ( output_image_path == 0 ) {
         BOOST_LOG_TRIVIAL(error) <<  "We need to have an output file" ;
         return -1;
     }
 
     // Geometry control
-    if ( widthwiseImage == 0 || heightwiseImage == 0) {
+    if ( images_widthwise == 0 || images_heightwise == 0) {
         BOOST_LOG_TRIVIAL(error) <<  "We need to know composition geometry (option -g)" ;
         return -1;
     }
@@ -224,21 +224,21 @@ int parse_command_line ( int argc, char** argv ) {
  * \brief Charge les images contenues dans le dossier en entrée et l'image de sortie
  * \details Toutes les images doivent avoir les mêmes caractéristiques, dimensions et type des canaux. Les images en entrée seront gérée par un objet de la classe #CompoundImage, et l'image en sortie sera une image TIFF.
  *
- * \param[out] ppImageOut image résultante de l'outil
- * \param[out] ppCompoundIn ensemble des images en entrée
+ * \param[out] output_image image résultante de l'outil
+ * \param[out] compound_image ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int load_images ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
+int load_images ( FileImage** output_image, CompoundImage** compound_image ) {
 
-    std::vector< std::string > imagesNames;
+    std::vector< std::string > images_filenames;
     
-    std::vector< std::vector<Image*> > imagesIn;
+    std::vector< std::vector<Image*> > input_images;
 
-    // Dimensionnement de imagesIn
-    imagesIn.resize(heightwiseImage);
-    for (int row = 0; row < heightwiseImage; row++)
-        imagesIn.at(row).resize(widthwiseImage);
-    for ( int i = 0; i < heightwiseImage; i++ ) for ( int j = 0; j < widthwiseImage; j++ ) imagesIn[i][j] = NULL;
+    // Dimensionnement de input_images
+    input_images.resize(images_heightwise);
+    for (int row = 0; row < images_heightwise; row++)
+        input_images.at(row).resize(images_widthwise);
+    for ( int i = 0; i < images_heightwise; i++ ) for ( int j = 0; j < images_widthwise; j++ ) input_images[i][j] = NULL;
 
     int width, height;
     int samplesperpixel;
@@ -248,46 +248,46 @@ int load_images ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
     /********* Parcours du dossier ************/
 
     // Ouverture et test du répertoire source
-    DIR * rep = opendir(inputDir);
+    DIR * input_directory = opendir(input_directory_path);
 
-    if (rep == NULL) {
-        BOOST_LOG_TRIVIAL(error) << "Cannot open input directory : " << inputDir;
+    if (input_directory == NULL) {
+        BOOST_LOG_TRIVIAL(error) << "Cannot open input directory : " << input_directory_path;
         return -1;
     }
     
     struct dirent * ent;
 
      // On récupère tous les fichiers, puis on les trie
-    while ((ent = readdir(rep)) != NULL) {
+    while ((ent = readdir(input_directory)) != NULL) {
         if (ent->d_name[0] == '.') continue;
-        imagesNames.push_back(std::string(ent->d_name));
+        images_filenames.push_back(std::string(ent->d_name));
     }
 
-    closedir(rep);
+    closedir(input_directory);
     
-    BOOST_LOG_TRIVIAL(debug) << imagesNames.size() << " files in the provided directory";
-    if (imagesNames.size() > widthwiseImage*heightwiseImage) {
+    BOOST_LOG_TRIVIAL(debug) << images_filenames.size() << " files in the provided directory";
+    if (images_filenames.size() > images_widthwise*images_heightwise) {
         BOOST_LOG_TRIVIAL(warning) << "We have too much images in the input directory (regarding to the provided geometry).";
-        BOOST_LOG_TRIVIAL(warning) << "Only " << widthwiseImage*heightwiseImage << " first images will be used";
+        BOOST_LOG_TRIVIAL(warning) << "Only " << images_widthwise*images_heightwise << " first images will be used";
     }
 
-    if (imagesNames.size() < widthwiseImage*heightwiseImage) {
-        BOOST_LOG_TRIVIAL(error) << "Not enough images, we need " << widthwiseImage*heightwiseImage << ", and we find " << imagesNames.size();
+    if (images_filenames.size() < images_widthwise*images_heightwise) {
+        BOOST_LOG_TRIVIAL(error) << "Not enough images, we need " << images_widthwise*images_heightwise << ", and we find " << images_filenames.size();
         return -1;
     }
 
-    std::sort(imagesNames.begin(), imagesNames.end());
+    std::sort(images_filenames.begin(), images_filenames.end());
 
     /********* Chargement des images ************/
     
     /* On doit connaître les dimensions des images en entrée pour pouvoir créer les images de sortie
      * Lecture et création des images sources */
-    for (int k = 0; k < widthwiseImage*heightwiseImage; k++) {
+    for (int k = 0; k < images_widthwise*images_heightwise; k++) {
 
-        int i = k/widthwiseImage;
-        int j = k%widthwiseImage;
+        int i = k/images_widthwise;
+        int j = k%images_widthwise;
 
-        std::string str = inputDir + imagesNames.at(k);
+        std::string str = input_directory_path + images_filenames.at(k);
         char filename[256];
         memset(filename, 0, 256);
         memcpy(filename, str.c_str(), str.length());
@@ -314,28 +314,28 @@ int load_images ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
                  height != pImage->get_height() )
             {
                 delete pImage;
-                for ( int ii = 0; ii < heightwiseImage; ii++ ) for ( int jj = 0; jj < widthwiseImage; jj++ ) delete imagesIn[ii][jj];
+                for ( int ii = 0; ii < images_heightwise; ii++ ) for ( int jj = 0; jj < images_widthwise; jj++ ) delete input_images[ii][jj];
                 BOOST_LOG_TRIVIAL(error) <<  "All input images must have same dimensions and sample type : error for image " << filename ;
                 return -1;
             }
         }
 
-        pImage->set_bbox(BoundingBox<double>(j * width, (heightwiseImage - i - 1) * height, (j+1) * width, (heightwiseImage - i) * height));
+        pImage->set_bbox(BoundingBox<double>(j * width, (images_heightwise - i - 1) * height, (j+1) * width, (images_heightwise - i) * height));
         
-        imagesIn[i][j] = pImage;
+        input_images[i][j] = pImage;
         
     }
 
-    *ppCompoundIn = new CompoundImage(imagesIn);
+    *compound_image = new CompoundImage(input_images);
 
     // Création de l'image de sortie
-    *ppImageOut = FileImage::create_to_write (
-        outputImage, BoundingBox<double>(0., 0., 0., 0.), -1., -1., width*widthwiseImage, height*heightwiseImage, samplesperpixel,
+    *output_image = FileImage::create_to_write (
+        output_image_path, BoundingBox<double>(0., 0., 0., 0.), -1., -1., width*images_widthwise, height*images_heightwise, samplesperpixel,
         sample_format, photometric,compression
     );
 
-    if ( *ppImageOut == NULL ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer l'image de sortie " << outputImage ;
+    if ( *output_image == NULL ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer l'image de sortie " << output_image_path ;
         return -1;
     }
 
@@ -356,8 +356,8 @@ int load_images ( FileImage** ppImageOut, CompoundImage** ppCompoundIn ) {
  */
 int main ( int argc, char **argv ) {
 
-    FileImage* pImageOut = NULL;
-    CompoundImage* pCompoundIn = NULL;
+    FileImage* output_image = NULL;
+    CompoundImage* compound_image = NULL;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -380,26 +380,26 @@ int main ( int argc, char **argv ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Load" ;
     // Chargement des images
-    if ( load_images ( &pImageOut, &pCompoundIn ) < 0 ) {
-        if ( pCompoundIn ) {
-            delete pCompoundIn;
+    if ( load_images ( &output_image, &compound_image ) < 0 ) {
+        if ( compound_image ) {
+            delete compound_image;
         }
-        if ( pImageOut ) {
-            delete pImageOut; 
+        if ( output_image ) {
+            delete output_image; 
         }
         error ( "Cannot load images from the input directory",-1 );
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Save image" ;
     // Enregistrement de l'image fusionnée
-    if ( pImageOut->write_image ( pCompoundIn ) < 0 ) {
+    if ( output_image->write_image ( compound_image ) < 0 ) {
         error ( "Cannot write the compound image",-1 );
     }
 
-    ProjPool::cleanProjPool();
+    ProjPool::clean_projs();
     proj_cleanup();
-    delete pCompoundIn;
-    delete pImageOut;
+    delete compound_image;
+    delete output_image;
 
     return 0;
 }

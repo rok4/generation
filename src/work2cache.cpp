@@ -110,12 +110,12 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  ( message );
     usage();
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -134,7 +134,7 @@ void error ( std::string message, int errorCode ) {
  */
 int main ( int argc, char **argv ) {
 
-    char* input = 0, *output = 0;
+    char* input_path = 0, *output_path = 0;
     int tile_width = 256, tile_height = 256;
     Compression::eCompression compression = Compression::NONE;
 
@@ -221,8 +221,8 @@ int main ( int argc, char **argv ) {
                     error ( "Unknown option : " + std::string(argv[i]) ,-1 );
             }
         } else {
-            if ( input == 0 ) input = argv[i];
-            else if ( output == 0 ) output = argv[i];
+            if ( input_path == 0 ) input_path = argv[i];
+            else if ( output_path == 0 ) output_path = argv[i];
             else { error ( "Argument must specify ONE input file and ONE output file/object", 2 ); }
         }
     }
@@ -232,12 +232,12 @@ int main ( int argc, char **argv ) {
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
 
-    if ( input == 0 || output == 0 ) {
+    if ( input_path == 0 || output_path == 0 ) {
         error ("Argument must specify one input file and one output file/object", -1);
     }
 
     ContextType::eContextType type;
-    std::string fo_name = std::string(output);
+    std::string fo_name = std::string(output_path);
     std::string tray_name;
 
     ContextType::split_path(fo_name, type, fo_name, tray_name);
@@ -249,7 +249,7 @@ int main ( int argc, char **argv ) {
     context = StoragePool::get_context(type, tray_name);
 
     BOOST_LOG_TRIVIAL(debug) <<  ( "Open image to read" );
-    FileImage* source_image = FileImage::create_to_read(input);
+    FileImage* source_image = FileImage::create_to_read(input_path);
     if (source_image == NULL) {
         error("Cannot read the source image", -1);
     }
@@ -267,7 +267,7 @@ int main ( int argc, char **argv ) {
         }
 
         if (! source_image->add_converter ( sampleformat, samplesperpixel ) ) {
-            error ( "Cannot add converter to the input FileImage " + std::string(input), -1 );
+            error ( "Cannot add converter to the input FileImage " + std::string(input_path), -1 );
         }
     } else {
         // On n'a pas précisé de format de sortie
@@ -281,37 +281,37 @@ int main ( int argc, char **argv ) {
         source_image->print();
     }
 
-    Rok4Image* rok4Image = Rok4Image::create_to_write(
+    Rok4Image* rok4_image = Rok4Image::create_to_write(
         fo_name, BoundingBox<double>(0.,0.,0.,0.), -1, -1, source_image->get_width(), source_image->get_height(), samplesperpixel,
         sampleformat, photometric, compression,
         tile_width, tile_height, context
     );
     
-    if (rok4Image == NULL) {
+    if (rok4_image == NULL) {
         error("Cannot create the ROK4 image to write", -1);
     }
 
-    rok4Image->set_extra_sample(source_image->get_extra_sample());
+    rok4_image->set_extra_sample(source_image->get_extra_sample());
 
     if (debug_logger) {
-        rok4Image->print();
+        rok4_image->print();
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  ( "Write" );
 
-    if (rok4Image->write_image(source_image) < 0) {
+    if (rok4_image->write_image(source_image) < 0) {
         error("Cannot write ROK4 image", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  ( "Clean" );
 
-    ProjPool::cleanProjPool();
+    ProjPool::clean_projs();
     proj_cleanup();
-    CurlPool::cleanCurlPool();
+    CurlPool::clean_curls();
     curl_global_cleanup();
-    StoragePool::cleanStoragePool();
+    StoragePool::clean_storages();
     delete source_image;
-    delete rok4Image;
+    delete rok4_image;
 
     return 0;
 }
