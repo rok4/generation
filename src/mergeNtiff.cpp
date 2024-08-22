@@ -156,7 +156,7 @@ std::string help = std::string("\nmergeNtiff version ") + std::string(VERSION) +
                    "            -99999 for DTM\n"
                    "            255,255,255 for orthophotography\n"
                    "    -p style file\n"
-                   "    -a sample format : (float or uint)\n"
+                   "    -a sample format : (float32 or uint8)\n"
                    "    -s samples per pixel : (1, 2, 3 or 4)\n"
                    "    -d debug logger activation\n\n"
 

@@ -83,7 +83,7 @@ std::string help = std::string("\nwork2cache version ") + std::string(VERSION) +
     "             zip     Deflate encoding\n"
     "             png     Non-official TIFF compression, each tile is an independant PNG image (with PNG header)\n"
     "     -t tile size : widthwise and heightwise. Have to be a divisor of the global image's size\n"
-    "     -a sample format : (float or uint)\n"
+    "     -a sample format : (float32 or uint8)\n"
     "     -s samples per pixel : (1, 2, 3 or 4)\n"
     "     -d : debug logger activation\n\n"
 

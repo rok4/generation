@@ -138,7 +138,7 @@ std::string help = std::string("\ncache2work version ") + std::string(VERSION) +
     "             X = b           background image\n"
     "     -mX input associated masks (optionnal)\n"
     "             X = [1..4] or X = b\n"
-    "     -a sample format : (float or uint)\n"
+    "     -a sample format : (float32 or uint8)\n"
     "     -s samples per pixel : (1, 2, 3 or 4)\n"
     "     -d debug logger activation\n\n"
 
