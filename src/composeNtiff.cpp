@@ -396,6 +396,7 @@ int main ( int argc, char **argv ) {
         error ( "Cannot write the compound image",-1 );
     }
 
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
     delete compound_image;

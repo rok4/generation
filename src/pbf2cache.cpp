@@ -213,6 +213,7 @@ int main ( int argc, char **argv ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
 
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
     CurlPool::clean_curls();

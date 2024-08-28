@@ -537,6 +537,7 @@ int main ( int argc, char **argv ) {
         }
     }
 
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
     delete merged_image;

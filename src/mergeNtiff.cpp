@@ -479,7 +479,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
             return -1;
         }
 
-        CRS* crs = new CRS(srss.at(i));
+        CRS* crs = CrsBook::get_crs(srss.at(i));
 
         if (! crs->is_define()) {
             BOOST_LOG_TRIVIAL(error) << "Input CRS unknown: " << srss.at(i);
@@ -517,7 +517,6 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
             i++;
             free(paths.at(i));
         }
-        delete crs;
 
         input_images->push_back(input_image);
 
@@ -587,7 +586,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
         photometric = Photometric::RGB;
     }
 
-    CRS *output_crs = new CRS(srss.at(0));
+    CRS *output_crs = CrsBook::get_crs(srss.at(0));
     if (! output_crs->is_define()) {
         BOOST_LOG_TRIVIAL(error) << "Output CRS unknown: " << srss.at(0);
         return -1;
@@ -622,8 +621,6 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
         (*output_mask)->set_crs(output_crs);
         free(paths.at(1));
     }
-
-    delete output_crs;
 
     if (debug_logger) (*output_image)->print();
 
@@ -951,8 +948,6 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
     (*reprojected_image)->set_crs(output_image->get_crs());
 
-    (*reprojected_image)->print();
-
     if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
         return false;
@@ -1173,6 +1168,7 @@ int main(int argc, char** argv) {
         if (merged_image) delete merged_image;
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
+        CrsBook::clean_crss();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec chargement des images", -1);
@@ -1184,6 +1180,7 @@ int main(int argc, char** argv) {
         if (merged_image) delete merged_image;
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
+        CrsBook::clean_crss();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec ajout des convertisseurs", -1);
@@ -1202,6 +1199,7 @@ int main(int argc, char** argv) {
             if (merged_image) delete merged_image;
             if (output_image) delete output_image;
             if (output_mask) delete output_mask;
+            CrsBook::clean_crss();
             ProjPool::clean_projs();
             proj_cleanup();
             error("Error with option -n : a value for nodata is missing", -1);
@@ -1214,6 +1212,7 @@ int main(int argc, char** argv) {
                 if (merged_image) delete merged_image;
                 if (output_image) delete output_image;
                 if (output_mask) delete output_mask;
+                CrsBook::clean_crss();
                 ProjPool::clean_projs();
                 proj_cleanup();
                 error("Error with option -n : one value per sample, separate with comma", -1);
@@ -1229,6 +1228,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
+        CrsBook::clean_crss();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec tri des images", -1);
@@ -1241,6 +1241,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
+        CrsBook::clean_crss();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec fusion des paquets d images", -1);
@@ -1253,6 +1254,7 @@ int main(int argc, char** argv) {
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
+        CrsBook::clean_crss();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec enregistrement de l image finale", -1);
@@ -1266,6 +1268,7 @@ int main(int argc, char** argv) {
             if (output_image) delete output_image;
             if (output_mask) delete output_mask;
             delete[] nodata;
+            CrsBook::clean_crss();
             ProjPool::clean_projs();
             proj_cleanup();
             error("Echec enregistrement du masque final", -1);
@@ -1283,6 +1286,7 @@ int main(int argc, char** argv) {
     delete merged_image;
     delete output_image;
     delete output_mask;
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
     StoragePool::clean_storages();

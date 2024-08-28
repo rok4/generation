@@ -235,6 +235,7 @@ int main ( int argc, char **argv )
     
     delete rok4_image;
     delete output_image;
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
     CurlPool::clean_curls();

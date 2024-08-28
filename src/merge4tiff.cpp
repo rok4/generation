@@ -44,11 +44,8 @@
  */
 
 #include <tiffio.h>
-#include <rok4/image/Image.h>
-#include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
-#include <rok4/image/file/FileImage.h>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
@@ -62,6 +59,12 @@ namespace keywords = boost::log::keywords;
 #include <algorithm>
 #include <string.h>
 #include <stdint.h>
+
+#include <rok4/image/Image.h>
+#include <rok4/enums/Format.h>
+#include <rok4/utils/Cache.h>
+#include <rok4/image/file/FileImage.h>
+
 #include "config.h"
 
 /* Valeurs de nodata */
@@ -806,34 +809,29 @@ int main ( int argc, char* argv[] ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Nodata interpretation" ;
     // Conversion string->int[] du paramètre nodata
-    int nodata[samplesperpixel];
+    int int_nodata[samplesperpixel];
 
-    char* char_iterator = strtok ( strnodata,"," );
-    if ( char_iterator == NULL ) {
-        error ( "Error with option -n : a value for nodata is missing",-1 );
-    }
-    nodata[0] = atoi ( char_iterator );
-    for ( int i = 1; i < samplesperpixel; i++ ) {
-        char_iterator = strtok ( NULL, "," );
-        if ( char_iterator == NULL ) {
-            error ( "Error with option -n : a value for nodata is missing",-1 );
-        }
-        nodata[i] = atoi ( char_iterator );
+    std::vector<std::string> vector_nodata;
+    boost::split(vector_nodata, strnodata, boost::is_any_of(","));
+    if (vector_nodata.size() != samplesperpixel) error ( "Error with option -n : a value for nodata is missing",-1 );
+    
+    for ( int i = 0; i < samplesperpixel; i++ ) {
+        int_nodata[i] = atoi ( vector_nodata.at(i).c_str() );
     }
 
     // Cas MNT
     if ( sampleformat == SampleFormat::FLOAT32 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Merge images (float)" ;
         float nodata[samplesperpixel];
-        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( float ) nodata[i];
+        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( float ) int_nodata[i];
         if ( merge<float> ( background_image, input_images, output_image, output_mask, nodata ) < 0 ) error ( "Unable to merge float images",-1 );
     }
     // Cas images
     else if ( sampleformat == SampleFormat::UINT8 ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Merge images (uint8_t)" ;
         uint8_t nodata[samplesperpixel];
-        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( uint8_t ) nodata[i];
-        if ( merge ( background_image, input_images, output_image, output_mask, nodata ) < 0 ) error ( "Unable to merge integer images",-1 );
+        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( uint8_t ) int_nodata[i];
+        if ( merge<uint8_t> ( background_image, input_images, output_image, output_mask, nodata ) < 0 ) error ( "Unable to merge integer images",-1 );
     } else {
         error ( "Unhandled sample's format",-1 );
     }
@@ -841,6 +839,7 @@ int main ( int argc, char* argv[] ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
     
+    CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
 
