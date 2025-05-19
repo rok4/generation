@@ -109,7 +109,7 @@ Photometric::ePhotometric photometric;
 bool debug_logger=false;
 
 /** \~french Message d'usage de la commande merge4tiff */
-std::string help = std::string("\ncache2work version ") + std::string(VERSION) + "\n\n"
+std::string help = std::string("\nmerge4tiff version ") + std::string(VERSION) + "\n\n"
 
     "Four images subsampling, formed a square, might use a background and data masks\n\n"
 

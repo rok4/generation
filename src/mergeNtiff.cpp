@@ -770,7 +770,9 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
                 input_to_resample = new PaletteImage ( input_images , style->get_palette() );
             }
         } else {
-            input_to_resample = styled_image;
+            if (styled_image != NULL) {
+                input_to_resample = styled_image;
+            }
         }
     }
 
@@ -928,7 +930,9 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
                 input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
             }
         } else {
-            input_to_reproject = styled_image;
+            if (styled_image != NULL) {
+                input_to_reproject = styled_image;
+            }
         }
 
         input_to_reproject->set_crs(input_images->get_crs());
@@ -988,7 +992,7 @@ int merge_images(FileImage *output_image,                          // Sortie
     // - Avec le nodata attendu en entrée du style fourni
     int* nd = nodata;
     if (style_provided) {
-        nd = style->get_input_nodata_value();
+        nd = style->get_input_nodata_value(nd);
     }
 
     for (unsigned int i = 0; i < sorted_input_images.size(); i++) {
@@ -1015,7 +1019,7 @@ int merge_images(FileImage *output_image,                          // Sortie
         if (output_image->compatible(stackable_image)) {
             BOOST_LOG_TRIVIAL(debug) << "\t is compatible";
             /* les images sources et finale ont la meme resolution et la meme phase
-             * on aura donc pas besoin de reechantillonnage.*/
+             * on n'aura donc pas besoin de reechantillonnage.*/
             if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
                 Image* styled_image = NULL;
@@ -1083,7 +1087,7 @@ int merge_images(FileImage *output_image,                          // Sortie
     // - Avec le nodata de sortie du style fourni
     nd = nodata;
     if (style_provided) {
-        nd = style->get_output_nodata_value();
+        nd = style->get_output_nodata_value(nd);
     }
 
     for (int i = 0; i < output_image->get_channels(); i++) {
@@ -1215,7 +1219,7 @@ int main(int argc, char** argv) {
                 CrsBook::clean_crss();
                 ProjPool::clean_projs();
                 proj_cleanup();
-                error("Error with option -n : one value per sample, separate with comma", -1);
+                error("Error with option -n : one value per sample(" + std::to_string(samplesperpixel) + "), separate with comma", -1);
             }
             nodata[i] = atoi(char_iterator);
         }

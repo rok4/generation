@@ -288,7 +288,7 @@ int main ( int argc, char* argv[] ) {
     }
 
     // New nodata
-    if ( new_nodata_value ) {
+    if ( new_nodata_value_string ) {
         char_iterator = strtok ( new_nodata_value_string,"," );
         if ( char_iterator == NULL ) {
             error ( "Error with option -nodata : integer values seperated by comma",-1 );

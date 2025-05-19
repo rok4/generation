@@ -124,7 +124,6 @@ void usage() {
  */
 void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
-    BOOST_LOG_TRIVIAL(error) <<  "Source directory : " << input_directory_path ;
     usage();
     exit ( error_code );
 }

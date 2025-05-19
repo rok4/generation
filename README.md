@@ -1,6 +1,6 @@
 # Outils de génération de dalles raster et vecteur
 
-![ROK4 Logo](https://rok4.github.io/assets/images/rok4.png)
+![ROK4 Logo](https://rok4.github.io/assets/images/rok4-256.png)
 
 Ces outils permettent le calcul des dalles de données composant les pyramides exploitées par le [serveur](https://github.com/rok4/server) et s'appuient essentiellement sur la [librairie C++ du projet](https://github.com/rok4/core-cpp)
 
