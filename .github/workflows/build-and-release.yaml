@@ -39,7 +39,6 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - os: ubuntu-20.04
           - os: ubuntu-22.04
 
     runs-on: ${{ matrix.os }}
@@ -76,7 +75,7 @@ jobs:
           release-tag: ${{ github.ref_name }}
 
       - name: Build documentation
-        if: "matrix.os == 'ubuntu-20.04'"
+        if: "matrix.os == 'ubuntu-22.04'"
         run: |
           cd build
           make doc
@@ -105,7 +104,7 @@ jobs:
         run: pip install -r docs/requirements.txt
 
       - name: Publish documentation
-        if: "matrix.os == 'ubuntu-20.04'"
+        if: "matrix.os == 'ubuntu-22.04'"
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
