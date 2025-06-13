@@ -1,0 +1,896 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <meta name="generator" content="Doxygen 1.8.17" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Outils de manipulation raster ROK4</title>
+    <link href="tabs.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="dynsections.js"></script>
+    <link href="navtree.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="resize.js"></script>
+    <script type="text/javascript" src="navtreedata.js"></script>
+    <script type="text/javascript" src="navtree.js"></script>
+    <link href="search/search.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="search/searchdata.js"></script>
+    <script type="text/javascript" src="search/search.js"></script>
+    <link href="doxygen.css" rel="stylesheet" type="text/css" />
+    <link href="doxygen-awesome.css" rel="stylesheet" type="text/css" />
+</head>
+<body><!-- Généré par Doxygen 1.9.1 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Recherche','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','Recherche');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(document).ready(function(){initNavTree('mergeNtiff_8cpp.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Fonctions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
+  <div class="headertitle">
+<div class="title">Référence du fichier mergeNtiff.cpp</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées.  
+<a href="#details">Plus de détails...</a></p>
+<div class="textblock"><code>#include &lt;pthread.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;boost/log/core.hpp&gt;</code><br />
+<code>#include &lt;boost/log/trivial.hpp&gt;</code><br />
+<code>#include &lt;boost/log/utility/setup/common_attributes.hpp&gt;</code><br />
+<code>#include &lt;boost/log/utility/setup/console.hpp&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;sstream&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;tiffio.h&gt;</code><br />
+<code>#include &lt;rok4/utils/CRS.h&gt;</code><br />
+<code>#include &lt;rok4/image/ExtendedCompoundImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/file/FileImage.h&gt;</code><br />
+<code>#include &lt;rok4/enums/Format.h&gt;</code><br />
+<code>#include &lt;rok4/utils/Cache.h&gt;</code><br />
+<code>#include &lt;rok4/enums/Interpolation.h&gt;</code><br />
+<code>#include &lt;rok4/processors/PixelConverter.h&gt;</code><br />
+<code>#include &lt;rok4/image/ReprojectedImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/ResampledImage.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &quot;config.h&quot;</code><br />
+<code>#include &lt;rok4/style/Style.h&gt;</code><br />
+<code>#include &lt;rok4/image/PaletteImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/EstompageImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/PenteImage.h&gt;</code><br />
+<code>#include &lt;rok4/image/AspectImage.h&gt;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Fonctions</h2></td></tr>
+<tr class="memitem:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a2ef30c42cbc289d899a8be5d2d8f77d0">usage</a> ()</td></tr>
+<tr class="memdesc:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Affiche l'utilisation et les différentes options de la commande mergeNtiff <a class="el" href="mergeNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a>.  <a href="mergeNtiff_8cpp.html#a2ef30c42cbc289d899a8be5d2d8f77d0">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a2ef30c42cbc289d899a8be5d2d8f77d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73a01a8b4c56aecd53a68494735c8997"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a73a01a8b4c56aecd53a68494735c8997">error</a> (std::string message, int error_code)</td></tr>
+<tr class="memdesc:a73a01a8b4c56aecd53a68494735c8997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Affiche un message d'erreur, l'utilisation de la commande et sort en erreur.  <a href="mergeNtiff_8cpp.html#a73a01a8b4c56aecd53a68494735c8997">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a73a01a8b4c56aecd53a68494735c8997"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad30443f7f0c5cc937f68aba193ea9ed7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ad30443f7f0c5cc937f68aba193ea9ed7">parse_command_line</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:ad30443f7f0c5cc937f68aba193ea9ed7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Récupère les valeurs passées en paramètres de la commande, et les stocke dans les variables globales.  <a href="mergeNtiff_8cpp.html#ad30443f7f0c5cc937f68aba193ea9ed7">Plus de détails...</a><br /></td></tr>
+<tr class="separator:ad30443f7f0c5cc937f68aba193ea9ed7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acac7afed70abae2c206380b6a1372d4d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#acac7afed70abae2c206380b6a1372d4d">load_configuration</a> (std::vector&lt; bool &gt; *masks, std::vector&lt; char * &gt; *paths, std::vector&lt; std::string &gt; *srss, std::vector&lt; BoundingBox&lt; double &gt; &gt; *bboxes, std::vector&lt; double &gt; *resxs, std::vector&lt; double &gt; *resys)</td></tr>
+<tr class="memdesc:acac7afed70abae2c206380b6a1372d4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lit l'ensemble de la configuration.  <a href="mergeNtiff_8cpp.html#acac7afed70abae2c206380b6a1372d4d">Plus de détails...</a><br /></td></tr>
+<tr class="separator:acac7afed70abae2c206380b6a1372d4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9960cd5e7a5eb5fc87524bf7ea2d9f83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a9960cd5e7a5eb5fc87524bf7ea2d9f83">load_images</a> (FileImage **output_image, FileImage **output_mask, std::vector&lt; FileImage * &gt; *input_images)</td></tr>
+<tr class="memdesc:a9960cd5e7a5eb5fc87524bf7ea2d9f83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Charge les images en entrée et en sortie depuis le fichier de configuration.  <a href="mergeNtiff_8cpp.html#a9960cd5e7a5eb5fc87524bf7ea2d9f83">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a9960cd5e7a5eb5fc87524bf7ea2d9f83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e5f8856a32217f8616095514b0ca31e"><td class="memItemLeft" align="right" valign="top"><a id="a7e5f8856a32217f8616095514b0ca31e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>add_converters</b> (std::vector&lt; FileImage * &gt; input_images)</td></tr>
+<tr class="separator:a7e5f8856a32217f8616095514b0ca31e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca20a63908288e766b53bfffc6496efc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#aca20a63908288e766b53bfffc6496efc">sort_images</a> (std::vector&lt; FileImage * &gt; input_images, std::vector&lt; std::vector&lt; Image * &gt; &gt; *sorted_input_images)</td></tr>
+<tr class="memdesc:aca20a63908288e766b53bfffc6496efc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trie les images sources en paquets d'images superposables.  <a href="mergeNtiff_8cpp.html#aca20a63908288e766b53bfffc6496efc">Plus de détails...</a><br /></td></tr>
+<tr class="separator:aca20a63908288e766b53bfffc6496efc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a9e8ea357b809da7754467b4a76aa87"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a1a9e8ea357b809da7754467b4a76aa87">resample_images</a> (FileImage *output_image, ExtendedCompoundImage *input_images, ResampledImage **resampled_image)</td></tr>
+<tr class="memdesc:a1a9e8ea357b809da7754467b4a76aa87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Réechantillonne un paquet d'images compatibles.  <a href="mergeNtiff_8cpp.html#a1a9e8ea357b809da7754467b4a76aa87">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a1a9e8ea357b809da7754467b4a76aa87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8174ff1048cf18c4c38944b97abe186d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a8174ff1048cf18c4c38944b97abe186d">reproject_images</a> (FileImage *output_image, ExtendedCompoundImage *input_images, ReprojectedImage **reprojected_image)</td></tr>
+<tr class="memdesc:a8174ff1048cf18c4c38944b97abe186d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reprojette un paquet d'images compatibles.  <a href="mergeNtiff_8cpp.html#a8174ff1048cf18c4c38944b97abe186d">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a8174ff1048cf18c4c38944b97abe186d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0a344e6f6ef51043c3f411d5c5a72a2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ab0a344e6f6ef51043c3f411d5c5a72a2">merge_images</a> (FileImage *output_image, std::vector&lt; std::vector&lt; Image * &gt;&gt; &amp;sorted_input_images, ExtendedCompoundImage **merged_image)</td></tr>
+<tr class="memdesc:ab0a344e6f6ef51043c3f411d5c5a72a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Traite chaque paquet d'images en entrée.  <a href="mergeNtiff_8cpp.html#ab0a344e6f6ef51043c3f411d5c5a72a2">Plus de détails...</a><br /></td></tr>
+<tr class="separator:ab0a344e6f6ef51043c3f411d5c5a72a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
+<tr class="memdesc:a3c04138a5bfe5d72780bb7e82a18e627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fonction principale de l'outil mergeNtiff.  <a href="mergeNtiff_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">Plus de détails...</a><br /></td></tr>
+<tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a6c0b3992667a06b9f46d67b75b0834c0"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a6c0b3992667a06b9f46d67b75b0834c0">configuration_path</a> [256]</td></tr>
+<tr class="separator:a6c0b3992667a06b9f46d67b75b0834c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2696270fb7848c98fd669ea9ecb77cf4"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a2696270fb7848c98fd669ea9ecb77cf4">images_root</a> [256]</td></tr>
+<tr class="separator:a2696270fb7848c98fd669ea9ecb77cf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4df063b488037ee32e7f2009377691bb"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a4df063b488037ee32e7f2009377691bb">strnodata</a> [256]</td></tr>
+<tr class="separator:a4df063b488037ee32e7f2009377691bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a978605dd2639a0d269d9872605b9ea90"><td class="memItemLeft" align="right" valign="top"><a id="a978605dd2639a0d269d9872605b9ea90"></a>
+int *&#160;</td><td class="memItemRight" valign="bottom"><b>nodata</b></td></tr>
+<tr class="separator:a978605dd2639a0d269d9872605b9ea90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad02996df63b812ee5ed708244a18e7a5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ad02996df63b812ee5ed708244a18e7a5">nodata_provided</a> = false</td></tr>
+<tr class="separator:ad02996df63b812ee5ed708244a18e7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af294fa8ae3795d366057d7fe76b42395"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#af294fa8ae3795d366057d7fe76b42395">output_format_provided</a> = false</td></tr>
+<tr class="separator:af294fa8ae3795d366057d7fe76b42395"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a69b73601b508dd6658c226f42cb1b4"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a9a69b73601b508dd6658c226f42cb1b4">samplesperpixel</a> = 0</td></tr>
+<tr class="separator:a9a69b73601b508dd6658c226f42cb1b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1953f88f170fc37a3149ec6a40db2a98"><td class="memItemLeft" align="right" valign="top">SampleFormat::eSampleFormat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a1953f88f170fc37a3149ec6a40db2a98">sampleformat</a> = SampleFormat::UNKNOWN</td></tr>
+<tr class="separator:a1953f88f170fc37a3149ec6a40db2a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a359c6187cecc9f7ec9abc9c638eff616"><td class="memItemLeft" align="right" valign="top">Photometric::ePhotometric&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a359c6187cecc9f7ec9abc9c638eff616">photometric</a></td></tr>
+<tr class="separator:a359c6187cecc9f7ec9abc9c638eff616"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527676d008d5ab68518a5cb08bdea98f"><td class="memItemLeft" align="right" valign="top">Compression::eCompression&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a527676d008d5ab68518a5cb08bdea98f">compression</a> = Compression::NONE</td></tr>
+<tr class="separator:a527676d008d5ab68518a5cb08bdea98f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c9ba56bd7bdf9c1b74f4cca5de85526"><td class="memItemLeft" align="right" valign="top">Interpolation::KernelType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#a9c9ba56bd7bdf9c1b74f4cca5de85526">interpolation</a> = Interpolation::CUBIC</td></tr>
+<tr class="separator:a9c9ba56bd7bdf9c1b74f4cca5de85526"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3da7696f24757cccc8d4a35b0f9beaf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ab3da7696f24757cccc8d4a35b0f9beaf">background_provided</a> = false</td></tr>
+<tr class="separator:ab3da7696f24757cccc8d4a35b0f9beaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade21e1c43684423e4d12ebcc0c2f2196"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ade21e1c43684423e4d12ebcc0c2f2196">style_provided</a> = false</td></tr>
+<tr class="separator:ade21e1c43684423e4d12ebcc0c2f2196"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5c479e2ed20f5ea4eda50072807c71b"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#ac5c479e2ed20f5ea4eda50072807c71b">style_file</a> [256]</td></tr>
+<tr class="separator:ac5c479e2ed20f5ea4eda50072807c71b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba5b82e5214fe69e04b777eb338db07c"><td class="memItemLeft" align="right" valign="top">Style *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#aba5b82e5214fe69e04b777eb338db07c">style</a></td></tr>
+<tr class="separator:aba5b82e5214fe69e04b777eb338db07c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6821053e4d347fd51eab031ea845c98"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#af6821053e4d347fd51eab031ea845c98">debug_logger</a> = false</td></tr>
+<tr class="separator:af6821053e4d347fd51eab031ea845c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecfcd8d5595d8ba1a38ef3c624d1186a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mergeNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a></td></tr>
+<tr class="separator:aecfcd8d5595d8ba1a38ef3c624d1186a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Description détaillée</h2>
+<div class="textblock"><p>Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées. </p>
+<dl class="section author"><dt>Auteur</dt><dd>Institut national de l'information géographique et forestière <div class="image">
+<img src="mergeNtiff.png" alt=""/>
+</div>
+</dd></dl>
+<p>La légende utilisée dans tous les schémas de la documentation de ce fichier sera la suivante </p><div class="image">
+<img src="mergeNtiff_legende.png" alt=""/>
+</div>
+<p>Pour réaliser la fusion des images en entrée, on traite différemment : </p><ul>
+<li>les images qui sont superposables à l'image de sortie (même SRS, mêmes résolutions, mêmes phases) : on parle alors d'images compatibles, pas de réechantillonnage nécessaire. </li>
+<li>les images non compatibles mais de même SRS : un passage par le réechantillonnage (plus lourd en calcul) est indispensable. </li>
+<li>les images non compatibles et de SRS différents : un passage par la reprojection (encore plus lourd en calcul) est indispensable. </li>
+</ul>
+</div><h2 class="groupheader">Documentation des fonctions</h2>
+<a id="a73a01a8b4c56aecd53a68494735c8997"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73a01a8b4c56aecd53a68494735c8997">&#9670;&nbsp;</a></span>error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void error </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>message</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>error_code</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Affiche un message d'erreur, l'utilisation de la commande et sort en erreur. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">message</td><td>message d'erreur </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">error_code</td><td>code de retour </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="acac7afed70abae2c206380b6a1372d4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acac7afed70abae2c206380b6a1372d4d">&#9670;&nbsp;</a></span>load_configuration()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool load_configuration </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; bool &gt; *&#160;</td>
+          <td class="paramname"><em>masks</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; char * &gt; *&#160;</td>
+          <td class="paramname"><em>paths</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; *&#160;</td>
+          <td class="paramname"><em>srss</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; BoundingBox&lt; double &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>bboxes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt; *&#160;</td>
+          <td class="paramname"><em>resxs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; double &gt; *&#160;</td>
+          <td class="paramname"><em>resys</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Lit l'ensemble de la configuration. </p>
+<p>On parse la ligne courante du fichier de configuration, en stockant les valeurs dans les variables fournies. On saute les lignes vides. On lit ensuite la ligne suivante : </p><ul>
+<li>si elle correspond à un masque, on complète les informations </li>
+<li>si elle ne correspond pas à un masque, on recule le pointeur</li>
+</ul>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">masks</td><td>Indicateurs de présence d'un masque </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">paths</td><td>Chemins des images </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">srss</td><td>Systèmes de coordonnées des images </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">bboxes</td><td>Rectangles englobant des images </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">resxs</td><td>Résolution en x des images </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">resys</td><td>Résolution en y des images </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>true en cas de succès, false si échec </dd></dl>
+
+</div>
+</div>
+<a id="a9960cd5e7a5eb5fc87524bf7ea2d9f83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9960cd5e7a5eb5fc87524bf7ea2d9f83">&#9670;&nbsp;</a></span>load_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int load_images </td>
+          <td>(</td>
+          <td class="paramtype">FileImage **&#160;</td>
+          <td class="paramname"><em>output_image</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FileImage **&#160;</td>
+          <td class="paramname"><em>output_mask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; FileImage * &gt; *&#160;</td>
+          <td class="paramname"><em>input_images</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Charge les images en entrée et en sortie depuis le fichier de configuration. </p>
+<p>On va récupérer toutes les informations de toutes les images et masques présents dans le fichier de configuration et créer les objets FileImage correspondant. Toutes les images ici manipulées sont de vraies images (physiques) dans ce sens où elles sont des fichiers soit lus, soit qui seront écrits.</p>
+<p>Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_path et images_root va être concaténer au chemin vers les fichiers de sortie. </p><dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">output_image</td><td>image résultante de l'outil </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">output_mask</td><td>masque résultat de l'outil, si demandé </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">sorted_input_images</td><td>ensemble des images en entrée </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="a3c04138a5bfe5d72780bb7e82a18e627"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&nbsp;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Fonction principale de l'outil mergeNtiff. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">argc</td><td>nombre de paramètres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">argv</td><td>tableau des paramètres </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="ab0a344e6f6ef51043c3f411d5c5a72a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0a344e6f6ef51043c3f411d5c5a72a2">&#9670;&nbsp;</a></span>merge_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int merge_images </td>
+          <td>(</td>
+          <td class="paramtype">FileImage *&#160;</td>
+          <td class="paramname"><em>output_image</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; Image * &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>sorted_input_images</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ExtendedCompoundImage **&#160;</td>
+          <td class="paramname"><em>merged_image</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Traite chaque paquet d'images en entrée. </p>
+<p>On a préalablement trié les images par compatibilité. Pour chaque paquet, on va créer un objet de la classe ExtendedCompoundImage. Ce dernier est à considérer comme une image simple. Cette image peut être : </p><ul>
+<li>superposable avec l'image de sortie. Elle est directement ajoutée à une liste d'image. </li>
+<li>non superposable avec l'image de sortie mais dans le même système de coordonnées. On va alors la réechantillonner, en utilisant la classe ResampledImage. C'est l'image réechantillonnée que l'on ajoute à la liste d'image. </li>
+<li>non superposable avec l'image de sortie et dans un système de coordonnées différent. On va alors la reprojeter, en utilisant la classe ReprojectedImage. C'est l'image reprojetée que l'on ajoute à la liste d'image.</li>
+</ul>
+<div class="image">
+<img src="mergeNtiff_composition.png" alt=""/>
+</div>
+<p>On obtient donc une liste d'images superposables avec celle de sortie, que l'on va réunir sous un objet de la classe ExtendedCompoundImage, qui sera la source unique utilisée pour écrire l'image de sortie.</p>
+<div class="image">
+<img src="mergeNtiff_decoupe.png" alt=""/>
+</div>
+<p>Les masques sont gérés en toile de fond, en étant attachés à chacune des images manipulées. </p><dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">output_image</td><td>image de sortie </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">input_images</td><td>paquets d'images en entrée </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">merged_image</td><td>paquet d'images superposable avec l'image de sortie </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>0 en cas de succès, -1 en cas d'erreur </dd></dl>
+
+</div>
+</div>
+<a id="ad30443f7f0c5cc937f68aba193ea9ed7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad30443f7f0c5cc937f68aba193ea9ed7">&#9670;&nbsp;</a></span>parse_command_line()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int parse_command_line </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Récupère les valeurs passées en paramètres de la commande, et les stocke dans les variables globales. </p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">argc</td><td>nombre de paramètres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">argv</td><td>tableau des paramètres </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="a8174ff1048cf18c4c38944b97abe186d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8174ff1048cf18c4c38944b97abe186d">&#9670;&nbsp;</a></span>reproject_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool reproject_images </td>
+          <td>(</td>
+          <td class="paramtype">FileImage *&#160;</td>
+          <td class="paramname"><em>output_image</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ExtendedCompoundImage *&#160;</td>
+          <td class="paramname"><em>input_images</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ReprojectedImage **&#160;</td>
+          <td class="paramname"><em>reprojected_image</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reprojette un paquet d'images compatibles. </p>
+<p>On crée l'objet ReprojectedImage correspondant à la reprojection du paquet d'images, afin de le rendre compatible avec l'image de sortie. On veut que l'emprise de l'image réechantillonnée ne dépasse ni de l'image de sortie, ni des images en entrée (sans prendre en compte les miroirs, données virtuelles).</p>
+<p>L'image reprojetée doit être strictement incluse dans l'image source utilisée, c'est pourquoi on va artificiellement agrandir l'image source (avec du nodata) pour être sur de l'inclusion stricte.</p>
+<p>L'image reprojetée peut être nulle, dans le cas où l'image source ne recouvrait pas suffisemment l'image de sortie pour permettre le calcul d'une image (une dimensions de l'image reprojetée aurait été nulle).</p>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">output_image</td><td>image résultante de l'outil </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">input_images</td><td>paquet d'images compatibles, à reprojeter </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">reprojected_image</td><td>image reprojetée </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>VRAI si succès, FAUX sinon </dd></dl>
+
+</div>
+</div>
+<a id="a1a9e8ea357b809da7754467b4a76aa87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a9e8ea357b809da7754467b4a76aa87">&#9670;&nbsp;</a></span>resample_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool resample_images </td>
+          <td>(</td>
+          <td class="paramtype">FileImage *&#160;</td>
+          <td class="paramname"><em>output_image</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ExtendedCompoundImage *&#160;</td>
+          <td class="paramname"><em>input_images</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ResampledImage **&#160;</td>
+          <td class="paramname"><em>resampled_image</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Réechantillonne un paquet d'images compatibles. </p>
+<p>On crée l'objet ResampledImage correspondant au réechantillonnage du paquet d'images, afin de le rendre compatible avec l'image de sortie. On veut que l'emprise de l'image réechantillonnée ne dépasse ni de l'image de sortie, ni des images en entrée (sans prendre en compte les miroirs, données virtuelles). </p><dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">output_image</td><td>image résultante de l'outil </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">input_images</td><td>paquet d'images compatibles, à réechantillonner </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resampled_image</td><td>image réechantillonnée </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>VRAI si succès, FAUX sinon </dd></dl>
+
+</div>
+</div>
+<a id="aca20a63908288e766b53bfffc6496efc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca20a63908288e766b53bfffc6496efc">&#9670;&nbsp;</a></span>sort_images()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int sort_images </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; FileImage * &gt;&#160;</td>
+          <td class="paramname"><em>input_images</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::vector&lt; Image * &gt; &gt; *&#160;</td>
+          <td class="paramname"><em>sorted_input_images</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Trie les images sources en paquets d'images superposables. </p>
+<p>On réunit les images en paquets, dans lesquels : </p><ul>
+<li>toutes les images ont la même résolution, en X et en Y </li>
+<li>toutes les images ont la même phase, en X et en Y</li>
+</ul>
+<p>On conserve cependant l'ordre originale des images, quitte à augmenter le nombre de paquets final. Ce tri sert à simplifier le traitement des images et leur réechantillonnage.</p>
+<div class="image">
+<img src="mergeNtiff_package.png" alt=""/>
+</div>
+<dl class="params"><dt>Paramètres</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">input_images</td><td>images en entrée </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">sorted_input_images</td><td>images en entrée, triées en paquets compatibles </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Renvoie</dt><dd>code de retour, 0 si réussi, -1 sinon </dd></dl>
+
+</div>
+</div>
+<a id="a2ef30c42cbc289d899a8be5d2d8f77d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ef30c42cbc289d899a8be5d2d8f77d0">&#9670;&nbsp;</a></span>usage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void usage </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Affiche l'utilisation et les différentes options de la commande mergeNtiff <a class="el" href="mergeNtiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a">help</a>. </p>
+<p>L'affichage se fait dans le niveau de logger INFO </p>
+
+</div>
+</div>
+<h2 class="groupheader">Documentation des variables</h2>
+<a id="ab3da7696f24757cccc8d4a35b0f9beaf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3da7696f24757cccc8d4a35b0f9beaf">&#9670;&nbsp;</a></span>background_provided</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool background_provided = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A-t-on précisé une image de fond </p>
+
+</div>
+</div>
+<a id="a527676d008d5ab68518a5cb08bdea98f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a527676d008d5ab68518a5cb08bdea98f">&#9670;&nbsp;</a></span>compression</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Compression::eCompression compression = Compression::NONE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Compression de l'image de sortie </p>
+
+</div>
+</div>
+<a id="a6c0b3992667a06b9f46d67b75b0834c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c0b3992667a06b9f46d67b75b0834c0">&#9670;&nbsp;</a></span>configuration_path</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char configuration_path[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Chemin du fichier de configuration des images </p>
+
+</div>
+</div>
+<a id="af6821053e4d347fd51eab031ea845c98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6821053e4d347fd51eab031ea845c98">&#9670;&nbsp;</a></span>debug_logger</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool debug_logger = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Activation du niveau de log debug. Faux par défaut </p>
+
+</div>
+</div>
+<a id="aecfcd8d5595d8ba1a38ef3c624d1186a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecfcd8d5595d8ba1a38ef3c624d1186a">&#9670;&nbsp;</a></span>help</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string help</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Message d'usage de la commande mergeNtiff </p>
+
+</div>
+</div>
+<a id="a2696270fb7848c98fd669ea9ecb77cf4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2696270fb7848c98fd669ea9ecb77cf4">&#9670;&nbsp;</a></span>images_root</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char images_root[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Racine pour les images de sortie </p>
+
+</div>
+</div>
+<a id="a9c9ba56bd7bdf9c1b74f4cca5de85526"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c9ba56bd7bdf9c1b74f4cca5de85526">&#9670;&nbsp;</a></span>interpolation</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Interpolation::KernelType interpolation = Interpolation::CUBIC</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Interpolation utilisée pour le réechantillonnage ou la reprojection </p>
+
+</div>
+</div>
+<a id="ad02996df63b812ee5ed708244a18e7a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad02996df63b812ee5ed708244a18e7a5">&#9670;&nbsp;</a></span>nodata_provided</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool nodata_provided = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A-t-on précisé une valeur de nodata </p>
+
+</div>
+</div>
+<a id="af294fa8ae3795d366057d7fe76b42395"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af294fa8ae3795d366057d7fe76b42395">&#9670;&nbsp;</a></span>output_format_provided</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool output_format_provided = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A-t-on précisé le format en sortie, c'est à dire les 3 informations samplesperpixel et sampleformat </p>
+
+</div>
+</div>
+<a id="a359c6187cecc9f7ec9abc9c638eff616"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a359c6187cecc9f7ec9abc9c638eff616">&#9670;&nbsp;</a></span>photometric</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Photometric::ePhotometric photometric</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Photométrie (rgb, gray), déduit du nombre de canaux </p>
+
+</div>
+</div>
+<a id="a1953f88f170fc37a3149ec6a40db2a98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1953f88f170fc37a3149ec6a40db2a98">&#9670;&nbsp;</a></span>sampleformat</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">SampleFormat::eSampleFormat sampleformat = SampleFormat::UNKNOWN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Format du canal (entier, flottant, signé ou non...), pour l'image en sortie </p>
+
+</div>
+</div>
+<a id="a9a69b73601b508dd6658c226f42cb1b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a69b73601b508dd6658c226f42cb1b4">&#9670;&nbsp;</a></span>samplesperpixel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t samplesperpixel = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Nombre de canaux par pixel, pour l'image en sortie </p>
+
+</div>
+</div>
+<a id="a4df063b488037ee32e7f2009377691bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4df063b488037ee32e7f2009377691bb">&#9670;&nbsp;</a></span>strnodata</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char strnodata[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Valeur de nodata sous forme de chaîne de caractère (passée en paramètre de la commande) </p>
+
+</div>
+</div>
+<a id="aba5b82e5214fe69e04b777eb338db07c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba5b82e5214fe69e04b777eb338db07c">&#9670;&nbsp;</a></span>style</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Style* style</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Objet style à appliquer </p>
+
+</div>
+</div>
+<a id="ac5c479e2ed20f5ea4eda50072807c71b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5c479e2ed20f5ea4eda50072807c71b">&#9670;&nbsp;</a></span>style_file</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char style_file[256]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Chemin du fichier de style à appliquer </p>
+
+</div>
+</div>
+<a id="ade21e1c43684423e4d12ebcc0c2f2196"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade21e1c43684423e4d12ebcc0c2f2196">&#9670;&nbsp;</a></span>style_provided</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool style_provided = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A-t-on précisé un style </p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="mergeNtiff_8cpp.html">mergeNtiff.cpp</a></li>
+    <li class="footer">Généré par <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+  </ul>
+</div>
+</body>
+</html>
