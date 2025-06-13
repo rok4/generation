@@ -1,3 +1,18 @@
+## 5.0.0
+
+### [Changed]
+
+* Le format des canaux contient la taille en bits
+* Passage en snake case
+
+### [Fixed]
+
+* Correction de l'utilisation d'un style "identité"
+
+### [Removed]
+
+* Suppression de l'option crop dans work2cache
+
 ## 4.2.0
 
 ### [Added]

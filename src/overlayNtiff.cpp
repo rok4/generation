@@ -68,11 +68,9 @@ namespace keywords = boost::log::keywords;
 #include <rok4/utils/Cache.h>
 
 /** \~french Chemin du fichier de configuration des images */
-char imageListFilename[256];
+char configuration_path[256];
 /** \~french Nombre de canaux par pixel de l'image en sortie */
 uint16_t samplesperpixel = 0;
-/** \~french Nombre de bits occupé par un canal */
-uint16_t bitspersample;
 /** \~french Format du canal (entier, flottant, signé ou non...), dans les images en entrée et celle en sortie */
 SampleFormat::eSampleFormat sampleformat;
 /** \~french Photométrie (rgb, gray), pour les images en sortie */
@@ -80,7 +78,7 @@ Photometric::ePhotometric photometric = Photometric::RGB;
 /** \~french Compression de l'image de sortie */
 Compression::eCompression compression = Compression::NONE;
 /** \~french Mode de fusion des images */
-Merge::eMergeType mergeMethod = Merge::UNKNOWN;
+Merge::eMergeType merge_method = Merge::UNKNOWN;
 
 /** \~french Couleur à considérer comme transparent dans le images en entrée. Vrai couleur (sur 3 canaux). Peut ne pas être définie */
 int* transparent;
@@ -88,7 +86,7 @@ int* transparent;
 int* background;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
-bool debugLogger=false;
+bool debug_logger=false;
 
 
 /** \~french Message d'usage de la commande overlayNtiff */
@@ -140,14 +138,13 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
-    BOOST_LOG_TRIVIAL(error) <<  "Configuration file : " << imageListFilename ;
+    BOOST_LOG_TRIVIAL(error) <<  "Configuration file : " << configuration_path ;
     usage();
-    sleep ( 1 );
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -157,12 +154,12 @@ void error ( std::string message, int errorCode ) {
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int parseCommandLine ( int argc, char** argv ) {
+int parse_command_line ( int argc, char** argv ) {
 
-    char strTransparent[256];
-    memset ( strTransparent, 0, 256 );
-    char strBg[256];
-    memset ( strBg, 0, 256 );
+    char transparent_string[256];
+    memset ( transparent_string, 0, 256 );
+    char background_string[256];
+    memset ( background_string, 0, 256 );
 
     for ( int i = 1; i < argc; i++ ) {
         if ( argv[i][0] == '-' ) {
@@ -171,22 +168,22 @@ int parseCommandLine ( int argc, char** argv ) {
                 usage();
                 exit ( 0 );
             case 'd': // debug logs
-                debugLogger = true;
+                debug_logger = true;
                 break;
             case 'f': // Images' list file
                 if ( i++ >= argc ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error with images' list file (option -f)" ;
                     return -1;
                 }
-                strcpy ( imageListFilename,argv[i] );
+                strcpy ( configuration_path,argv[i] );
                 break;
             case 'm': // image merge method
                 if ( i++ >= argc ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error with merge method (option -m)" ;
                     return -1;
                 }
-                mergeMethod = Merge::fromString ( argv[i] );
-                if ( mergeMethod == Merge::UNKNOWN ) {
+                merge_method = Merge::from_string ( argv[i] );
+                if ( merge_method == Merge::UNKNOWN ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Unknown value for merge method (option -m) : " << argv[i] ;
                     return -1;
                 }
@@ -239,14 +236,14 @@ int parseCommandLine ( int argc, char** argv ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error with transparent color (option -t)" ;
                     return -1;
                 }
-                strcpy ( strTransparent,argv[i] );
+                strcpy ( transparent_string,argv[i] );
                 break;
             case 'b': // background color
                 if ( i++ >= argc ) {
                     BOOST_LOG_TRIVIAL(error) <<  "Error with background color (option -b)" ;
                     return -1;
                 }
-                strcpy ( strBg,argv[i] );
+                strcpy ( background_string,argv[i] );
                 break;
             default:
                 BOOST_LOG_TRIVIAL(error) <<  "Unknown option : -" << argv[i][1] ;
@@ -256,13 +253,13 @@ int parseCommandLine ( int argc, char** argv ) {
     }
 
     // Merge method control
-    if ( mergeMethod == Merge::UNKNOWN ) {
+    if ( merge_method == Merge::UNKNOWN ) {
         BOOST_LOG_TRIVIAL(error) <<  "We need to know the merge method (option -m)" ;
         return -1;
     }
 
     // Image list file control
-    if ( strlen ( imageListFilename ) == 0 ) {
+    if ( strlen ( configuration_path ) == 0 ) {
         BOOST_LOG_TRIVIAL(error) <<  "We need to have one images' list (text file, option -f)" ;
         return -1;
     }
@@ -273,47 +270,47 @@ int parseCommandLine ( int argc, char** argv ) {
         return -1;
     }
 
-    if (mergeMethod == Merge::ALPHATOP && strlen ( strTransparent ) != 0 ) {
+    if (merge_method == Merge::ALPHATOP && strlen ( transparent_string ) != 0 ) {
         transparent = new int[3];
 
         // Transparent interpretation
-        char* charValue = strtok ( strTransparent,"," );
-        if ( charValue == NULL ) {
+        char* char_iterator = strtok ( transparent_string,"," );
+        if ( char_iterator == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Error with option -t : 3 integers values separated by comma" ;
             return -1;
         }
-        int value = atoi ( charValue );
+        int value = atoi ( char_iterator );
         transparent[0] = value;
         for ( int i = 1; i < 3; i++ ) {
-            charValue = strtok ( NULL, "," );
-            if ( charValue == NULL ) {
+            char_iterator = strtok ( NULL, "," );
+            if ( char_iterator == NULL ) {
                 BOOST_LOG_TRIVIAL(error) <<  "Error with option -t : 3 integers values separated by comma" ;
                 return -1;
             }
-            value = atoi ( charValue );
+            value = atoi ( char_iterator );
             transparent[i] = value;
         }
     }
 
-    if ( strlen ( strBg ) != 0 ) {
+    if ( strlen ( background_string ) != 0 ) {
         background = new int[samplesperpixel];
 
         // Background interpretation
-        char* charValue = strtok ( strBg,"," );
-        if ( charValue == NULL ) {
+        char* char_iterator = strtok ( background_string,"," );
+        if ( char_iterator == NULL ) {
             BOOST_LOG_TRIVIAL(error) <<  "Error with option -b : one integer value per final sample separated by comma" ;
             return -1;
         }
-        int value = atoi ( charValue );
+        int value = atoi ( char_iterator );
         background[0] = value;
 
         for ( int i = 1; i < samplesperpixel; i++ ) {
-            charValue = strtok ( NULL, "," );
-            if ( charValue == NULL ) {
+            char_iterator = strtok ( NULL, "," );
+            if ( char_iterator == NULL ) {
                 BOOST_LOG_TRIVIAL(error) <<  "Error with option -b : one integer value per final sample separated by comma" ;
                 return -1;
             }
-            value = atoi ( charValue );
+            value = atoi ( char_iterator );
             background[i] = value;
         }
 
@@ -329,27 +326,27 @@ int parseCommandLine ( int argc, char** argv ) {
  * \~french
  * \brief Lit une ligne du fichier de configuration
  * \details Une ligne contient le chemin vers une image, potentiellement suivi du chemin vers le masque associé.
- * \param[in,out] file flux de lecture vers le fichier de configuration
- * \param[out] imageFileName chemin de l'image lu dans le fichier de configuration
- * \param[out] hasMask précise si l'image possède un masque
- * \param[out] maskFileName chemin du masque lu dans le fichier de configuration
+ * \param[in,out] configuration_file flux de lecture vers le fichier de configuration
+ * \param[out] image_path chemin de l'image lu dans le fichier de configuration
+ * \param[out] has_mask précise si l'image possède un masque
+ * \param[out] mask_path chemin du masque lu dans le fichier de configuration
  * \return code de retour, 0 en cas de succès, -1 si la fin du fichier est atteinte, 1 en cas d'erreur
  */
-int readFileLine ( std::ifstream& file, char* imageFileName, bool* hasMask, char* maskFileName ) {
+int read_configuration_line ( std::ifstream& configuration_file, char* image_path, bool* has_mask, char* mask_path ) {
     std::string str;
 
     while ( str.empty() ) {
-        if ( file.eof() ) {
+        if ( configuration_file.eof() ) {
             BOOST_LOG_TRIVIAL(debug) <<  "Configuration file end reached" ;
             return -1;
         }
-        std::getline ( file,str );
+        std::getline ( configuration_file, str );
     }
 
-    if ( std::sscanf ( str.c_str(),"%s %s", imageFileName, maskFileName ) == 2 ) {
-        *hasMask = true;
+    if ( std::sscanf ( str.c_str(),"%s %s", image_path, mask_path ) == 2 ) {
+        *has_mask = true;
     } else {
-        *hasMask = false;
+        *has_mask = false;
     }
 
     return 0;
@@ -360,127 +357,121 @@ int readFileLine ( std::ifstream& file, char* imageFileName, bool* hasMask, char
  * \brief Charge les images en entrée et en sortie depuis le fichier de configuration
  * \details On va récupérer toutes les informations de toutes les images et masques présents dans le fichier de configuration et créer les objets LibtiffImage correspondant. Toutes les images ici manipulées sont de vraies images (physiques) dans ce sens où elles sont des fichiers soit lus, soit qui seront écrits.
  *
- * \param[out] ppImageOut image résultante de l'outil
- * \param[out] ppMaskOut masque résultat de l'outil, si demandé
+ * \param[out] output_image image résultante de l'outil
+ * \param[out] output_mask masque résultat de l'outil, si demandé
  * \param[out] pImageIn ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int loadImages ( FileImage** ppImageOut, FileImage** ppMaskOut, MergeImage** ppMergeIn ) {
-    char inputImagePath[IMAGE_MAX_FILENAME_LENGTH];
-    char inputMaskPath[IMAGE_MAX_FILENAME_LENGTH];
+int load_images ( FileImage** output_image, FileImage** output_mask, MergeImage** merged_image ) {
+    char input_image_path[IMAGE_MAX_FILENAME_LENGTH];
+    char input_mask_path[IMAGE_MAX_FILENAME_LENGTH];
 
-    char outputImagePath[IMAGE_MAX_FILENAME_LENGTH];
-    char outputMaskPath[IMAGE_MAX_FILENAME_LENGTH];
+    char output_image_path[IMAGE_MAX_FILENAME_LENGTH];
+    char output_mask_path[IMAGE_MAX_FILENAME_LENGTH];
 
-    std::vector<Image*> ImageIn;
-    BoundingBox<double> fakeBbox ( 0.,0.,0.,0. );
+    std::vector<Image*> input_images;
+    BoundingBox<double> empty_bbox ( 0.,0.,0.,0. );
 
     int width, height;
 
-    bool hasMask, hasOutMask;
-    FileImageFactory FIF;
-    MergeImageFactory MIF;
+    bool has_input_mask, has_output_mask;
 
     // Ouverture du fichier texte listant les images
-    std::ifstream file;
+    std::ifstream configuration_file;
 
-    file.open ( imageListFilename );
-    if ( !file ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Cannot open the file " << imageListFilename ;
+    configuration_file.open ( configuration_path );
+    if ( ! configuration_file ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Cannot open the file " << configuration_path ;
         return -1;
     }
 
     // Lecture de l'image de sortie
-    if ( readFileLine ( file,outputImagePath,&hasOutMask,outputMaskPath ) ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Cannot read output image in the file : " << imageListFilename ;
+    if ( read_configuration_line ( configuration_file,output_image_path,&has_output_mask,output_mask_path ) ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Cannot read output image in the file : " << configuration_path ;
         return -1;
     }
 
     // On doit connaître les dimensions des images en entrée pour pouvoir créer les images de sortie
 
     // Lecture et création des images sources
-    int inputNb = 0;
+    int input_count = 0;
     int out = 0;
-    while ( ( out = readFileLine ( file,inputImagePath,&hasMask,inputMaskPath ) ) == 0 ) {
-        FileImage* pImage = FIF.createImageToRead ( inputImagePath );
-        if ( pImage == NULL ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Cannot create a FileImage from the file " << inputImagePath ;
+    while ( ( out = read_configuration_line ( configuration_file,input_image_path,&has_input_mask,input_mask_path ) ) == 0 ) {
+        FileImage* input_image = FileImage::create_to_read ( input_image_path );
+        if ( input_image == NULL ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Cannot create a FileImage from the file " << input_image_path ;
             return -1;
         }
 
-        if ( inputNb == 0 ) {
+        if ( input_count == 0 ) {
             // C'est notre première image en entrée, on mémorise les caractéristiques)
-            bitspersample = pImage->getBitsPerSample();
-            sampleformat = pImage->getSampleFormat();
-            width = pImage->getWidth();
-            height = pImage->getHeight();
+            sampleformat = input_image->get_sample_format();
+            width = input_image->get_width();
+            height = input_image->get_height();
         } else {
             // Toutes les images en entrée doivent avoir certaines caractéristiques en commun
-            if ( bitspersample != pImage->getBitsPerSample() ||
-                    sampleformat != pImage->getSampleFormat() ||
-                    width != pImage->getWidth() || height != pImage->getHeight() ) {
-
+            if (sampleformat != input_image->get_sample_format() || width != input_image->get_width() || height != input_image->get_height() ) {
                 BOOST_LOG_TRIVIAL(error) <<  "All input images must have same dimension and sample type" ;
                 return -1;
             }
         }
 
-        if ( hasMask ) {
+        if ( has_input_mask ) {
             /* On a un masque associé, on en fait une image à lire et on vérifie qu'elle est cohérentes :
              *          - même dimensions que l'image
              *          - 1 seul canal (entier)
              */
-            FileImage* pMask = FIF.createImageToRead ( inputMaskPath );
+            FileImage* pMask = FileImage::create_to_read ( input_mask_path );
             if ( pMask == NULL ) {
-                BOOST_LOG_TRIVIAL(error) <<  "Cannot create a FileImage (mask) from the file " << inputMaskPath ;
+                BOOST_LOG_TRIVIAL(error) <<  "Cannot create a FileImage (mask) from the file " << input_mask_path ;
                 return -1;
             }
 
-            if ( ! pImage->setMask ( pMask ) ) {
-                BOOST_LOG_TRIVIAL(error) <<  "Cannot add mask " << inputMaskPath ;
+            if ( ! input_image->set_mask ( pMask ) ) {
+                BOOST_LOG_TRIVIAL(error) <<  "Cannot add mask " << input_mask_path ;
                 return -1;
             }
         }
 
-        ImageIn.push_back ( pImage );
-        inputNb++;
+        input_images.push_back ( input_image );
+        input_count++;
     }
 
     if ( out != -1 ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Failure reading the file " << imageListFilename ;
+        BOOST_LOG_TRIVIAL(error) <<  "Failure reading the file " << configuration_path ;
         return -1;
     }
 
     // Fermeture du fichier
-    file.close();
+    configuration_file.close();
 
     // On crée notre MergeImage, qui s'occupera des calculs de fusion des pixels
 
-    *ppMergeIn = MIF.createMergeImage ( ImageIn, samplesperpixel, background, transparent, mergeMethod );
+    *merged_image = MergeImage::create ( input_images, samplesperpixel, background, transparent, merge_method );
 
     // Le masque fusionné est ajouté
-    MergeMask* pMM = new MergeMask ( *ppMergeIn );
+    MergeMask* merged_mask = new MergeMask ( *merged_image );
 
-    if ( ! ( *ppMergeIn )->setMask ( pMM ) ) {
+    if ( ! ( *merged_image )->set_mask ( merged_mask ) ) {
         BOOST_LOG_TRIVIAL(error) <<  "Cannot add mask to the merged image" ;
         return -1;
     }
 
     // Création des sorties
-    *ppImageOut = FIF.createImageToWrite ( outputImagePath, fakeBbox, -1., -1., width, height, samplesperpixel,
-                  sampleformat, bitspersample, photometric,compression );
+    *output_image = FileImage::create_to_write ( output_image_path, empty_bbox, -1., -1., width, height, samplesperpixel,
+                  sampleformat, photometric,compression );
 
-    if ( *ppImageOut == NULL ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer l'image " << outputImagePath ;
+    if ( *output_image == NULL ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer l'image " << output_image_path ;
         return -1;
     }
 
-    if ( hasOutMask ) {
-        *ppMaskOut = FIF.createImageToWrite ( outputMaskPath, fakeBbox, -1., -1., width, height, 1,
-                     SampleFormat::UINT, 8, Photometric::MASK, Compression::DEFLATE );
+    if ( has_output_mask ) {
+        *output_mask = FileImage::create_to_write ( output_mask_path, empty_bbox, -1., -1., width, height, 1,
+                     SampleFormat::UINT8, Photometric::MASK, Compression::DEFLATE );
 
-        if ( *ppMaskOut == NULL ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer le masque " << outputMaskPath ;
+        if ( *output_mask == NULL ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Impossible de creer le masque " << output_mask_path ;
             return -1;
         }
     }
@@ -502,9 +493,9 @@ int loadImages ( FileImage** ppImageOut, FileImage** ppMaskOut, MergeImage** ppM
  */
 int main ( int argc, char **argv ) {
 
-    FileImage* pImageOut ;
-    FileImage* pMaskOut = NULL;
-    MergeImage* pMergeIn;
+    FileImage* output_image ;
+    FileImage* output_mask = NULL;
+    MergeImage* merged_image;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -517,40 +508,41 @@ int main ( int argc, char **argv ) {
 
     BOOST_LOG_TRIVIAL(debug) <<  "Read parameters" ;
     // Lecture des parametres de la ligne de commande
-    if ( parseCommandLine ( argc,argv ) < 0 ) {
+    if ( parse_command_line ( argc,argv ) < 0 ) {
         error ( "Cannot parse command line",-1 );
     }
 
     // On sait maintenant si on doit activer le niveau de log DEBUG
-    if (debugLogger) {
+    if (debug_logger) {
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Load" ;
     // Chargement des images
-    if ( loadImages ( &pImageOut,&pMaskOut,&pMergeIn ) < 0 ) {
+    if ( load_images ( &output_image,&output_mask,&merged_image ) < 0 ) {
         error ( "Cannot load images from the configuration file",-1 );
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Save image" ;
     // Enregistrement de l'image fusionnée
-    if ( pImageOut->writeImage ( pMergeIn ) < 0 ) {
+    if ( output_image->write_image ( merged_image ) < 0 ) {
         error ( "Cannot write the merged image",-1 );
     }
 
     // Enregistrement du masque fusionné, si demandé
-    if ( pMaskOut != NULL) {
+    if ( output_mask != NULL) {
         BOOST_LOG_TRIVIAL(debug) <<  "Save mask" ;
-        if ( pMaskOut->writeImage ( pMergeIn->Image::getMask() ) < 0 ) {
+        if ( output_mask->write_image ( merged_image->Image::get_mask() ) < 0 ) {
             error ( "Cannot write the merged mask",-1 );
         }
     }
 
-    ProjPool::cleanProjPool();
+    CrsBook::clean_crss();
+    ProjPool::clean_projs();
     proj_cleanup();
-    delete pMergeIn;
-    delete pImageOut;
-    delete pMaskOut;
+    delete merged_image;
+    delete output_image;
+    delete output_mask;
 
     delete [] background;
     if ( transparent != NULL ) {

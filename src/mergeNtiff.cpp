@@ -84,27 +84,27 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 #include <rok4/style/Style.h>
-#include <rok4/image/StyledImage.h>
+#include <rok4/image/PaletteImage.h>
 #include <rok4/image/EstompageImage.h>
 #include <rok4/image/PenteImage.h>
 #include <rok4/image/AspectImage.h>
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
-char imageListFilename[256];
+char configuration_path[256];
 /** \~french Racine pour les images de sortie */
-char outImagesRoot[256];
+char images_root[256];
 
 /** \~french Valeur de nodata sous forme de chaîne de caractère (passée en paramètre de la commande) */
 char strnodata[256];
 int* nodata;
+/** \~french A-t-on précisé une valeur de nodata */
+bool nodata_provided = false;
 
-/** \~french A-t-on précisé le format en sortie, c'est à dire les 3 informations samplesperpixel, bitspersample et sampleformat */
-bool outputProvided = false;
+/** \~french A-t-on précisé le format en sortie, c'est à dire les 3 informations samplesperpixel et sampleformat */
+bool output_format_provided = false;
 /** \~french Nombre de canaux par pixel, pour l'image en sortie */
 uint16_t samplesperpixel = 0;
-/** \~french Nombre de bits occupé par un canal, pour l'image en sortie */
-uint16_t bitspersample = 0;
 /** \~french Format du canal (entier, flottant, signé ou non...), pour l'image en sortie */
 SampleFormat::eSampleFormat sampleformat = SampleFormat::UNKNOWN;
 
@@ -117,18 +117,16 @@ Compression::eCompression compression = Compression::NONE;
 Interpolation::KernelType interpolation = Interpolation::CUBIC;
 
 /** \~french A-t-on précisé une image de fond */
-bool backgroundProvided = false;
+bool background_provided = false;
 /** \~french A-t-on précisé un style */
-bool styleProvided = false;
+bool style_provided = false;
 /** \~french Chemin du fichier de style à appliquer */
-char styleFilename[256];
+char style_file[256];
 /** \~french Objet style à appliquer */
 Style* style;
-/** \~french Valeur de nodata après application du style */
-int* styleNodata = NULL;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
-bool debugLogger = false;
+bool debug_logger = false;
 
 /** \~french Message d'usage de la commande mergeNtiff */
 std::string help = std::string("\nmergeNtiff version ") + std::string(VERSION) +
@@ -154,22 +152,21 @@ std::string help = std::string("\nmergeNtiff version ") + std::string(VERSION) +
                    "            linear\n"
                    "            bicubic\n"
                    "            lanczos lanczos 3\n"
-                   "    -n nodata value, one interger per sample, seperated with comma. If a style is provided, this value is the nodata in source data. Examples\n"
+                   "    -n nodata value, one interger per sample, seperated with comma. If a style is provided, nodata values will be read from style. Examples\n"
                    "            -99999 for DTM\n"
                    "            255,255,255 for orthophotography\n"
                    "    -p style file\n"
-                   "    -a sample format : (float or uint)\n"
-                   "    -b bits per sample : (8 or 32)\n"
+                   "    -a sample format : (float32 or uint8)\n"
                    "    -s samples per pixel : (1, 2, 3 or 4)\n"
                    "    -d debug logger activation\n\n"
 
-                   "If bitspersample, sampleformat or samplesperpixel are not provided, those 3 informations are read from the image sources (all have to own the same). If 3 are provided, conversion may be done.\n\n"
+                   "If sampleformat or samplesperpixel are not provided, those informations are read from the image sources (all have to own the same). If all are provided, conversion may be done.\n\n"
 
                    "Examples\n"
                    "    - for orthophotography\n"
                    "    mergeNtiff -f conf.txt -c zip -i bicubic -n 255,255,255\n"
                    "    - for DTM\n"
-                   "    mergeNtiff -f conf.txt -c zip -i nn -s 1 -b 32 -p gray -a float -n -99999\n\n";
+                   "    mergeNtiff -f conf.txt -c zip -i nn -s 1 -p gray -a float32 -n -99999\n\n";
 
 /**
  * \~french
@@ -184,14 +181,13 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error(std::string message, int errorCode) {
+void error(std::string message, int error_code) {
     BOOST_LOG_TRIVIAL(error) << message;
-    BOOST_LOG_TRIVIAL(error) << "Configuration file : " << imageListFilename;
+    BOOST_LOG_TRIVIAL(error) << "Configuration file : " << configuration_path;
     usage();
-    sleep(1);
-    exit(errorCode);
+    exit(error_code);
 }
 
 /**
@@ -201,7 +197,7 @@ void error(std::string message, int errorCode) {
  * \param[in] argv tableau des paramètres
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int parseCommandLine(int argc, char** argv) {
+int parse_command_line(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {
@@ -209,24 +205,24 @@ int parseCommandLine(int argc, char** argv) {
                     usage();
                     exit(0);
                 case 'd':  // debug logs
-                    debugLogger = true;
+                    debug_logger = true;
                     break;
                 case 'g':  // background
-                    backgroundProvided = true;
+                    background_provided = true;
                     break;
                 case 'f':  // fichier de liste des images source
                     if (i++ >= argc) {
                         BOOST_LOG_TRIVIAL(error) << "Error in option -f";
                         return -1;
                     }
-                    strcpy(imageListFilename, argv[i]);
+                    strcpy(configuration_path, argv[i]);
                     break;
                 case 'r':  // racine pour le fichier de configuration
                     if (i++ >= argc) {
                         BOOST_LOG_TRIVIAL(error) << "Error in option -r";
                         return -1;
                     }
-                    strcpy(outImagesRoot, argv[i]);
+                    strcpy(images_root, argv[i]);
                     break;
                 case 'i':  // interpolation
                     if (i++ >= argc) {
@@ -252,6 +248,7 @@ int parseCommandLine(int argc, char** argv) {
                         return -1;
                     }
                     strcpy(strnodata, argv[i]);
+                    nodata_provided = true;
                     break;
                 case 'c':  // compression
                     if (i++ >= argc) {
@@ -281,8 +278,8 @@ int parseCommandLine(int argc, char** argv) {
                         BOOST_LOG_TRIVIAL(error) << "Error in option -p";
                         return -1;
                     }
-                    strcpy(styleFilename, argv[i]);
-                    styleProvided = true;
+                    strcpy(style_file, argv[i]);
+                    style_provided = true;
                     break;
 
                 /****************** OPTIONNEL, POUR FORCER DES CONVERSIONS **********************/
@@ -304,29 +301,15 @@ int parseCommandLine(int argc, char** argv) {
                         return -1;
                     }
                     break;
-                case 'b':  // bitspersample
-                    if (i++ >= argc) {
-                        BOOST_LOG_TRIVIAL(error) << "Error in option -b";
-                        return -1;
-                    }
-                    if (strncmp(argv[i], "8", 1) == 0)
-                        bitspersample = 8;
-                    else if (strncmp(argv[i], "32", 2) == 0)
-                        bitspersample = 32;
-                    else {
-                        BOOST_LOG_TRIVIAL(error) << "Unknown value for option -b : " << argv[i];
-                        return -1;
-                    }
-                    break;
                 case 'a':  // sampleformat
                     if (i++ >= argc) {
                         BOOST_LOG_TRIVIAL(error) << "Error in option -a";
                         return -1;
                     }
-                    if (strncmp(argv[i], "uint", 4) == 0)
-                        sampleformat = SampleFormat::UINT;
-                    else if (strncmp(argv[i], "float", 5) == 0)
-                        sampleformat = SampleFormat::FLOAT;
+                    if (strncmp(argv[i], "uint8", 5) == 0)
+                        sampleformat = SampleFormat::UINT8;
+                    else if (strncmp(argv[i], "float32", 7) == 0)
+                        sampleformat = SampleFormat::FLOAT32;
                     else {
                         BOOST_LOG_TRIVIAL(error) << "Unknown value for option -a : " << argv[i];
                         return -1;
@@ -341,7 +324,7 @@ int parseCommandLine(int argc, char** argv) {
         }
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "mergeNtiff -f " << imageListFilename;
+    BOOST_LOG_TRIVIAL(debug) << "mergeNtiff -f " << configuration_path;
 
     return 0;
 }
@@ -361,7 +344,7 @@ int parseCommandLine(int argc, char** argv) {
  * \param[in,out] resys Résolution en y des images
  * \return true en cas de succès, false si échec
  */
-bool loadConfiguration(
+bool load_configuration(
     std::vector<bool>* masks,
     std::vector<char*>* paths,
     std::vector<std::string>* srss,
@@ -369,11 +352,11 @@ bool loadConfiguration(
     std::vector<double>* resxs,
     std::vector<double>* resys) {
     std::ifstream file;
-    int rootLength = strlen(outImagesRoot);
+    int rootLength = strlen(images_root);
 
-    file.open(imageListFilename);
+    file.open(configuration_path);
     if (!file.is_open()) {
-        BOOST_LOG_TRIVIAL(error) << "Impossible d'ouvrir le fichier " << imageListFilename;
+        BOOST_LOG_TRIVIAL(error) << "Impossible d'ouvrir le fichier " << configuration_path;
         return false;
     }
 
@@ -389,7 +372,7 @@ bool loadConfiguration(
         std::string crs;
         BoundingBox<double> bb(0., 0., 0., 0.);
         double resx, resy;
-        bool isMask;
+        bool is_mask;
 
         file.getline(line, 2 * IMAGE_MAX_FILENAME_LENGTH);
         if (strlen(line) == 0) {
@@ -399,10 +382,10 @@ bool loadConfiguration(
         if (nb == 9 && memcmp(type, "IMG", 3) == 0) {
             // On lit la ligne d'une image
             crs.assign(tmpCRS);
-            isMask = false;
+            is_mask = false;
         } else if (nb == 2 && memcmp(type, "MSK", 3) == 0) {
             // On lit la ligne d'un masque
-            isMask = true;
+            is_mask = true;
 
             if (masks->size() == 0 || masks->back()) {
                 // La première ligne ne peut être un masque et on ne peut pas avoir deux masques à la suite
@@ -420,14 +403,14 @@ bool loadConfiguration(
         memset(path, 0, IMAGE_MAX_FILENAME_LENGTH);
 
         if (!strncmp(tmpPath, "?", 1)) {
-            strcpy(path, outImagesRoot);
+            strcpy(path, images_root);
             strcpy(&(path[rootLength]), &(tmpPath[1]));
         } else {
             strcpy(path, tmpPath);
         }
 
         // On ajoute tout ça dans les vecteurs
-        masks->push_back(isMask);
+        masks->push_back(is_mask);
         paths->push_back(path);
         srss->push_back(crs);
         bboxes->push_back(bb);
@@ -440,7 +423,7 @@ bool loadConfiguration(
         file.close();
         return true;
     } else {
-        BOOST_LOG_TRIVIAL(error) << "Failure reading the configuration file " << imageListFilename;
+        BOOST_LOG_TRIVIAL(error) << "Failure reading the configuration file " << configuration_path;
         file.close();
         return false;
     }
@@ -451,13 +434,13 @@ bool loadConfiguration(
  * \brief Charge les images en entrée et en sortie depuis le fichier de configuration
  * \details On va récupérer toutes les informations de toutes les images et masques présents dans le fichier de configuration et créer les objets FileImage correspondant. Toutes les images ici manipulées sont de vraies images (physiques) dans ce sens où elles sont des fichiers soit lus, soit qui seront écrits.
  *
- * Le chemin vers le fichier de configuration est stocké dans la variables globale imageListFilename et outImagesRoot va être concaténer au chemin vers les fichiers de sortie.
- * \param[out] ppImageOut image résultante de l'outil
- * \param[out] ppMaskOut masque résultat de l'outil, si demandé
- * \param[out] pImageIn ensemble des images en entrée
+ * Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_path et images_root va être concaténer au chemin vers les fichiers de sortie.
+ * \param[out] output_image image résultante de l'outil
+ * \param[out] output_mask masque résultat de l'outil, si demandé
+ * \param[out] sorted_input_images ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int loadImages(FileImage** ppImageOut, FileImage** ppMaskOut, std::vector<FileImage*>* pImageIn) {
+int load_images(FileImage** output_image, FileImage** output_mask, std::vector<FileImage*>* input_images) {
     std::vector<bool> masks;
     std::vector<char*> paths;
     std::vector<std::string> srss;
@@ -465,142 +448,132 @@ int loadImages(FileImage** ppImageOut, FileImage** ppMaskOut, std::vector<FileIm
     std::vector<double> resxs;
     std::vector<double> resys;
 
-    if (!loadConfiguration(&masks, &paths, &srss, &bboxes, &resxs, &resys)) {
-        BOOST_LOG_TRIVIAL(error) << "Cannot load configuration file " << imageListFilename;
+    if (! load_configuration(&masks, &paths, &srss, &bboxes, &resxs, &resys)) {
+        BOOST_LOG_TRIVIAL(error) << "Cannot load configuration file " << configuration_path;
         return -1;
     }
 
     // On doit avoir au moins deux lignes, trois si on a un masque de sortie
     if (masks.size() < 2 || (masks.size() == 2 && masks.back())) {
-        BOOST_LOG_TRIVIAL(error) << "We have no input images in configuration file " << imageListFilename;
+        BOOST_LOG_TRIVIAL(error) << "We have no input images in configuration file " << configuration_path;
         return -1;
     }
 
     // On va charger les images en entrée en premier pour avoir certaines informations
-    int firstInput = 1;
+    int first_input = 1;
     if (masks.at(1)) {
         // La deuxième ligne est le masque de sortie
-        firstInput = 2;
+        first_input = 2;
     }
 
     /****************** LES ENTRÉES : CRÉATION ******************/
 
-    FileImageFactory factory;
-    int nbImgsIn = 0;
+    int input_count = 0;
 
-    for (int i = firstInput; i < masks.size(); i++) {
-        nbImgsIn++;
-        BOOST_LOG_TRIVIAL(debug) << "Input " << nbImgsIn;
+    for (int i = first_input; i < masks.size(); i++) {
+        input_count++;
+        BOOST_LOG_TRIVIAL(debug) << "Input " << input_count;
 
         if (resxs.at(i) == 0. || resys.at(i) == 0.) {
-            BOOST_LOG_TRIVIAL(error) << "Source image " << nbImgsIn << " is not valid (resolutions)";
+            BOOST_LOG_TRIVIAL(error) << "Source image " << input_count << " is not valid (resolutions)";
             return -1;
         }
 
-        CRS *crs = new CRS(srss.at(i));
+        CRS* crs = CrsBook::get_crs(srss.at(i));
 
-        if (!crs->isDefine()) {
+        if (! crs->is_define()) {
             BOOST_LOG_TRIVIAL(error) << "Input CRS unknown: " << srss.at(i);
             return -1;
         } else {
-            BOOST_LOG_TRIVIAL(debug) << crs->getProjCode();
-            bboxes.at(i).crs = crs->getRequestCode();
+            BOOST_LOG_TRIVIAL(debug) << crs->get_proj_code();
+            bboxes.at(i).crs = crs->get_request_code();
         }
 
-        if (!bboxes.at(i).isInAreaOfCRS(crs)) {
+        if (! bboxes.at(i).is_in_crs_area(crs)) {
             BOOST_LOG_TRIVIAL(debug) << "Warning : the input image's (" << paths.at(i) << ") bbox is not included in the srs (" << srss.at(i) << ") definition extent";
-            BOOST_LOG_TRIVIAL(debug) << bboxes.at(i).toString() << " not included in " << crs->getNativeCrsDefinitionArea().toString();
+            BOOST_LOG_TRIVIAL(debug) << bboxes.at(i).to_string() << " not included in " << crs->get_native_crs_definition_area().to_string();
         }
 
-        FileImage* pImage = factory.createImageToRead(paths.at(i), bboxes.at(i), resxs.at(i), resys.at(i));
-        if (pImage == NULL) {
+        FileImage* input_image = FileImage::create_to_read(paths.at(i), bboxes.at(i), resxs.at(i), resys.at(i));
+        if (input_image == NULL) {
             BOOST_LOG_TRIVIAL(error) << "Impossible de creer une image a partir de " << paths.at(i);
             return -1;
         }
-        pImage->setCRS(crs);
+        input_image->set_crs(crs);
         free(paths.at(i));
 
         if (i + 1 < masks.size() && masks.at(i + 1)) {
-            FileImage* pMask = factory.createImageToRead(paths.at(i + 1), bboxes.at(i), resxs.at(i), resys.at(i));
-            if (pMask == NULL) {
-                BOOST_LOG_TRIVIAL(error) << "Impossible de creer un masque a partir de " << paths.at(i);
+            FileImage* input_mask = FileImage::create_to_read(paths.at(i + 1), bboxes.at(i), resxs.at(i), resys.at(i));
+            if (input_mask == NULL) {
+                BOOST_LOG_TRIVIAL(error) << "Impossible de creer un masque a partir de " << paths.at(i + 1);
                 return -1;
             }
-            pMask->setCRS(crs);
+            input_mask->set_crs(crs);
 
-            if (!pImage->setMask(pMask)) {
+            if (!input_image->set_mask(input_mask)) {
                 BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the input FileImage";
                 return -1;
             }
             i++;
             free(paths.at(i));
         }
-        delete crs;
 
-        pImageIn->push_back(pImage);
+        input_images->push_back(input_image);
 
         /* On vérifie que le format des canaux est le même pour toutes les images en entrée :
          *     - sampleformat
-         *     - bitspersample
          *     - samplesperpixel
          */
 
-        if (! outputProvided && nbImgsIn == 1) {
+        if (! output_format_provided && input_count == 1) {
             /* On n'a pas précisé de format en sortie, on va donc utiliser celui des entrées
              * On veut donc avoir le même format pour toutes les entrées
              * On lit la première image en entrée, qui sert de référence
              * L'image en sortie sera à ce format
              */
-            bitspersample = pImage->getBitsPerSample();
-            samplesperpixel = pImage->getChannels();
-            sampleformat = pImage->getSampleFormat();
-        } else if (!outputProvided) {
+            samplesperpixel = input_image->get_channels();
+            sampleformat = input_image->get_sample_format();
+        } else if (!output_format_provided) {
             // On doit avoir le même format pour tout le monde
-            if (bitspersample != pImage->getBitsPerSample()) {
+            if (samplesperpixel != input_image->get_channels()) {
                 BOOST_LOG_TRIVIAL(error) << "We don't provided output format, so all inputs have to own the same";
-                BOOST_LOG_TRIVIAL(error) << "The first image and the " << nbImgsIn << " one don't have the same number of bits per sample";
-                BOOST_LOG_TRIVIAL(error) << bitspersample << " != " << pImage->getBitsPerSample();
+                BOOST_LOG_TRIVIAL(error) << "The first image and the " << input_count << " one don't have the same number of samples per pixel";
+                BOOST_LOG_TRIVIAL(error) << samplesperpixel << " != " << input_image->get_channels();
             }
-            if (samplesperpixel != pImage->getChannels()) {
+            if (sampleformat != input_image->get_sample_format()) {
                 BOOST_LOG_TRIVIAL(error) << "We don't provided output format, so all inputs have to own the same";
-                BOOST_LOG_TRIVIAL(error) << "The first image and the " << nbImgsIn << " one don't have the same number of samples per pixel";
-                BOOST_LOG_TRIVIAL(error) << samplesperpixel << " != " << pImage->getChannels();
-            }
-            if (sampleformat != pImage->getSampleFormat()) {
-                BOOST_LOG_TRIVIAL(error) << "We don't provided output format, so all inputs have to own the same";
-                BOOST_LOG_TRIVIAL(error) << "The first image and the " << nbImgsIn << " one don't have the same sample format";
-                BOOST_LOG_TRIVIAL(error) << sampleformat << " != " << pImage->getSampleFormat();
+                BOOST_LOG_TRIVIAL(error) << "The first image and the " << input_count << " one don't have the same sample format";
+                BOOST_LOG_TRIVIAL(error) << sampleformat << " != " << input_image->get_sample_format();
             }
         }
     }
 
-    if (pImageIn->size() == 0) {
-        BOOST_LOG_TRIVIAL(error) << "Erreur lecture du fichier de parametres '" << imageListFilename << "' : pas de données en entrée.";
+    if (input_images->size() == 0) {
+        BOOST_LOG_TRIVIAL(error) << "Erreur lecture du fichier de parametres '" << configuration_path << "' : pas de données en entrée.";
         return -1;
     } else {
-        BOOST_LOG_TRIVIAL(debug) << nbImgsIn << " image(s) en entrée";
+        BOOST_LOG_TRIVIAL(debug) << input_count << " image(s) en entrée";
     }
 
     /********************** LE STYLE : CRÉATION *************************/
 
-    if (styleProvided) {
+    if (style_provided) {
         BOOST_LOG_TRIVIAL(debug) << "Load style";
-        style = new Style(styleFilename, false);
-        if ( ! style->isOk() ) {
-            BOOST_LOG_TRIVIAL(error) << style->getErrorMessage();
+        style = new Style(style_file);
+        if ( ! style->is_ok() ) {
+            BOOST_LOG_TRIVIAL(error) << style->get_error_message();
             BOOST_LOG_TRIVIAL(error) << "Cannot load style";
             return -1;
         }
 
-        if ( ! style->youCan(samplesperpixel) ) {
+        if ( ! style->handle(samplesperpixel) ) {
             BOOST_LOG_TRIVIAL(error) << "Cannot apply this style for this channels number";
             return -1;
         }
 
         // Le style peut modifier les caractéristiques
-        bitspersample = style->getBitsPerSample(bitspersample);
-        samplesperpixel = style->getChannels(samplesperpixel);
-        sampleformat = style->getSampleFormat(sampleformat);
+        samplesperpixel = style->get_channels(samplesperpixel);
+        sampleformat = style->get_sample_format(sampleformat);
     }
 
     /********************** LA SORTIE : CRÉATION *************************/
@@ -613,8 +586,8 @@ int loadImages(FileImage** ppImageOut, FileImage** ppMaskOut, std::vector<FileIm
         photometric = Photometric::RGB;
     }
 
-    CRS *outCrs = new CRS(srss.at(0));
-    if (!outCrs->isDefine()) {
+    CRS *output_crs = CrsBook::get_crs(srss.at(0));
+    if (! output_crs->is_define()) {
         BOOST_LOG_TRIVIAL(error) << "Output CRS unknown: " << srss.at(0);
         return -1;
     }
@@ -623,55 +596,53 @@ int loadImages(FileImage** ppImageOut, FileImage** ppMaskOut, std::vector<FileIm
     int width = lround((bboxes.at(0).xmax - bboxes.at(0).xmin) / (resxs.at(0)));
     int height = lround((bboxes.at(0).ymax - bboxes.at(0).ymin) / (resys.at(0)));
 
-    *ppImageOut = factory.createImageToWrite(
+    *output_image = FileImage::create_to_write(
         paths.at(0), bboxes.at(0), resxs.at(0), resys.at(0), width, height,
-        samplesperpixel, sampleformat, bitspersample, photometric, compression);
+        samplesperpixel, sampleformat, photometric, compression);
 
-    if (*ppImageOut == NULL) {
+    if (*output_image == NULL) {
         BOOST_LOG_TRIVIAL(error) << "Impossible de creer l'image " << paths.at(0);
         return -1;
     }
 
-    (*ppImageOut)->setCRS(outCrs);
+    (*output_image)->set_crs(output_crs);
     free(paths.at(0));
 
-    if (firstInput == 2) {
-        *ppMaskOut = factory.createImageToWrite(
+    if (first_input == 2) {
+        *output_mask = FileImage::create_to_write(
             paths.at(1), bboxes.at(0), resxs.at(0), resys.at(0), width, height,
-            1, SampleFormat::UINT, 8, Photometric::MASK, Compression::DEFLATE);
+            1, SampleFormat::UINT8, Photometric::MASK, Compression::DEFLATE);
 
-        if (*ppMaskOut == NULL) {
+        if (*output_mask == NULL) {
             BOOST_LOG_TRIVIAL(error) << "Impossible de creer le masque " << paths.at(1);
             return -1;
         }
 
-        (*ppMaskOut)->setCRS(outCrs);
+        (*output_mask)->set_crs(output_crs);
         free(paths.at(1));
     }
 
-    delete outCrs;
-
-    if (debugLogger) (*ppImageOut)->print();
+    if (debug_logger) (*output_image)->print();
 
     return 0;
 }
 
-int addConverters(std::vector<FileImage*> ImageIn) {
-    if (! outputProvided) {
+int add_converters(std::vector<FileImage*> input_images) {
+    if (! output_format_provided) {
         // On n'a pas précisé de format en sortie, donc toutes les images doivent avoir le même
         // Et la sortie a aussi ce format, donc pas besoin de convertisseur
 
         return 0;
     }
 
-    for (std::vector<FileImage*>::iterator itImg = ImageIn.begin(); itImg < ImageIn.end(); itImg++) {
-        if (!(*itImg)->addConverter(sampleformat, bitspersample, samplesperpixel)) {
+    for (std::vector<FileImage*>::iterator input_images_iterator = input_images.begin(); input_images_iterator < input_images.end(); input_images_iterator++) {
+        if (!(*input_images_iterator)->add_converter(sampleformat, samplesperpixel)) {
             BOOST_LOG_TRIVIAL(error) << "Cannot add converter for an input image";
-            (*itImg)->print();
+            (*input_images_iterator)->print();
             return -1;
         }
 
-        if (debugLogger) (*itImg)->print();
+        if (debug_logger) (*input_images_iterator)->print();
     }
 
     return 0;
@@ -689,30 +660,30 @@ int addConverters(std::vector<FileImage*> ImageIn) {
  *
  * \~ \image html mergeNtiff_package.png \~french
  *
- * \param[in] ImageIn images en entrée
- * \param[out] pTabImageIn images en entrée, triées en paquets compatibles
+ * \param[in] input_images images en entrée
+ * \param[out] sorted_input_images images en entrée, triées en paquets compatibles
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int sortImages(std::vector<FileImage*> ImageIn, std::vector<std::vector<Image*> >* pTabImageIn) {
-    std::vector<Image*> vTmpImg;
-    std::vector<FileImage*>::iterator itiniImg = ImageIn.begin();
+int sort_images(std::vector<FileImage*> input_images, std::vector<std::vector<Image*> >* sorted_input_images) {
+    std::vector<Image*> current_pack;
+    std::vector<FileImage*>::iterator current_input_images_iterator = input_images.begin();
 
     /* we create consistent images' vectors (X/Y resolution and X/Y phases)
      * Masks are moved in parallel with images
      */
-    for (std::vector<FileImage*>::iterator itImg = ImageIn.begin(); itImg < ImageIn.end() - 1; itImg++) {
-        if (!(*itImg)->isCompatibleWith(*(itImg + 1))) {
+    for (std::vector<FileImage*>::iterator input_images_iterator = input_images.begin(); input_images_iterator < input_images.end() - 1; input_images_iterator++) {
+        if (!(*input_images_iterator)->compatible(*(input_images_iterator + 1))) {
             // two following images are not compatible, we split images' vector
-            vTmpImg.assign(itiniImg, itImg + 1);
-            itiniImg = itImg + 1;
-            pTabImageIn->push_back(vTmpImg);
+            current_pack.assign(current_input_images_iterator, input_images_iterator + 1);
+            current_input_images_iterator = input_images_iterator + 1;
+            sorted_input_images->push_back(current_pack);
         }
     }
 
-    // we don't forget to store last images in pTabImageIn
+    // we don't forget to store last images in sorted_input_images
     // images
-    vTmpImg.assign(itiniImg, ImageIn.end());
-    pTabImageIn->push_back(vTmpImg);
+    current_pack.assign(current_input_images_iterator, input_images.end());
+    sorted_input_images->push_back(current_pack);
 
     return 0;
 }
@@ -721,29 +692,29 @@ int sortImages(std::vector<FileImage*> ImageIn, std::vector<std::vector<Image*> 
  * \~french
  * \brief Réechantillonne un paquet d'images compatibles
  * \details On crée l'objet ResampledImage correspondant au réechantillonnage du paquet d'images, afin de le rendre compatible avec l'image de sortie. On veut que l'emprise de l'image réechantillonnée ne dépasse ni de l'image de sortie, ni des images en entrée (sans prendre en compte les miroirs, données virtuelles).
- * \param[in] pImageOut image résultante de l'outil
- * \param[in] pECI paquet d'images compatibles, à réechantillonner
- * \param[in] ppRImage image réechantillonnée
+ * \param[in] output_image image résultante de l'outil
+ * \param[in] input_images paquet d'images compatibles, à réechantillonner
+ * \param[in] resampled_image image réechantillonnée
  * \return VRAI si succès, FAUX sinon
  */
-bool resampleImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, ResampledImage** ppRImage) {
-    double resx_dst = pImageOut->getResX(), resy_dst = pImageOut->getResY();
+bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_images, ResampledImage** resampled_image) {
+    double resx_dst = output_image->get_resx(), resy_dst = output_image->get_resy();
 
-    const Kernel& K = Kernel::getInstance(interpolation);
+    const Kernel& kernel = Kernel::get_instance(interpolation);
 
     // Ajout des miroirs
     // Valeurs utilisées pour déterminer la taille des miroirs en pixel (taille optimale en fonction du noyau utilisé)
-    int mirrorSizeX = ceil(K.size(resx_dst / pECI->getResX())) + 1;
-    int mirrorSizeY = ceil(K.size(resy_dst / pECI->getResY())) + 1;
+    int mirror_size_x = ceil(kernel.size(resx_dst / input_images->get_resx())) + 1;
+    int mirror_size_y = ceil(kernel.size(resy_dst / input_images->get_resy())) + 1;
 
-    int mirrorSize = std::max(mirrorSizeX, mirrorSizeY);
+    int mirror_size = std::max(mirror_size_x, mirror_size_y);
 
-    BOOST_LOG_TRIVIAL(debug) << "\t Mirror's size : " << mirrorSize;
+    BOOST_LOG_TRIVIAL(debug) << "\t Mirror's size : " << mirror_size;
 
     // On mémorise la bbox d'origine, sans les miroirs
-    BoundingBox<double> realBbox = pECI->getBbox();
+    BoundingBox<double> real_bbox = input_images->get_bbox();
 
-    if (! pECI->addMirrors(mirrorSize)) {
+    if (! input_images->add_mirrors(mirror_size)) {
         BOOST_LOG_TRIVIAL(error) << "Unable to add mirrors";
         return false;
     }
@@ -751,10 +722,10 @@ bool resampleImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Resampled
     /* L'image reechantillonnee est limitee a l'intersection entre l'image de sortie et les images sources
      * (sans compter les miroirs)
      */
-    double xmin_dst = std::max(realBbox.xmin, pImageOut->getXmin());
-    double xmax_dst = std::min(realBbox.xmax, pImageOut->getXmax());
-    double ymin_dst = std::max(realBbox.ymin, pImageOut->getYmin());
-    double ymax_dst = std::min(realBbox.ymax, pImageOut->getYmax());
+    double xmin_dst = std::max(real_bbox.xmin, output_image->get_xmin());
+    double xmax_dst = std::min(real_bbox.xmax, output_image->get_xmax());
+    double ymin_dst = std::max(real_bbox.ymin, output_image->get_ymin());
+    double ymax_dst = std::min(real_bbox.ymax, output_image->get_ymax());
 
     BoundingBox<double> bbox_dst(xmin_dst, ymin_dst, xmax_dst, ymax_dst);
 
@@ -762,7 +733,7 @@ bool resampleImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Resampled
      * avec l'image de sortie. Il faut donc modifier la bounding box afin qu'elle remplisse les conditions de compatibilité
      * (phases égales en x et en y).
      */
-    bbox_dst.phase(pImageOut->getBbox(), pImageOut->getResX(), pImageOut->getResY());
+    bbox_dst.phase(output_image->get_bbox(), output_image->get_resx(), output_image->get_resy());
 
     // Dimension de l'image reechantillonnee
     int width_dst = int((bbox_dst.xmax - bbox_dst.xmin) / resx_dst + 0.5);
@@ -774,38 +745,40 @@ bool resampleImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Resampled
     }
 
     // On réechantillonne le masque : TOUJOURS EN PPV, sans utilisation de masque pour l'interpolation
-    ResampledImage* pRMask = new ResampledImage(pECI->Image::getMask(), width_dst, height_dst, resx_dst, resy_dst, bbox_dst,
+    ResampledImage* resampled_mask = new ResampledImage(input_images->Image::get_mask(), width_dst, height_dst, resx_dst, resy_dst, bbox_dst,
                                                 Interpolation::NEAREST_NEIGHBOUR, false);
 
     // Reechantillonnage
-    Image* pInput = pECI;
-    if (styleProvided) {
-        Image* pStyled = NULL;
+    Image* input_to_resample = input_images;
+    if (style_provided) {
+        Image* styled_image = NULL;
         
-        if (style->isEstompage()) {
-            pStyled = new EstompageImage (pECI, style->getEstompage());
+        if (style->estompage_defined()) {
+            styled_image = new EstompageImage (input_images, style->get_estompage());
         }
-        else if (style->isPente()) {
-            pStyled = new PenteImage (pECI, style->getPente());
+        else if (style->pente_defined()) {
+            styled_image = new PenteImage (input_images, style->get_pente());
         }
-        else if (style->isAspect()) {
-            pStyled = new AspectImage (pECI, style->getAspect()) ;           
+        else if (style->aspect_defined()) {
+            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
         }
 
-        if ( pInput->getChannels() == 1 && ! ( style->getPalette()->getColoursMap()->empty() ) ) {
-            if (pStyled != NULL) {
-                pInput = new StyledImage ( pStyled, samplesperpixel , style->getPalette() );
+        if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+            if (styled_image != NULL) {
+                input_to_resample = new PaletteImage ( styled_image , style->get_palette() );
             } else {
-                pInput = new StyledImage ( pECI, samplesperpixel , style->getPalette() );
+                input_to_resample = new PaletteImage ( input_images , style->get_palette() );
             }
         } else {
-            pInput = pStyled;
+            if (styled_image != NULL) {
+                input_to_resample = styled_image;
+            }
         }
     }
 
-    *ppRImage = new ResampledImage(pInput, width_dst, height_dst, resx_dst, resy_dst, bbox_dst, interpolation, pECI->useMasks());
+    *resampled_image = new ResampledImage(input_to_resample, width_dst, height_dst, resx_dst, resy_dst, bbox_dst, interpolation, input_images->use_masks());
 
-    if (!(*ppRImage)->setMask(pRMask)) {
+    if (!(*resampled_image)->set_mask(resampled_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ResampledImage";
         return false;
     }
@@ -822,53 +795,53 @@ bool resampleImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Resampled
  *
  * L'image reprojetée peut être nulle, dans le cas où l'image source ne recouvrait pas suffisemment l'image de sortie pour permettre le calcul d'une image (une dimensions de l'image reprojetée aurait été nulle).
  *
- * \param[in] pImageOut image résultante de l'outil
- * \param[in] pECI paquet d'images compatibles, à reprojeter
- * \param[in] ppRImage image reprojetée
+ * \param[in] output_image image résultante de l'outil
+ * \param[in] input_images paquet d'images compatibles, à reprojeter
+ * \param[in] reprojected_image image reprojetée
  * \return VRAI si succès, FAUX sinon
  */
-bool reprojectImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, ReprojectedImage** ppRImage) {
+bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_images, ReprojectedImage** reprojected_image) {
     // Calcul des paramètres de reprojection
 
-    double resx_dst = pImageOut->getResX(), resy_dst = pImageOut->getResY();
-    double resx_src = pECI->getResX(), resy_src = pECI->getResY();
+    double resx_dst = output_image->get_resx(), resy_dst = output_image->get_resy();
+    double resx_src = input_images->get_resx(), resy_src = input_images->get_resy();
 
-    const Kernel& K = Kernel::getInstance(interpolation);
+    const Kernel& kernel = Kernel::get_instance(interpolation);
 
     /******** Conversion de la bbox source dans le srs de sortie ********/
     /******************* et calcul des ratios des résolutions ***********/
 
-    BoundingBox<double> tmp_bbox = pECI->getBbox().cropToAreaOfCRS(pECI->getCRS());
+    BoundingBox<double> tmp_bbox = input_images->get_bbox().crop_to_crs_area(input_images->get_crs());
 
-    int cropWidth = ceil((tmp_bbox.xmax - tmp_bbox.xmin) / resx_src);
-    int cropHeight = ceil((tmp_bbox.ymax - tmp_bbox.ymin) / resy_src);
+    int crop_width = ceil((tmp_bbox.xmax - tmp_bbox.xmin) / resx_src);
+    int crop_height = ceil((tmp_bbox.ymax - tmp_bbox.ymin) / resy_src);
 
-    if (!tmp_bbox.reproject(pECI->getCRS(), pImageOut->getCRS())) {
+    if (!tmp_bbox.reproject(input_images->get_crs(), output_image->get_crs())) {
         BOOST_LOG_TRIVIAL(error) << "Erreur reprojection bbox src -> dst";
         return false;
     }
 
-    /* On valcule les résolutions de l'image source "équivalente" dans le SRS de destination, pour pouvoir calculer le ratio
+    /* On calcule les résolutions de l'image source "équivalente" dans le SRS de destination, pour pouvoir calculer le ratio
      * des résolutions pour la taille des miroirs */
-    double resx_calc = (tmp_bbox.xmax - tmp_bbox.xmin) / double(cropWidth);
-    double resy_calc = (tmp_bbox.ymax - tmp_bbox.ymin) / double(cropHeight);
+    double resx_calc = (tmp_bbox.xmax - tmp_bbox.xmin) / double(crop_width);
+    double resy_calc = (tmp_bbox.ymax - tmp_bbox.ymin) / double(crop_height);
 
     /******************** Image reprojetée : dimensions *****************/
 
     /* On fait particulièrement attention à ne considérer que la partie valide de la bbox finale
      * c'est à dire la partie incluse dans l'espace de définition du SRS
      * On va donc la "croper" */
-    BoundingBox<double> croped_output_bbox = pImageOut->getBbox().cropToAreaOfCRS(pImageOut->getCRS());
+    BoundingBox<double> croped_output_bbox = output_image->get_bbox().crop_to_crs_area(output_image->get_crs());
 
-    BoundingBox<double> bbox_dst = croped_output_bbox.getIntersection(tmp_bbox);
+    BoundingBox<double> bbox_dst = croped_output_bbox.get_intersection(tmp_bbox);
 
-    BOOST_LOG_TRIVIAL(debug) << "        BBOX dst (srs destination) : " << bbox_dst.toString();
+    BOOST_LOG_TRIVIAL(debug) << "        BBOX dst (srs destination) : " << bbox_dst.to_string();
 
     /* Nous avons maintenant les limites de l'image reprojetée. N'oublions pas que celle ci doit être compatible
      * avec l'image de sortie. Il faut donc modifier la bounding box afin qu'elle remplisse les conditions de compatibilité
      * (phases égales en x et en y).
      */
-    bbox_dst.phase(pImageOut->getBbox(), pImageOut->getResX(), pImageOut->getResY());
+    bbox_dst.phase(output_image->get_bbox(), output_image->get_resx(), output_image->get_resy());
 
     // Dimension de l'image reechantillonnee
     BOOST_LOG_TRIVIAL(debug) << "        Calculated destination width (float) : " << (bbox_dst.xmax - bbox_dst.xmin) / resx_dst;
@@ -876,105 +849,110 @@ bool reprojectImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Reprojec
     int width_dst = int((bbox_dst.xmax - bbox_dst.xmin) / resx_dst + 0.5);
     int height_dst = int((bbox_dst.ymax - bbox_dst.ymin) / resy_dst + 0.5);
 
-    if (width_dst <= 0 || height_dst <= 0)
-    {
+    if (width_dst <= 0 || height_dst <= 0) {
         BOOST_LOG_TRIVIAL(warning) << "A ReprojectedImage's dimension would have been null";
         return true;
     }
 
     tmp_bbox = bbox_dst;
 
-    if (!tmp_bbox.reproject(pImageOut->getCRS(), pECI->getCRS())) {
+    if (! tmp_bbox.reproject(output_image->get_crs(), input_images->get_crs())) {
         BOOST_LOG_TRIVIAL(error) << "Erreur reprojection bbox dst en crs src";
         return false;
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "        BBOX dst (srs source) : " << tmp_bbox.toString();
-    BOOST_LOG_TRIVIAL(debug) << "        BBOX source : " << pECI->getBbox().toString();
+    BOOST_LOG_TRIVIAL(debug) << "        BBOX dst (srs source) : " << tmp_bbox.to_string();
+    BOOST_LOG_TRIVIAL(debug) << "        BBOX source : " << input_images->get_bbox().to_string();
 
     /************************ Ajout des miroirs *************************/
 
-    double ratioX = resx_dst / resx_calc;
-    double ratioY = resy_dst / resy_calc;
+    double ratio_x = resx_dst / resx_calc;
+    double ratio_y = resy_dst / resy_calc;
 
     // Ajout des miroirs
-    int mirrorSizeX = ceil(K.size(ratioX)) + 1;
-    int mirrorSizeY = ceil(K.size(ratioY)) + 1;
+    int mirror_size_x = ceil(kernel.size(ratio_x)) + 1;
+    int mirror_size_y = ceil(kernel.size(ratio_y)) + 1;
 
-    int mirrorSize = 2 * std::max(mirrorSizeX, mirrorSizeY);
+    int mirror_size = 2 * std::max(mirror_size_x, mirror_size_y);
 
-    BOOST_LOG_TRIVIAL(debug) << "        Mirror's size : " << mirrorSize;
+    BOOST_LOG_TRIVIAL(debug) << "        Mirror's size : " << mirror_size;
 
-    if (!pECI->addMirrors(mirrorSize)) {
+    if (! input_images->add_mirrors(mirror_size)) {
         BOOST_LOG_TRIVIAL(error) << "Unable to add mirrors";
         return false;
     }
 
-    BOOST_LOG_TRIVIAL(debug) << "        BBOX source avec miroir : " << pECI->getBbox().toString();
+    BOOST_LOG_TRIVIAL(debug) << "        BBOX source avec miroir : " << input_images->get_bbox().to_string();
 
     /********************** Image source agrandie ***********************/
 
     /* L'image à reprojeter n'est pas intégralement contenue dans l'image source. Cela va poser des problèmes lors de l'interpolation :
      * ReprojectedImage va vouloir accéder à des coordonnées pixel négatives -> segmentation fault.
      * Pour éviter cela, on va agrandir artificiellemnt l'étendue de l'image source (avec du nodata) */
-    if (!pECI->extendBbox(tmp_bbox, mirrorSize + 1)) {
+    if (! input_images->extend_bbox(tmp_bbox, mirror_size + 1)) {
         BOOST_LOG_TRIVIAL(error) << "Unable to extend the source image extent for the reprojection";
         return false;
     }
-    BOOST_LOG_TRIVIAL(debug) << "        BBOX source agrandie : " << pECI->getBbox().toString();
+    BOOST_LOG_TRIVIAL(debug) << "        BBOX source agrandie : " << input_images->get_bbox().to_string();
 
     /********************** Grille de reprojection **********************/
 
     Grid* grid = new Grid(width_dst, height_dst, bbox_dst);
 
-    if (!(grid->reproject(pImageOut->getCRS(), pECI->getCRS()))) {
+    if (!(grid->reproject(output_image->get_crs(), input_images->get_crs()))) {
         BOOST_LOG_TRIVIAL(error) << "Bbox image invalide";
         return false;
     }
 
-    grid->affine_transform(1. / resx_src, -pECI->getBbox().xmin / resx_src - 0.5,
-                           -1. / resy_src, pECI->getBbox().ymax / resy_src - 0.5);
+    grid->affine_transform(1. / resx_src, -input_images->get_bbox().xmin / resx_src - 0.5,
+                           -1. / resy_src, input_images->get_bbox().ymax / resy_src - 0.5);
 
 
     /********************** Application du style **********************/
-    Image* pInput = pECI;
-    if (styleProvided) {
-        Image* pStyled = NULL;
+    Image* input_to_reproject = input_images;
+    if (style_provided) {
+        Image* styled_image = NULL;
 
-        if (style->isEstompage()) {
-            pStyled = new EstompageImage (pECI, style->getEstompage());
+        if (style->estompage_defined()) {
+            styled_image = new EstompageImage (input_images, style->get_estompage());
         }
-        else if (style->isPente()) {
-            pStyled = new PenteImage (pECI, style->getPente());
+        else if (style->pente_defined()) {
+            styled_image = new PenteImage (input_images, style->get_pente());
         }
-        else if (style->isAspect()) {
-            pStyled = new AspectImage (pECI, style->getAspect()) ;           
+        else if (style->aspect_defined()) {
+            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
         }
 
-        if ( pInput->getChannels() == 1 && ! ( style->getPalette()->getColoursMap()->empty() ) ) {
-            if (pStyled != NULL) {
-                pInput = new StyledImage ( pStyled, samplesperpixel , style->getPalette() );
+        if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+            if (styled_image != NULL) {
+                input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
             } else {
-                pInput = new StyledImage ( pECI, samplesperpixel , style->getPalette() );
+                input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
             }
         } else {
-            pInput = pStyled;
+            if (styled_image != NULL) {
+                input_to_reproject = styled_image;
+            }
         }
+
+        input_to_reproject->set_crs(input_images->get_crs());
     }
 
     /*************************** Image reprojetée ***********************/
 
     // On  reprojete le masque : TOUJOURS EN PPV, sans utilisation de masque pour l'interpolation
-    ReprojectedImage* pRMask = new ReprojectedImage(pECI->Image::getMask(), bbox_dst, resx_dst, resy_dst, grid,
-                                                    Interpolation::NEAREST_NEIGHBOUR, false);
-    pRMask->setCRS(pImageOut->getCRS());
+    ReprojectedImage* reprojected_mask = new ReprojectedImage(
+        input_images->Image::get_mask(), bbox_dst, resx_dst, resy_dst, grid,
+        Interpolation::NEAREST_NEIGHBOUR, false
+    );
+    reprojected_mask->set_crs(output_image->get_crs());
 
     // Reprojection de l'image
 
-    *ppRImage = new ReprojectedImage(pInput, bbox_dst, resx_dst, resy_dst, grid, interpolation, pECI->useMasks());
-    (*ppRImage)->setCRS(pImageOut->getCRS());
+    *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
+    (*reprojected_image)->set_crs(output_image->get_crs());
 
-    if (!(*ppRImage)->setMask(pRMask)) {
+    if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
         return false;
     }
@@ -998,134 +976,139 @@ bool reprojectImages(FileImage* pImageOut, ExtendedCompoundImage* pECI, Reprojec
  * \~ \image html mergeNtiff_decoupe.png \~french
  *
  * Les masques sont gérés en toile de fond, en étant attachés à chacune des images manipulées.
- * \param[in] pImageOut image de sortie
- * \param[in] TabImageIn paquets d'images en entrée
- * \param[out] ppECIout paquet d'images superposable avec l'image de sortie
- * \param[in] nodata valeur de non-donnée
+ * \param[in] output_image image de sortie
+ * \param[in] input_images paquets d'images en entrée
+ * \param[out] merged_image paquet d'images superposable avec l'image de sortie
  * \return 0 en cas de succès, -1 en cas d'erreur
  */
-int mergeTabImages(FileImage *pImageOut,                          // Sortie
-                   std::vector<std::vector<Image *>> &TabImageIn, // Entrée
-                   ExtendedCompoundImage **ppECIout)              // Résultat du merge
+int merge_images(FileImage *output_image,                          // Sortie
+                   std::vector<std::vector<Image *>> &sorted_input_images, // Entrée
+                   ExtendedCompoundImage **merged_image)              // Résultat du merge
 {
-    ExtendedCompoundImageFactory ECIF;
-    std::vector<Image*> pOverlayedImages;
+    std::vector<Image*> stackable_images;
 
-    for (unsigned int i = 0; i < TabImageIn.size(); i++) {
-        BOOST_LOG_TRIVIAL(debug) << "Pack " << i << " : " << TabImageIn.at(i).size() << " image(s)";
+    // Les données en entrée sont remplies :
+    // - Avec le nodata fourni si pas de style
+    // - Avec le nodata attendu en entrée du style fourni
+    int* nd = nodata;
+    if (style_provided) {
+        nd = style->get_input_nodata_value(nd);
+    }
+
+    for (unsigned int i = 0; i < sorted_input_images.size(); i++) {
+        BOOST_LOG_TRIVIAL(debug) << "Pack " << i << " : " << sorted_input_images.at(i).size() << " image(s)";
         // Mise en superposition du paquet d'images en 2 etapes
 
         // Etape 1 : Creation d'une image composite (avec potentiellement une seule image)
 
-        ExtendedCompoundImage* pECI = ECIF.createExtendedCompoundImage(TabImageIn.at(i), nodata, 0);
-        if (pECI == NULL) {
+        ExtendedCompoundImage* stackable_image = ExtendedCompoundImage::create(sorted_input_images.at(i), nd, 0);
+        if (stackable_image == NULL) {
             BOOST_LOG_TRIVIAL(error) << "Impossible d'assembler les images";
             return -1;
         }
-        pECI->setCRS(TabImageIn.at(i).at(0)->getCRS());
+        stackable_image->set_crs(sorted_input_images.at(i).at(0)->get_crs());
 
-        ExtendedCompoundMask* pECMI = new ExtendedCompoundMask(pECI);
+        ExtendedCompoundMask* stackable_mask = new ExtendedCompoundMask(stackable_image);
 
-        pECMI->setCRS(TabImageIn.at(i).at(0)->getCRS());
-        if (! pECI->setMask(pECMI)) {
+        stackable_mask->set_crs(sorted_input_images.at(i).at(0)->get_crs());
+        if (! stackable_image->set_mask(stackable_mask)) {
             BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Image's pack " << i;
             return -1;
         }
 
-        if (pImageOut->isCompatibleWith(pECI)) {
+        if (output_image->compatible(stackable_image)) {
             BOOST_LOG_TRIVIAL(debug) << "\t is compatible";
             /* les images sources et finale ont la meme resolution et la meme phase
-             * on aura donc pas besoin de reechantillonnage.*/
-            if (styleProvided && ! (i == 0 && backgroundProvided)) {
+             * on n'aura donc pas besoin de reechantillonnage.*/
+            if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
-                Image* pStyled = NULL;
+                Image* styled_image = NULL;
                 
-                if (style->isEstompage()) {
-                    pStyled = new EstompageImage (pECI, style->getEstompage());
+                if (style->estompage_defined()) {
+                    styled_image = new EstompageImage (stackable_image, style->get_estompage());
                 }
-                else if (style->isPente()) {
-                    pStyled = new PenteImage (pECI, style->getPente());
+                else if (style->pente_defined()) {
+                    styled_image = new PenteImage (stackable_image, style->get_pente());
                 }
-                else if (style->isAspect()) {
-                    pStyled = new AspectImage (pECI, style->getAspect()) ;           
+                else if (style->aspect_defined()) {
+                    styled_image = new AspectImage (stackable_image, style->get_aspect()) ;           
                 }
 
-                if ( pECI->getChannels() == 1 && ! ( style->getPalette()->getColoursMap()->empty() ) ) {
-                    if (pStyled != NULL) {
-                        pOverlayedImages.push_back(new StyledImage ( pStyled, samplesperpixel , style->getPalette() ));
+                if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+                    if (styled_image != NULL) {
+                        stackable_images.push_back(new PaletteImage ( styled_image , style->get_palette() ));
                     } else {
-                        pOverlayedImages.push_back(new StyledImage ( pECI, samplesperpixel , style->getPalette() ));
+                        stackable_images.push_back(new PaletteImage ( stackable_image , style->get_palette() ));
                     }
                 } else {
-                    pOverlayedImages.push_back(pStyled);
+                    stackable_images.push_back(styled_image);
                 }
             } else {
-                pOverlayedImages.push_back(pECI);
+                stackable_images.push_back(stackable_image);
             }
 
-        } else if (pECI->getCRS()->cmpRequestCode(pImageOut->getCRS()->getRequestCode())) {
+        } else if (stackable_image->get_crs()->cmp_request_code(output_image->get_crs()->get_request_code())) {
             BOOST_LOG_TRIVIAL(debug) << "\t need a resampling";
 
-            ResampledImage* pResampledImage = NULL;
+            ResampledImage* resampled_image = NULL;
 
-            if (!resampleImages(pImageOut, pECI, &pResampledImage)) {
+            if (!resample_images(output_image, stackable_image, &resampled_image)) {
                 BOOST_LOG_TRIVIAL(error) << "Cannot resample images' pack";
                 return -1;
             }
 
-            if (pResampledImage == NULL) {
+            if (resampled_image == NULL) {
                 BOOST_LOG_TRIVIAL(warning) << "No resampled image to add";
             } else {
-                pOverlayedImages.push_back(pResampledImage);
+                stackable_images.push_back(resampled_image);
             }
 
         } else {
             BOOST_LOG_TRIVIAL(debug) << "\t need a reprojection";
 
-            ReprojectedImage* pReprojectedImage = NULL;
+            ReprojectedImage* reprojected_image = NULL;
 
-            if (!reprojectImages(pImageOut, pECI, &pReprojectedImage)) {
+            if (!reproject_images(output_image, stackable_image, &reprojected_image)) {
                 BOOST_LOG_TRIVIAL(error) << "Cannot reproject images' pack";
                 return -1;
             }
 
-            if (pReprojectedImage == NULL) {
+            if (reprojected_image == NULL) {
                 BOOST_LOG_TRIVIAL(warning) << "No reprojected image to add";
             } else {
-                pOverlayedImages.push_back(pReprojectedImage);
+                stackable_images.push_back(reprojected_image);
             }
         }
     }
 
-    int* outputNodata;
-    if (! styleProvided || style->getNodata(&styleNodata) == 0) {
-        // Si il n'y a pas de style ou que le style ne modifie pas les canaux (getNodata = 0), on met le même nodata que pour les entrées
-        // (potentiellement converties à la volée)
-        BOOST_LOG_TRIVIAL(debug) << "Input nodata = output nodata";
-        outputNodata = nodata;
-    } else {
-        outputNodata = styleNodata;
+
+    // Les données en sortie sont remplies :
+    // - Avec le nodata fourni si pas de style
+    // - Avec le nodata de sortie du style fourni
+    nd = nodata;
+    if (style_provided) {
+        nd = style->get_output_nodata_value(nd);
     }
 
-    for (int i = 0; i < pImageOut->getChannels(); i++) {
-        BOOST_LOG_TRIVIAL(debug) << "output nodata [" << i << "] = " << outputNodata[i];
+    for (int i = 0; i < output_image->get_channels(); i++) {
+        BOOST_LOG_TRIVIAL(debug) << "output nodata [" << i << "] = " << nd[i];
     }
 
     // Assemblage des paquets et decoupage aux dimensions de l image de sortie
-    *ppECIout = ECIF.createExtendedCompoundImage(
-        pImageOut->getWidth(), pImageOut->getHeight(), pImageOut->getChannels(), pImageOut->getBbox(),
-        pOverlayedImages, outputNodata, 0);
+    *merged_image = ExtendedCompoundImage::create(
+        output_image->get_width(), output_image->get_height(), output_image->get_channels(), output_image->get_bbox(),
+        stackable_images, nd, 0);
 
-    if (*ppECIout == NULL) {
-        for (int i = 0; i < pOverlayedImages.size(); i++) delete pOverlayedImages.at(i);
+    if (*merged_image == NULL) {
+        for (int i = 0; i < stackable_images.size(); i++) delete stackable_images.at(i);
         BOOST_LOG_TRIVIAL(error) << "Cannot create final compounded image.";
         return -1;
     }
 
     // Masque
-    ExtendedCompoundMask* pECMIout = new ExtendedCompoundMask(*ppECIout);
+    ExtendedCompoundMask* merged_mask = new ExtendedCompoundMask(*merged_image);
 
-    if (!(*ppECIout)->setMask(pECMIout)) {
+    if (!(*merged_image)->set_mask(merged_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the main Extended Compound Image";
         return -1;
     }
@@ -1146,11 +1129,11 @@ int mergeTabImages(FileImage *pImageOut,                          // Sortie
  * \return 0 if success, -1 otherwise
  */
 int main(int argc, char** argv) {
-    FileImage* pImageOut = NULL;
-    FileImage* pMaskOut = NULL;
-    std::vector<FileImage*> ImageIn;
-    std::vector<std::vector<Image*> > TabImageIn;
-    ExtendedCompoundImage* pECI = NULL;
+    FileImage* output_image = NULL;
+    FileImage* output_mask = NULL;
+    std::vector<FileImage*> input_images;
+    std::vector<std::vector<Image*> > sorted_input_images;
+    ExtendedCompoundImage* merged_image = NULL;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::info);
@@ -1158,129 +1141,139 @@ int main(int argc, char** argv) {
     boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
     logging::add_console_log(
         std::cout,
-        keywords::format = "%Severity%\t%Message%");
+        keywords::format = "%Severity%\t%Message%"
+    );
 
     // Lecture des parametres de la ligne de commande
-    if (parseCommandLine(argc, argv) < 0) {
+    if (parse_command_line(argc, argv) < 0) {
         error("Echec lecture ligne de commande", -1);
     }
 
     // On sait maintenant si on doit activer le niveau de log DEBUG
-    if (debugLogger) {
+    if (debug_logger) {
         boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
     }
 
     // On regarde si on a tout précisé en sortie, pour voir si des conversions sont possibles
-    if (sampleformat != SampleFormat::UNKNOWN && bitspersample != 0 && samplesperpixel != 0) {
-        outputProvided = true;
+    if (sampleformat != SampleFormat::UNKNOWN && samplesperpixel != 0) {
+        output_format_provided = true;
     }
-    if (outputProvided && styleProvided) {
+    if (output_format_provided && style_provided) {
         error("Impossible d'appliquer un style et une conversion à la volée", -1);
+    }
+
+    if (! style_provided && ! nodata_provided) {
+        error("Préciser une valeur de nodata est obligatoire sans style", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Load";
     // Chargement des images
-    if (loadImages(&pImageOut, &pMaskOut, &ImageIn) < 0) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
-        ProjPool::cleanProjPool();
+    if (load_images(&output_image, &output_mask, &input_images) < 0) {
+        if (merged_image) delete merged_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec chargement des images", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Add converters";
     // Ajout des modules de conversion aux images en entrée
-    if (addConverters(ImageIn) < 0) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
-        ProjPool::cleanProjPool();
+    if (add_converters(input_images) < 0) {
+        if (merged_image) delete merged_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec ajout des convertisseurs", -1);
     }
 
-    // Maintenant que l'on a la valeur de samplesperpixel, on peut lire le nodata
+    // Maintenant que l'on a la valeur de samplesperpixel, on peut lire le nodata fourni
     // Conversion string->int[] du paramètre nodata
-    BOOST_LOG_TRIVIAL(debug) << "Nodata interpretation";
-    int nodataElements = samplesperpixel;
-    if (styleProvided) {
-        // Si un style est fourni, la valeur de nodata fournie est celle des données en entrée, et non de la sortie
-        // Le nodata de la sortie est déduit du style
-        nodataElements = ImageIn.at(0)->getChannels();
-    }
 
-    nodata = new int[nodataElements];
+    if (nodata_provided) {
+        BOOST_LOG_TRIVIAL(debug) << "Nodata interpretation";
+        
+        nodata = new int[samplesperpixel];
 
-    char* charValue = strtok(strnodata, ",");
-    if (charValue == NULL) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
-        ProjPool::cleanProjPool();
-        proj_cleanup();
-        error("Error with option -n : a value for nodata is missing", -1);
-    }
-    nodata[0] = atoi(charValue);
-
-    for (int i = 1; i < nodataElements; i++) {
-        charValue = strtok(NULL, ",");
-        if (charValue == NULL) {
-            if (pECI) delete pECI;
-            if (pImageOut) delete pImageOut;
-            if (pMaskOut) delete pMaskOut;
-            ProjPool::cleanProjPool();
+        char* char_iterator = strtok(strnodata, ",");
+        if (char_iterator == NULL) {
+            if (merged_image) delete merged_image;
+            if (output_image) delete output_image;
+            if (output_mask) delete output_mask;
+            CrsBook::clean_crss();
+            ProjPool::clean_projs();
             proj_cleanup();
-            error("Error with option -n : one value per sample, separate with comma", -1);
+            error("Error with option -n : a value for nodata is missing", -1);
         }
-        nodata[i] = atoi(charValue);
+        nodata[0] = atoi(char_iterator);
+
+        for (int i = 1; i < samplesperpixel; i++) {
+            char_iterator = strtok(NULL, ",");
+            if (char_iterator == NULL) {
+                if (merged_image) delete merged_image;
+                if (output_image) delete output_image;
+                if (output_mask) delete output_mask;
+                CrsBook::clean_crss();
+                ProjPool::clean_projs();
+                proj_cleanup();
+                error("Error with option -n : one value per sample(" + std::to_string(samplesperpixel) + "), separate with comma", -1);
+            }
+            nodata[i] = atoi(char_iterator);
+        }
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Sort";
     // Tri des images
-    if (sortImages(ImageIn, &TabImageIn) < 0) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
+    if (sort_images(input_images, &sorted_input_images) < 0) {
+        if (merged_image) delete merged_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec tri des images", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Merge";
     // Fusion des paquets d images
-    if (mergeTabImages(pImageOut, TabImageIn, &pECI) < 0) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
+    if (merge_images(output_image, sorted_input_images, &merged_image) < 0) {
+        if (merged_image) delete merged_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec fusion des paquets d images", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Save image";
     // Enregistrement de l'image fusionnée
-    if (pImageOut->writeImage(pECI) < 0) {
-        if (pECI) delete pECI;
-        if (pImageOut) delete pImageOut;
-        if (pMaskOut) delete pMaskOut;
+    if (output_image->write_image(merged_image) < 0) {
+        if (merged_image) delete merged_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
         delete[] nodata;
-        ProjPool::cleanProjPool();
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
         proj_cleanup();
         error("Echec enregistrement de l image finale", -1);
     }
 
-    if (pMaskOut != NULL) {
+    if (output_mask != NULL) {
         BOOST_LOG_TRIVIAL(debug) << "Save mask";
         // Enregistrement du masque fusionné, si demandé
-        if (pMaskOut->writeImage(pECI->Image::getMask()) < 0) {
-            if (pECI) delete pECI;
-            if (pImageOut) delete pImageOut;
-            if (pMaskOut) delete pMaskOut;
+        if (output_mask->write_image(merged_image->Image::get_mask()) < 0) {
+            if (merged_image) delete merged_image;
+            if (output_image) delete output_image;
+            if (output_mask) delete output_mask;
             delete[] nodata;
-            ProjPool::cleanProjPool();
+            CrsBook::clean_crss();
+            ProjPool::clean_projs();
             proj_cleanup();
             error("Echec enregistrement du masque final", -1);
         }
@@ -1288,20 +1281,20 @@ int main(int argc, char** argv) {
 
     BOOST_LOG_TRIVIAL(debug) << "Clean";
     // Nettoyage
-    if (styleProvided) {
-        if (! style->isIdentity()) {
-            delete[] styleNodata;
-        }
+    if (style_provided) {
         delete style;
     }
-    delete[] nodata;
-    delete pECI;
-    delete pImageOut;
-    delete pMaskOut;
-    ProjPool::cleanProjPool();
+    if (nodata_provided) {
+        delete[] nodata;
+    }
+    delete merged_image;
+    delete output_image;
+    delete output_mask;
+    CrsBook::clean_crss();
+    ProjPool::clean_projs();
     proj_cleanup();
-    StoragePool::cleanStoragePool();
-    CurlPool::cleanCurlPool();
+    StoragePool::clean_storages();
+    CurlPool::clean_curls();
     curl_global_cleanup();
 
     return 0;
