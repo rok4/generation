@@ -89,13 +89,12 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -112,12 +111,12 @@ void error ( std::string message, int errorCode ) {
  */
 int main ( int argc, char **argv ) {
 
-    char* output = 0, *rootDirectory = 0;
-    int tilePerWidth = 16, tilePerHeight = 16;
-    int ulCol = -1;
-    int ulRow = -1;
+    char* output = 0, *root_directory = 0;
+    int tiles_per_width = 16, tiles_per_height = 16;
+    int upper_left_column = -1;
+    int upper_left_row = -1;
 
-    bool debugLogger=false;
+    bool debug_logger = false;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -133,8 +132,8 @@ int main ( int argc, char **argv ) {
 
         if ( !strcmp ( argv[i],"-ultile" ) ) {
             if ( i+2 >= argc ) { error("Error in -ultile option", -1 ); }
-            ulCol = atoi ( argv[++i] );
-            ulRow = atoi ( argv[++i] );
+            upper_left_column = atoi ( argv[++i] );
+            upper_left_row = atoi ( argv[++i] );
             continue;
         }
 
@@ -144,19 +143,19 @@ int main ( int argc, char **argv ) {
                     usage();
                     exit ( 0 );
                 case 'd': // debug logs
-                    debugLogger = true;
+                    debug_logger = true;
                     break;
                 case 'r': // root directory
                     if ( i++ >= argc ) {
                         BOOST_LOG_TRIVIAL(error) <<  "Error in option -r" ;
                         return -1;
                     }
-                    rootDirectory = argv[i];
+                    root_directory = argv[i];
                     break;
                 case 't':
                     if ( i+2 >= argc ) { error("Error in -t option", -1 ); }
-                    tilePerWidth = atoi ( argv[++i] );
-                    tilePerHeight = atoi ( argv[++i] );
+                    tiles_per_width = atoi ( argv[++i] );
+                    tiles_per_height = atoi ( argv[++i] );
                     break;
 
                 default:
@@ -168,19 +167,19 @@ int main ( int argc, char **argv ) {
         }
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         // le niveau debug du logger est activé
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
 
-    if ( rootDirectory == 0 || output == 0 ) {
+    if ( root_directory == 0 || output == 0 ) {
         error ("Argument must specify one output file/object and one root directory", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) << "Output : " << output;
-    BOOST_LOG_TRIVIAL(debug) << "PBF root directory : " << rootDirectory;
+    BOOST_LOG_TRIVIAL(debug) << "PBF root directory : " << root_directory;
 
-    if ( ulRow == -1 || ulCol == -1 ) {
+    if ( upper_left_row == -1 || upper_left_column == -1 ) {
         error ("Upper left tile indices have to be provided (with option -ultile)", -1);
     }
 
@@ -193,34 +192,34 @@ int main ( int argc, char **argv ) {
     Context* context;
     curl_global_init(CURL_GLOBAL_ALL);
 
-    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Output is on a " + ContextType::to_string(type) + " storage in the tray ") + tray_name;
     context = StoragePool::get_context(type, tray_name);
 
-    Rok4ImageFactory R4IF;
-    Rok4Image* rok4Image = R4IF.createRok4ImageToWrite( fo_name, tilePerWidth, tilePerHeight, context );
+    Rok4Image* rok4_image = Rok4Image::create_to_write( fo_name, tiles_per_width, tiles_per_height, context );
     
-    if (rok4Image == NULL) {
+    if (rok4_image == NULL) {
         error("Cannot create the ROK4 image to write", -1);
     }
 
-    if (debugLogger) {
-        rok4Image->print();
+    if (debug_logger) {
+        rok4_image->print();
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Write" ;
 
-    if (rok4Image->writePbfTiles(ulCol, ulRow, rootDirectory) < 0) {
+    if (rok4_image->writePbfTiles(upper_left_column, upper_left_row, root_directory) < 0) {
         error("Cannot write ROK4 image from PBF tiles", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
 
-    ProjPool::cleanProjPool();
+    CrsBook::clean_crss();
+    ProjPool::clean_projs();
     proj_cleanup();
-    CurlPool::cleanCurlPool();
+    CurlPool::clean_curls();
     curl_global_cleanup();
-    StoragePool::cleanStoragePool();
-    delete rok4Image;
+    StoragePool::clean_storages();
+    delete rok4_image;
 
     return 0;
 }

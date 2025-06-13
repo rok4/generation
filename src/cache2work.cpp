@@ -47,27 +47,20 @@
 #include <cstdlib>
 #include <iostream>
 #include <string.h>
-
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/utility/setup/console.hpp>
 namespace logging = boost::log;
 namespace keywords = boost::log::keywords;
-
 #include <curl/curl.h>
+
 #include <rok4/enums/Format.h>
 #include <rok4/utils/Cache.h>
 #include <rok4/image/file/Rok4Image.h>
-#include "config.h"
 #include <rok4/image/file/FileImage.h>
 
-
-#if OBJECT_ENABLED
-#include <rok4/storage/object/CephPoolContext.h>
-#include <rok4/storage/object/SwiftContext.h>
-#include <rok4/storage/object/S3Context.h>
-#endif
+#include "config.h"
 
 /** \~french Message d'usage de la commande cache2work */
 std::string help = std::string("\ncache2work version ") + std::string(VERSION) + "\n\n"
@@ -106,13 +99,12 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -134,7 +126,7 @@ int main ( int argc, char **argv )
 
     char* input = 0, *output = 0;
     Compression::eCompression compression = Compression::NONE;
-    bool debugLogger=false;
+    bool debug_logger=false;
 
     /* Initialisation des Loggers */
     boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
@@ -154,7 +146,7 @@ int main ( int argc, char **argv )
                 exit ( 0 );
                 break;
             case 'd': // debug logs
-                debugLogger = true;
+                debug_logger = true;
                 break;
             case 'c': // compression
                 if ( ++i == argc ) {
@@ -188,7 +180,7 @@ int main ( int argc, char **argv )
         }
     }
 
-    if (debugLogger) {
+    if (debug_logger) {
         // le niveau debug du logger est activé
         boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::debug );
     }
@@ -206,7 +198,7 @@ int main ( int argc, char **argv )
     Context* context;
     curl_global_init(CURL_GLOBAL_ALL);
 
-    BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is on a " + ContextType::toString(type) + " storage in the tray ") + tray_name;
+    BOOST_LOG_TRIVIAL(debug) <<  std::string("Input is on a " + ContextType::to_string(type) + " storage in the tray ") + tray_name;
     context = StoragePool::get_context(type, tray_name);
 
     // Problème lors de l'ajout ou de la récupération de ce contexte de stockage
@@ -214,42 +206,41 @@ int main ( int argc, char **argv )
         error("Unable to connect context", -1);
     }
 
-    Rok4ImageFactory R4IF;
-    Rok4Image* rok4image = R4IF.createRok4ImageToRead(fo_name, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
-    if (rok4image == NULL) {
-        StoragePool::cleanStoragePool();
+    Rok4Image* rok4_image = Rok4Image::create_to_read(fo_name, BoundingBox<double>(0.,0.,0.,0.), 0., 0., context);
+    if (rok4_image == NULL) {
+        StoragePool::clean_storages();
         error (std::string("Cannot create ROK4 image to read ") + input, 1);
     }
 
-    FileImageFactory FIF;
-    FileImage* outputImage = FIF.createImageToWrite(
-        output, rok4image->getBbox(), rok4image->getResX(), rok4image->getResY(), rok4image->getWidth(), rok4image->getHeight(),
-        rok4image->getChannels(), rok4image->getSampleFormat(), rok4image->getBitsPerSample(), rok4image->getPhotometric(), compression
+    FileImage* output_image = FileImage::create_to_write(
+        output, rok4_image->get_bbox(), rok4_image->get_resx(), rok4_image->get_resy(), rok4_image->get_width(), rok4_image->get_height(),
+        rok4_image->get_channels(), rok4_image->get_sample_format(), rok4_image->get_photometric(), compression
     );
 
-    if (outputImage == NULL) {
-        delete rok4image;
-        StoragePool::cleanStoragePool();
+    if (output_image == NULL) {
+        delete rok4_image;
+        StoragePool::clean_storages();
         error (std::string("Cannot create image to write ") + output, -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Write" ;
-    if (outputImage->writeImage(rok4image) < 0) {
-        delete rok4image;
-        delete outputImage;
-        StoragePool::cleanStoragePool();
+    if (output_image->write_image(rok4_image) < 0) {
+        delete rok4_image;
+        delete output_image;
+        StoragePool::clean_storages();
         error("Cannot write image", -1);
     }
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
     
-    delete rok4image;
-    delete outputImage;
-    ProjPool::cleanProjPool();
+    delete rok4_image;
+    delete output_image;
+    CrsBook::clean_crss();
+    ProjPool::clean_projs();
     proj_cleanup();
-    CurlPool::cleanCurlPool();
+    CurlPool::clean_curls();
     curl_global_cleanup();
-    StoragePool::cleanStoragePool();
+    StoragePool::clean_storages();
 
     return 0;
 }

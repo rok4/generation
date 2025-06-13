@@ -75,13 +75,12 @@ void usage() {
  * \~french
  * \brief Affiche un message d'erreur, l'utilisation de la commande et sort en erreur
  * \param[in] message message d'erreur
- * \param[in] errorCode code de retour
+ * \param[in] error_code code de retour
  */
-void error ( std::string message, int errorCode ) {
+void error ( std::string message, int error_code ) {
     BOOST_LOG_TRIVIAL(error) <<  message ;
     usage();
-    sleep ( 1 );
-    exit ( errorCode );
+    exit ( error_code );
 }
 
 /**
@@ -133,9 +132,7 @@ int main ( int argc, char **argv )
         error ("Argument must specify one input file", -1);
     }
 
-    FileImageFactory FIF;
-
-    FileImage* image = FIF.createImageToRead(input);
+    FileImage* image = FileImage::create_to_read(input);
     int ret;
     if (image == NULL) {
         BOOST_LOG_TRIVIAL(error) << "Image NOK";
