@@ -767,13 +767,15 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
             styled_image = new TerrainrgbImage (input_images, style->get_terrainrgb()) ;           
         }
 
-        if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_resample = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_resample = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
+        if (style->palette_defined()){
+            if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+                if (styled_image != NULL) {
+                    input_to_resample = new PaletteImage ( styled_image , style->get_palette() );
+                } else {
+                    input_to_resample = new PaletteImage ( input_images , style->get_palette() );
+                }
+            } 
+        }else {
             if (styled_image != NULL) {
                 input_to_resample = styled_image;
             }
@@ -927,17 +929,17 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
             styled_image = new AspectImage (input_images, style->get_aspect()) ;           
         }
         else if (style->terrainrgb_defined()) {
-            styled_image = new TerrainrgbImage (input_images, style->get_terrainrgb()) ;     
-            styled_image->print();      
+            styled_image = new TerrainrgbImage (input_images, style->get_terrainrgb()) ;          
         }
-
-        if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
+        if (style->palette_defined()){
+            if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+                if (styled_image != NULL) {
+                    input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
+                } else {
+                    input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
+                }
+            } 
+        }else {
             if (styled_image != NULL) {
                 input_to_reproject = styled_image;
             }
@@ -1045,11 +1047,13 @@ int merge_images(FileImage *output_image,                          // Sortie
                     styled_image = new TerrainrgbImage (stackable_image, style->get_terrainrgb()) ;           
                 }
 
-                if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-                    if (styled_image != NULL) {
-                        stackable_images.push_back(new PaletteImage ( styled_image , style->get_palette() ));
-                    } else {
-                        stackable_images.push_back(new PaletteImage ( stackable_image , style->get_palette() ));
+                if (style->palette_defined()){
+                    if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
+                        if (styled_image != NULL) {
+                            stackable_images.push_back(new PaletteImage ( styled_image , style->get_palette() ));
+                        } else {
+                            stackable_images.push_back(new PaletteImage ( stackable_image , style->get_palette() ));
+                        }
                     }
                 } else {
                     stackable_images.push_back(styled_image);
