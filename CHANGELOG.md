@@ -1,3 +1,18 @@
+## Unreleased
+
+### [Added]
+
+- `mergeNtiff` : Ajout du cas du style terrainrgb lors des applications des styles
+
+### [Changed]
+
+- `mergeNtiff` : Vérification de l'existance d'une palette avant d'accéder aux éléments de palette.
+
+### [Deprecated]
+### [Removed]
+### [Fixed]
+### [Security]
+
 ## 5.0.0
 
 ### [Changed]
