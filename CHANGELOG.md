@@ -1,18 +1,27 @@
 # Changelog
+
 Tous les changements sont consignés dans ce fichier.
 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/) et ce projet respecte le [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
 ### Added
+
 - Possibilité de définir un timeout via la variable d'environnement `ROK4_NETWORK_TIMEOUT` (valeur à fournir en seconde) pour les intéraction avec le stockage Swift ou S3
 - Ajout de diagrammes pour comprendre l'usage des classes Image dans les différents outils
 - Amélioration de la documentation Doxygen
+- `mergeNtiff` : Ajout du cas du style terrainrgb lors des applications des styles
 
 ### Changed
+
 - Refonte du CHANGELOG au format [Keep a Changelog](https://keepachangelog.com/)
 - Changement des imports de Cache aux imports spécifiques des classes suite à la séparation du fichier Cache dans core-cpp. 
 - Merge4tiff utilise désormais les classes Image, dont la nouvelle SubsampledImage, pour faire le calcul raster
+- `mergeNtiff` : 
+    - Vérification de l'existance d'une palette avant d'accéder aux éléments de palette.
+    - Changement de la manière de faire le traitement de style pour utiliser la classe StyledImage de la lib core-cpp.
+
 ### Deprecated
 ### Removed
 ### Fixed

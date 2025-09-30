@@ -102,10 +102,7 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 #include <rok4/style/Style.h>
-#include <rok4/image/PaletteImage.h>
-#include <rok4/image/EstompageImage.h>
-#include <rok4/image/PenteImage.h>
-#include <rok4/image/AspectImage.h>
+#include <rok4/image/StyledImage.h>
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
@@ -778,29 +775,8 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
     // Reechantillonnage
     Image* input_to_resample = input_images;
     if (style_provided) {
-        Image* styled_image = NULL;
-        
-        if (style->estompage_defined()) {
-            styled_image = new EstompageImage (input_images, style->get_estompage());
-        }
-        else if (style->pente_defined()) {
-            styled_image = new PenteImage (input_images, style->get_pente());
-        }
-        else if (style->aspect_defined()) {
-            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
-        }
-
-        if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_resample = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_resample = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
-            if (styled_image != NULL) {
-                input_to_resample = styled_image;
-            }
-        }
+        StyledImage* s_image = StyledImage::create(input_images,style);
+        input_to_resample=s_image;
     }
 
     *resampled_image = new ResampledImage(input_to_resample, width_dst, height_dst, resx_dst, resy_dst, bbox_dst, interpolation, input_images->use_masks());
@@ -809,7 +785,7 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ResampledImage";
         return false;
     }
-
+    
     return true;
 }
 
@@ -938,30 +914,9 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     /********************** Application du style **********************/
     Image* input_to_reproject = input_images;
     if (style_provided) {
-        Image* styled_image = NULL;
-
-        if (style->estompage_defined()) {
-            styled_image = new EstompageImage (input_images, style->get_estompage());
-        }
-        else if (style->pente_defined()) {
-            styled_image = new PenteImage (input_images, style->get_pente());
-        }
-        else if (style->aspect_defined()) {
-            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
-        }
-
-        if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
-            if (styled_image != NULL) {
-                input_to_reproject = styled_image;
-            }
-        }
-
+        StyledImage* s_image = StyledImage::create(input_images,style);
+        
+        input_to_reproject = s_image;
         input_to_reproject->set_crs(input_images->get_crs());
     }
 
@@ -978,7 +933,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
 
     *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
     (*reprojected_image)->set_crs(output_image->get_crs());
-
+    
     if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
         return false;
@@ -1049,27 +1004,8 @@ int merge_images(FileImage *output_image,                          // Sortie
              * on n'aura donc pas besoin de reechantillonnage.*/
             if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
-                Image* styled_image = NULL;
-                
-                if (style->estompage_defined()) {
-                    styled_image = new EstompageImage (stackable_image, style->get_estompage());
-                }
-                else if (style->pente_defined()) {
-                    styled_image = new PenteImage (stackable_image, style->get_pente());
-                }
-                else if (style->aspect_defined()) {
-                    styled_image = new AspectImage (stackable_image, style->get_aspect()) ;           
-                }
-
-                if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-                    if (styled_image != NULL) {
-                        stackable_images.push_back(new PaletteImage ( styled_image , style->get_palette() ));
-                    } else {
-                        stackable_images.push_back(new PaletteImage ( stackable_image , style->get_palette() ));
-                    }
-                } else {
-                    stackable_images.push_back(styled_image);
-                }
+                StyledImage* s_image = StyledImage::create(stackable_image,style);
+                stackable_images.push_back(s_image);
             } else {
                 stackable_images.push_back(stackable_image);
             }
