@@ -88,6 +88,7 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/EstompageImage.h>
 #include <rok4/image/PenteImage.h>
 #include <rok4/image/AspectImage.h>
+#include <rok4/image/TerrainrgbImage.h>
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
@@ -762,6 +763,9 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
         else if (style->aspect_defined()) {
             styled_image = new AspectImage (input_images, style->get_aspect()) ;           
         }
+        else if (style->terrainrgb_defined()) {
+            styled_image = new TerrainrgbImage (input_images, style->get_terrainrgb()) ;           
+        }
 
         if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
             if (styled_image != NULL) {
@@ -922,6 +926,10 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
         else if (style->aspect_defined()) {
             styled_image = new AspectImage (input_images, style->get_aspect()) ;           
         }
+        else if (style->terrainrgb_defined()) {
+            styled_image = new TerrainrgbImage (input_images, style->get_terrainrgb()) ;     
+            styled_image->print();      
+        }
 
         if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
             if (styled_image != NULL) {
@@ -1032,6 +1040,9 @@ int merge_images(FileImage *output_image,                          // Sortie
                 }
                 else if (style->aspect_defined()) {
                     styled_image = new AspectImage (stackable_image, style->get_aspect()) ;           
+                }
+                else if (style->terrainrgb_defined()) {
+                    styled_image = new TerrainrgbImage (stackable_image, style->get_terrainrgb()) ;           
                 }
 
                 if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
