@@ -66,6 +66,7 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/DecimatedImage.h>
 #include <rok4/image/ExtendedCompoundImage.h>
 #include <rok4/utils/Cache.h>
+#include <rok4/utils/ProjPool.h>
 
 #include <rok4/enums/Format.h>
 #include <math.h>

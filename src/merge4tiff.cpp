@@ -62,9 +62,7 @@ namespace keywords = boost::log::keywords;
 
 #include <rok4/image/Image.h>
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
 #include <rok4/image/file/FileImage.h>
-
 #include "config.h"
 
 /* Valeurs de nodata */
