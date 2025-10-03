@@ -76,6 +76,7 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/file/FileImage.h>
 #include <rok4/enums/Format.h>
 #include <rok4/utils/Cache.h>
+#include <rok4/utils/CurlPool.h>
 #include <rok4/enums/Interpolation.h>
 #include <rok4/processors/PixelConverter.h>
 #include <rok4/image/ReprojectedImage.h>
