@@ -66,6 +66,7 @@ Leur définition est contrôlée à l'usage.
         - `ROK4_KEYSTONE_PROJECTID`
     - `ROK4_SWIFT_TOKEN_FILE` afin de sauvegarder le token d'accès, et ne pas le demander si ce fichier en contient un
 * Pour configurer l'usage de libcurl (intéraction SWIFT et S3)
+    - `ROK4_NETWORK_TIMEOUT` : temps en secondes d'inactivité d'une requête avant de la stopper. Aucun temps défini côté client si aucune valeur fournie
     - `ROK4_SSL_NO_VERIFY`
     - `HTTP_PROXY`
     - `HTTPS_PROXY`
