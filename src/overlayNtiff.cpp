@@ -65,7 +65,6 @@ namespace keywords = boost::log::keywords;
 #include <rok4/enums/Format.h>
 #include <math.h>
 #include "config.h"
-#include <rok4/utils/Cache.h>
 
 /** \~french Chemin du fichier de configuration des images */
 char configuration_path[256];

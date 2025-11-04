@@ -56,9 +56,11 @@ namespace keywords = boost::log::keywords;
 #include <curl/curl.h>
 
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
 #include <rok4/image/file/Rok4Image.h>
 #include <rok4/image/file/FileImage.h>
+#include <rok4/utils/CurlPool.h>
+#include <rok4/utils/ProjPool.h>
+#include <rok4/utils/StoragePool.h>
 
 #include "config.h"
 
