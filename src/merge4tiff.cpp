@@ -580,8 +580,8 @@ int fill_background_line ( FileImage* background_image, T* image_line, uint8_t* 
 template <typename T>
 int merge ( FileImage* background_image, FileImage* input_images[2][2], FileImage* output_image, FileImage* output_mask, T* nodata ) {
     
-    uint8 merge_weights[1024];
-    for ( int i = 0; i <= 1020; i++ ) merge_weights[i] = 255 - ( uint8 ) round ( pow ( double ( 1020 - i ) /1020., local_gamma ) * 255. );
+    uint8_t merge_weights[1024];
+    for ( int i = 0; i <= 1020; i++ ) merge_weights[i] = 255 - ( uint8_t ) round ( pow ( double ( 1020 - i ) /1020., local_gamma ) * 255. );
 
     int samples_count = width * samplesperpixel;
     int left,right;
@@ -613,7 +613,7 @@ int merge ( FileImage* background_image, FileImage* input_images[2][2], FileImag
         if ( input_images[y][1] ) right = 2*width;
         else right = width;
 
-        for ( uint32 h = 0; h < height / 2; h++ ) {
+        for ( uint32_t h = 0; h < height / 2; h++ ) {
 
             int line = y * height / 2 + h;
 
