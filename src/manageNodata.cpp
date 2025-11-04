@@ -72,7 +72,7 @@
 using namespace std;
 
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
+#include <rok4/utils/ProjPool.h>
 #include <rok4/image/file/TiffNodataManager.h>
 
 #include <boost/log/core.hpp>

@@ -64,8 +64,9 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/file/FileImage.h>
 #include <rok4/image/CompoundImage.h>
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
 #include "config.h"
+#include <rok4/utils/ProjPool.h>
+
 
 /** \~french Nombre d'images dans le sens de la largeur */
 int images_widthwise = 0;
