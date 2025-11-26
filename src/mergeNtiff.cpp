@@ -121,6 +121,8 @@ bool style_provided = false;
 char style_file[256];
 /** \~french Objet style à appliquer */
 Style* style;
+/** \~french Image avec le style appliqué  */
+StyledImage* s_image;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
 bool debug_logger = false;
@@ -748,7 +750,7 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
     // Reechantillonnage
     Image* input_to_resample = input_images;
     if (style_provided) {
-        StyledImage* s_image = new StyledImage(input_images,style);
+        s_image = new StyledImage(input_images,style);
         input_to_resample=s_image->styled_image;
     }
 
@@ -758,7 +760,7 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ResampledImage";
         return false;
     }
-
+    
     return true;
 }
 
@@ -887,7 +889,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     /********************** Application du style **********************/
     Image* input_to_reproject = input_images;
     if (style_provided) {
-        StyledImage* s_image= new StyledImage(input_images,style);
+        s_image= new StyledImage(input_images,style);
         
         input_to_reproject = s_image->styled_image;
         input_to_reproject->set_crs(input_images->get_crs());
@@ -906,7 +908,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
 
     *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
     (*reprojected_image)->set_crs(output_image->get_crs());
-
+    
     if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
         return false;
@@ -977,7 +979,7 @@ int merge_images(FileImage *output_image,                          // Sortie
              * on n'aura donc pas besoin de reechantillonnage.*/
             if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
-                StyledImage* s_image = new StyledImage(stackable_image,style);
+                s_image = new StyledImage(stackable_image,style);
                 stackable_images.push_back(s_image->styled_image);
             } else {
                 stackable_images.push_back(stackable_image);
