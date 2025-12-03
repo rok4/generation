@@ -1217,16 +1217,15 @@ int main(int argc, char** argv) {
 
     BOOST_LOG_TRIVIAL(debug) << "Clean";
     // Nettoyage
-    
+    if (style_provided) {
+        delete style;
+    }
     if (nodata_provided) {
         delete[] nodata;
     }
     delete merged_image;
     delete output_image;
     delete output_mask;
-    if (style_provided) {
-        delete style;
-    }
     CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
