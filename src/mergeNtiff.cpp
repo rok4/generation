@@ -121,8 +121,6 @@ bool style_provided = false;
 char style_file[256];
 /** \~french Objet style à appliquer */
 Style* style;
-/** \~french Image avec le style appliqué  */
-StyledImage* s_image;
 
 /** \~french Activation du niveau de log debug. Faux par défaut */
 bool debug_logger = false;
@@ -750,8 +748,8 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
     // Reechantillonnage
     Image* input_to_resample = input_images;
     if (style_provided) {
-        s_image = new StyledImage(input_images,style);
-        input_to_resample=s_image->styled_image;
+        StyledImage* s_image = StyledImage::create(input_images,style);
+        input_to_resample=s_image;
     }
 
     *resampled_image = new ResampledImage(input_to_resample, width_dst, height_dst, resx_dst, resy_dst, bbox_dst, interpolation, input_images->use_masks());
@@ -889,9 +887,9 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     /********************** Application du style **********************/
     Image* input_to_reproject = input_images;
     if (style_provided) {
-        s_image= new StyledImage(input_images,style);
+        StyledImage* s_image = StyledImage::create(input_images,style);
         
-        input_to_reproject = s_image->styled_image;
+        input_to_reproject = s_image;
         input_to_reproject->set_crs(input_images->get_crs());
     }
 
@@ -979,8 +977,8 @@ int merge_images(FileImage *output_image,                          // Sortie
              * on n'aura donc pas besoin de reechantillonnage.*/
             if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
-                s_image = new StyledImage(stackable_image,style);
-                stackable_images.push_back(s_image->styled_image);
+                StyledImage* s_image = StyledImage::create(stackable_image,style);
+                stackable_images.push_back(s_image);
             } else {
                 stackable_images.push_back(stackable_image);
             }
@@ -1219,15 +1217,16 @@ int main(int argc, char** argv) {
 
     BOOST_LOG_TRIVIAL(debug) << "Clean";
     // Nettoyage
-    if (style_provided) {
-        delete style;
-    }
+    
     if (nodata_provided) {
         delete[] nodata;
     }
     delete merged_image;
     delete output_image;
     delete output_mask;
+    if (style_provided) {
+        delete style;
+    }
     CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
