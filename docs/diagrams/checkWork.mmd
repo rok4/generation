@@ -1,0 +1,14 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+    img1@{ shape: proc, label: "FileImage"}
+    img1_notes@{ shape: braces, label: "image en entrée
+en lecture
+si la création est en succès, la commande sort en succès"}
+    img1 -.- img1_notes
+

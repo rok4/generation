@@ -35,7 +35,6 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-
 /**
  * \page merge4tiff Commande merge4tiff
  * \author Institut national de l'information géographique et forestière
@@ -46,7 +45,8 @@
  * \~french
  * 
  * L'implémentation de cette commande se trouve dans le fichier \ref merge4tiff.cpp
- * \section diagram Détails du chaînage des différentes classes d'image :
+ * 
+ * \section diagram_merge4tiff Détails du chaînage des différentes classes d'image :
  * 
  * @mermaid{merge4tiff}
  * 
@@ -456,7 +456,7 @@ int check_components ( FileImage* image, int position ) {
  * \details Crée les objets TIFF, contrôle la cohérence des caractéristiques des images en entrée, ouvre les flux de lecture et écriture. Les éventuels masques associés sont ajoutés aux objets FileImage.
  * \param[in] output_image image en sortie
  * \param[in] output_mask masque en sortie
- * \param[in] input_images image composée en entrée
+ * \param[in] input_image image composée en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int load_images ( FileImage** output_image, FileImage** output_mask, Image **input_image) {
@@ -551,7 +551,7 @@ int load_images ( FileImage** output_image, FileImage** output_mask, Image **inp
     }
 
     if (! si->set_mask(sm)) {
-        BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Subsmapled image";
+        BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Subsampled image";
         return -1;
     }
 

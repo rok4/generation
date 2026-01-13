@@ -36,10 +36,32 @@
  */
 
 /**
- * \file pbf2cache.cpp
+ * \page pbf2cache Commande pbf2cache
  * \author Institut national de l'information géographique et forestière
+ * \~ \image html pbf2cache.png \~french
  * \~french \brief Consitution d'une dalle vecteur ROK4 à partir des tuiles PBF
- * \~english \brief Build a vector ROK4 slab from PBD tiles
+ * \~english \brief Build a vector ROK4 slab from PBF tiles
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref pbf2cache.cpp
+ * 
+ * \section diagram_pbf2cache Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{pbf2cache}
+ * 
+ */
+
+/** \file pbf2cache.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande pbf2cache
+ * 
+ * Le fonctionnement général est décrit dans la page \ref pbf2cache .
+ * 
+ * \~english
+ * \brief Implementation file for command pbf2cache
+ * 
+ * Global operation is described into page \ref pbf2cache .
  */
 
 #include <cstdlib>

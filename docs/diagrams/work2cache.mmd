@@ -1,0 +1,22 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+    img1@{ shape: proc, label: "FileImage"}
+    img1_notes@{ shape: braces, label: "image en entrée
+en lecture
+avec un éventuel convertisseur"}
+    img1 -.- img1_notes
+
+    img2@{ shape: proc, label: "Rok4Image"}
+    img2_notes@{ shape: braces, label: "image en sortie
+en écriture"}
+    img2 -.- img2_notes
+
+    img1 write@-- est lue ligne par ligne pour écrire --> img2
+    write@{ animate: true }
+

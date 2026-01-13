@@ -1,0 +1,45 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+    img1@{ shape: proc, label: "FileImage"}
+    img1_notes@{ shape: braces, label: "1 par image de coin en entrée
+jusqu'à 4
+en lecture
+avec un éventuel convertisseur"}
+    img1 -.- img1_notes
+
+    img2@{ shape: proc, label: "ExtendedCompoundImage"}
+    img3@{ shape: proc, label: "SubsampledImage"}
+
+    img3 --> img2 --> img1
+
+    img5@{ shape: proc, label: "MergeImage"}
+    img4@{ shape: proc, label: "FileImage"}
+    img4_notes@{ shape: braces, label: "1 seule pour l'image de fond
+en lecture"}
+    img4 -.- img4_notes
+    img5 --> img4
+    img5 --> img3
+
+    input{Au choix}
+
+
+    img8@{ shape: proc, label: "FileImage"}
+    img8_notes@{ shape: braces, label: "image en sortie
+en écriture"}
+    img8 -.- img8_notes
+
+    input write1@-- est lue ligne par ligne pour écrire --> img8
+    img3 write2@-- si pas de fond fourni --> input
+    img5 write3@-- si un fond est fourni --> input
+    write1@{ animate: true }
+    write2@{ animate: true }
+    write3@{ animate: true }
+
+    classDef optionnal stroke-dasharray: 5 5;
+    class img5,img4 optionnal

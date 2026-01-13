@@ -1985,6 +1985,8 @@ hr {
 .contents img, .contents .center, .contents center, .contents div.image object {
     max-width: 100%;
     overflow: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media screen and (max-width: 767px) {
