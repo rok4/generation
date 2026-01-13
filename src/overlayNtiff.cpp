@@ -36,10 +36,32 @@
  */
 
 /**
- * \file overlayNtiff.cpp
+ * \page overlayNtiff Commande overlayNtiff
  * \author Institut national de l'information géographique et forestière
+ * \~ \image html overlayNtiff.png \~french
  * \~french \brief Fusion de N images aux mêmes dimensions, selon différentes méthodes
  * \~english \brief Merge N images with same dimensions, according to different merge methods
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref overlayNtiff.cpp
+ * 
+ * \section diagram_overlayNtiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{overlayNtiff}
+ * 
+ */
+
+/** \file overlayNtiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande overlayNtiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref overlayNtiff .
+ * 
+ * \~english
+ * \brief Implementation file for command overlayNtiff
+ * 
+ * Global operation is described into page \ref overlayNtiff .
  */
 
 #include <iostream>
@@ -358,7 +380,7 @@ int read_configuration_line ( std::ifstream& configuration_file, char* image_pat
  *
  * \param[out] output_image image résultante de l'outil
  * \param[out] output_mask masque résultat de l'outil, si demandé
- * \param[out] pImageIn ensemble des images en entrée
+ * \param[out] merged_image ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int load_images ( FileImage** output_image, FileImage** output_mask, MergeImage** merged_image ) {

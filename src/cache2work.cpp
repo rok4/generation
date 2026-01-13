@@ -36,12 +36,32 @@
  */
 
 /**
- * \file cache2work.cpp
+ * \page cache2work Commande cache2work
  * \author Institut national de l'information géographique et forestière
- * \~french \brief Convertit une image d'une pyramide ROK4 (TIFF tuilé) en une image TIFF, lisible avec LibtiffImage
- * \~french \details Certains formats sont propres aux spécifications d'une pyramide d'images ROK4 (format PNG).
- * Vision libimage : Rok4Image -> FileImage
- * \~english \brief Convert a ROK4 pyramide's image (tiled TIFF) to a TIFF image, readable with LibtiffImage
+ * \~ \image html cache2work.png \~french
+ * \~french \brief Convertit une image d'une pyramide ROK4 (TIFF tuilé) en une image TIFF standard
+ * \~english \brief Convert a ROK4 pyramide's image (tiled TIFF) to a standard TIFF image
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref cache2work.cpp
+ * 
+ * \section diagram_cache2work Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{cache2work}
+ * 
+ */
+
+/** \file cache2work.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande cache2work
+ * 
+ * Le fonctionnement général est décrit dans la page \ref cache2work .
+ * 
+ * \~english
+ * \brief Implementation file for command cache2work
+ * 
+ * Global operation is described into page \ref cache2work .
  */
 
 #include <cstdlib>

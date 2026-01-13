@@ -36,19 +36,37 @@
  */
 
 /**
- * \file mergeNtiff.cpp
+ * \page mergeNtiff Commande mergeNtiff
  * \author Institut national de l'information géographique et forestière
- * \~french \brief Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées
- * \~english \brief Create one georeferenced TIFF image from several georeferenced images
  * \~ \image html mergeNtiff.png \~french
- *
- * La légende utilisée dans tous les schémas de la documentation de ce fichier sera la suivante
- * \~ \image html mergeNtiff_legende.png \~french
- *
+ * \~french \brief Création d'une image TIFF géoréférencée à partir de plusieurs images sources géoréférencées
+ * \~english \brief Create one georeferenced TIFF image from several georeferenced images
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref mergeNtiff.cpp
+ * 
  * Pour réaliser la fusion des images en entrée, on traite différemment :
  * \li les images qui sont superposables à l'image de sortie (même SRS, mêmes résolutions, mêmes phases) : on parle alors d'images compatibles, pas de réechantillonnage nécessaire.
  * \li les images non compatibles mais de même SRS : un passage par le réechantillonnage (plus lourd en calcul) est indispensable.
  * \li les images non compatibles et de SRS différents : un passage par la reprojection (encore plus lourd en calcul) est indispensable.
+ * 
+ * \section diagram_mergeNtiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{mergeNtiff}
+ * 
+ */
+
+/** \file mergeNtiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande mergeNtiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref mergeNtiff .
+ * 
+ * \~english
+ * \brief Implementation file for command mergeNtiff
+ * 
+ * Global operation is described into page \ref mergeNtiff .
  */
 
 #include <pthread.h>
@@ -97,6 +115,7 @@ char images_root[256];
 
 /** \~french Valeur de nodata sous forme de chaîne de caractère (passée en paramètre de la commande) */
 char strnodata[256];
+/** \~french Valeur de nodata sous forme de tableau d'entiers */
 int* nodata;
 /** \~french A-t-on précisé une valeur de nodata */
 bool nodata_provided = false;
@@ -437,7 +456,7 @@ bool load_configuration(
  * Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_path et images_root va être concaténer au chemin vers les fichiers de sortie.
  * \param[out] output_image image résultante de l'outil
  * \param[out] output_mask masque résultat de l'outil, si demandé
- * \param[out] sorted_input_images ensemble des images en entrée
+ * \param[out] input_images ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int load_images(FileImage** output_image, FileImage** output_mask, std::vector<FileImage*>* input_images) {
@@ -627,6 +646,14 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
     return 0;
 }
 
+/**
+ * \~french
+ * \brief Ajoute les éventuel convertisseurs aux images en entrée
+ * \details Si un format de sortie a été spécifié et qu'il n'est pas identique à celui des images en entrée, on ajoute un convertisseur
+ *
+ * \param[in] input_images images en entrée
+ * \return code de retour, 0 si réussi, -1 sinon
+ */
 int add_converters(std::vector<FileImage*> input_images) {
     if (! output_format_provided) {
         // On n'a pas précisé de format en sortie, donc toutes les images doivent avoir le même
@@ -977,7 +1004,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
  *
  * Les masques sont gérés en toile de fond, en étant attachés à chacune des images manipulées.
  * \param[in] output_image image de sortie
- * \param[in] input_images paquets d'images en entrée
+ * \param[in] sorted_input_images paquets d'images en entrée
  * \param[out] merged_image paquet d'images superposable avec l'image de sortie
  * \return 0 en cas de succès, -1 en cas d'erreur
  */

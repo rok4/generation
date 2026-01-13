@@ -1,0 +1,27 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+    img1@{ shape: proc, label: "FileImage"}
+    img1_notes@{ shape: braces, label: "1 par image en entrée
+en lecture"}
+    img1 -.- img1_notes
+
+    img2@{ shape: proc, label: "MergeImage"}
+
+    img2 --> img1
+
+    img8@{ shape: proc, label: "FileImage"}
+    img8_notes@{ shape: braces, label: "image en sortie
+en écriture"}
+    img8 -.- img8_notes
+
+    img2 write@-- est lue ligne par ligne pour écrire --> img8
+    write@{ animate: true }
+
+    classDef optionnal stroke-dasharray: 5 5;
+    class img2 optionnal

@@ -36,10 +36,31 @@
  */
 
 /**
- * \file checkWork.cpp
+ * \page checkWork Commande checkWork
  * \author Institut national de l'information géographique et forestière
  * \~french \brief Contrôle la validité d'une image
  * \~english \brief Control image validity
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref checkWork.cpp
+ * 
+ * \section diagram_checkWork Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{checkWork}
+ * 
+ */
+
+/** \file checkWork.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande checkWork
+ * 
+ * Le fonctionnement général est décrit dans la page \ref checkWork .
+ * 
+ * \~english
+ * \brief Implementation file for command checkWork
+ * 
+ * Global operation is described into page \ref checkWork .
  */
 
 #include <cstdlib>

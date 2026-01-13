@@ -1,0 +1,35 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+
+    subgraph tnm["TiffNodataManager"]
+        direction TB
+
+        img1@{ shape: proc, label: "FileImage"}
+        img1_notes@{ shape: braces, label: "1 seul image en entrée
+    en lecture"}
+        img1 -.- img1_notes
+
+        proc{{determine les pixels de nodata}}
+
+        img1 write1@-- est lue en entier --> proc
+        write1@{ animate: true }
+
+        img8@{ shape: proc, label: "FileImage"}
+        img8_notes@{ shape: braces, label: "image en sortie
+    en écriture"}
+        img8 -.- img8_notes
+
+        proc write2@-- donnée bufferisée écrite --> img8
+        write2@{ animate: true }
+
+    end
+
+
+    classDef optionnal stroke-dasharray: 5 5;
+    class img2 optionnal

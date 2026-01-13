@@ -36,10 +36,32 @@
  */
 
 /**
- * \file composeNtiff.cpp
+ * \page composeNtiff Commande composeNtiff
  * \author Institut national de l'information géographique et forestière
+ * \~ \image html composeNtiff.png \~french
  * \~french \brief Montage de N images TIFF aux mêmes dimensions et caractéristiques
  * \~english \brief Monte N TIFF images with same dimensions and attributes
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref composeNtiff.cpp
+ * 
+ * \section diagram_composeNtiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{composeNtiff}
+ * 
+ */
+
+/** \file composeNtiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande composeNtiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref composeNtiff .
+ * 
+ * \~english
+ * \brief Implementation file for command composeNtiff
+ * 
+ * Global operation is described into page \ref composeNtiff .
  */
 
 #include <iostream>
@@ -222,7 +244,7 @@ int parse_command_line ( int argc, char** argv ) {
 /**
  * \~french
  * \brief Charge les images contenues dans le dossier en entrée et l'image de sortie
- * \details Toutes les images doivent avoir les mêmes caractéristiques, dimensions et type des canaux. Les images en entrée seront gérée par un objet de la classe #CompoundImage, et l'image en sortie sera une image TIFF.
+ * \details Toutes les images doivent avoir les mêmes caractéristiques, dimensions et type des canaux. Les images en entrée seront gérée par un objet de la classe CompoundImage, et l'image en sortie sera une image TIFF.
  *
  * \param[out] output_image image résultante de l'outil
  * \param[out] compound_image ensemble des images en entrée
