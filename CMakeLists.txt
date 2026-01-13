@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(BUILD_SHARED_LIBS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 ################### PARAMÈTRES
 
 set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "Installation location")

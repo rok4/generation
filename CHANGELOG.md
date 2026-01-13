@@ -8,6 +8,8 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/) et ce pr
 - Possibilité de définir un timeout via la variable d'environnement `ROK4_NETWORK_TIMEOUT` (valeur à fournir en seconde) pour les intéraction avec le stockage Swift ou S3
 - Ajout de diagrammes pour comprendre l'usage des classes Image dans les différents outils
 - Amélioration de la documentation Doxygen
+- Mise en place d'un hook de pre commit avec un linter C++ (clang-format style google)
+- Préparation de l'utilisation de clang-tidy
 
 ### Changed
 - Refonte du CHANGELOG au format [Keep a Changelog](https://keepachangelog.com/)

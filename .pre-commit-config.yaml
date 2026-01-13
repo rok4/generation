@@ -1,0 +1,28 @@
+exclude: "src/thirdparty|build|tests"
+fail_fast: false
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-case-conflict
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+  - repo: https://github.com/cpp-linter/cpp-linter-hooks
+    rev: v1.1.11  # Use the tag or commit you want
+    hooks:
+      - id: clang-format
+        args: [--style=file]
+      # - id: clang-tidy
+      #   args: ["--checks=.clang-tidy", "-p=build/"]
+
+ci:
+  autofix_commit_msg: "[pre-commit.ci] Corrections automatiques appliquées par les git hooks."
+  autofix_prs: true
+  autoupdate_commit_msg: "[pre-commit.ci] Mise à jour des git hooks."
+  autoupdate_schedule: quarterly
