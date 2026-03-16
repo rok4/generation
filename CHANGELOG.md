@@ -6,6 +6,8 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/) et ce pr
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-03-16
+
 ### Added
 
 - Possibilité de définir un timeout via la variable d'environnement `ROK4_NETWORK_TIMEOUT` (valeur à fournir en seconde) pour les intéraction avec le stockage Swift ou S3
@@ -71,7 +73,8 @@ Cette release contient les outils de génération des pyramides de données, per
 - Les chemins des dalles finales sont fournis dans un format précisant le type de stockage : `(file|ceph|s3|swift)://<chemin vers le fichier ou l'objet>`. Dans le cas du stockage objet, le chemin est de la forme `<nom du contenant>/<nom de l'objet>`
 - Passage de la librairie PROJ à la version 6
 
-[Unreleased]: https://github.com/rok4/generation/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/rok4/generation/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/rok4/generation/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/rok4/generation/compare/v4.2.0...v5.0.0
 [4.2.0]: https://github.com/rok4/generation/compare/v4.1.5...v4.2.0
 [4.1.5]: https://github.com/rok4/generation/compare/v4.1.4...v4.1.5
