@@ -36,12 +36,34 @@
  */
 
 /**
- * \file decimateNtiff.cpp
+ * \page decimateNtiff Commande decimateNtiff
  * \author Institut national de l'information géographique et forestière
- * \~french \brief Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées
- * \~english \brief Create one georeferenced TIFF image from several georeferenced images
  * \~ \image html decimateNtiff.png \~french
+ * \~french \brief Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées par décimation
+ * \~english \brief Create one georeferenced TIFF image from several georeferenced images with decimation
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref decimateNtiff.cpp
+ * 
+ * \section diagram_decimateNtiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{decimateNtiff}
+ * 
  */
+
+/** \file decimateNtiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande decimateNtiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref decimateNtiff .
+ * 
+ * \~english
+ * \brief Implementation file for command decimateNtiff
+ * 
+ * Global operation is described into page \ref decimateNtiff .
+ */
+
 
 #include <proj.h>
 #include <pthread.h>
@@ -65,18 +87,11 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/file/FileImage.h>
 #include <rok4/image/DecimatedImage.h>
 #include <rok4/image/ExtendedCompoundImage.h>
-#include <rok4/utils/Cache.h>
+#include <rok4/utils/ProjPool.h>
 
 #include <rok4/enums/Format.h>
 #include <math.h>
 #include "config.h"
-
-#ifndef __max
-#define __max(a, b)   ( ((a) > (b)) ? (a) : (b) )
-#endif
-#ifndef __min
-#define __min(a, b)   ( ((a) < (b)) ? (a) : (b) )
-#endif
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
@@ -496,6 +511,14 @@ int load_images ( FileImage** output_image, FileImage** output_mask, std::vector
     return 0;
 }
 
+/**
+ * \~french
+ * \brief Ajoute les éventuel convertisseurs aux images en entrée
+ * \details Si un format de sortie a été spécifié et qu'il n'est pas identique à celui des images en entrée, on ajoute un convertisseur
+ *
+ * \param[in] input_images images en entrée
+ * \return code de retour, 0 si réussi, -1 sinon
+ */
 int add_converters(std::vector<FileImage*> input_images) {
     if (! output_format_provided) {
         // On n'a pas précisé de format en sortie, donc toutes les images doivent avoir le même

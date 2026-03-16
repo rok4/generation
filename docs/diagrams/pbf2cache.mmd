@@ -1,0 +1,24 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    htmlLabels: false
+---
+
+flowchart TB
+
+    pbf[[ifstream]]
+    pbf_notes@{ shape: braces, label: "1 par tuile PBF en entrée
+en lecture"}
+    pbf -.- pbf_notes
+
+    img8@{ shape: proc, label: "Rok4Image"}
+    img8_notes@{ shape: braces, label: "image en sortie
+en écriture"}
+    img8 -.- img8_notes
+
+    pbf write@-- est lue en entier pour écrire tuile par tuile --> img8
+    write@{ animate: true }
+
+    classDef optionnal stroke-dasharray: 5 5;
+    class img2 optionnal

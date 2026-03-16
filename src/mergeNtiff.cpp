@@ -36,19 +36,37 @@
  */
 
 /**
- * \file mergeNtiff.cpp
+ * \page mergeNtiff Commande mergeNtiff
  * \author Institut national de l'information géographique et forestière
- * \~french \brief Création d'une image TIFF géoréférencée à partir de n images sources géoréférencées
- * \~english \brief Create one georeferenced TIFF image from several georeferenced images
  * \~ \image html mergeNtiff.png \~french
- *
- * La légende utilisée dans tous les schémas de la documentation de ce fichier sera la suivante
- * \~ \image html mergeNtiff_legende.png \~french
- *
+ * \~french \brief Création d'une image TIFF géoréférencée à partir de plusieurs images sources géoréférencées
+ * \~english \brief Create one georeferenced TIFF image from several georeferenced images
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref mergeNtiff.cpp
+ * 
  * Pour réaliser la fusion des images en entrée, on traite différemment :
  * \li les images qui sont superposables à l'image de sortie (même SRS, mêmes résolutions, mêmes phases) : on parle alors d'images compatibles, pas de réechantillonnage nécessaire.
  * \li les images non compatibles mais de même SRS : un passage par le réechantillonnage (plus lourd en calcul) est indispensable.
  * \li les images non compatibles et de SRS différents : un passage par la reprojection (encore plus lourd en calcul) est indispensable.
+ * 
+ * \section diagram_mergeNtiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{mergeNtiff}
+ * 
+ */
+
+/** \file mergeNtiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande mergeNtiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref mergeNtiff .
+ * 
+ * \~english
+ * \brief Implementation file for command mergeNtiff
+ * 
+ * Global operation is described into page \ref mergeNtiff .
  */
 
 #include <pthread.h>
@@ -75,7 +93,7 @@ namespace keywords = boost::log::keywords;
 #include <rok4/image/ExtendedCompoundImage.h>
 #include <rok4/image/file/FileImage.h>
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
+#include <rok4/utils/CurlPool.h>
 #include <rok4/enums/Interpolation.h>
 #include <rok4/processors/PixelConverter.h>
 #include <rok4/image/ReprojectedImage.h>
@@ -84,10 +102,7 @@ namespace keywords = boost::log::keywords;
 #include "config.h"
 
 #include <rok4/style/Style.h>
-#include <rok4/image/PaletteImage.h>
-#include <rok4/image/EstompageImage.h>
-#include <rok4/image/PenteImage.h>
-#include <rok4/image/AspectImage.h>
+#include <rok4/image/StyledImage.h>
 
 // Paramètres de la ligne de commande déclarés en global
 /** \~french Chemin du fichier de configuration des images */
@@ -97,6 +112,7 @@ char images_root[256];
 
 /** \~french Valeur de nodata sous forme de chaîne de caractère (passée en paramètre de la commande) */
 char strnodata[256];
+/** \~french Valeur de nodata sous forme de tableau d'entiers */
 int* nodata;
 /** \~french A-t-on précisé une valeur de nodata */
 bool nodata_provided = false;
@@ -437,7 +453,7 @@ bool load_configuration(
  * Le chemin vers le fichier de configuration est stocké dans la variables globale configuration_path et images_root va être concaténer au chemin vers les fichiers de sortie.
  * \param[out] output_image image résultante de l'outil
  * \param[out] output_mask masque résultat de l'outil, si demandé
- * \param[out] sorted_input_images ensemble des images en entrée
+ * \param[out] input_images ensemble des images en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int load_images(FileImage** output_image, FileImage** output_mask, std::vector<FileImage*>* input_images) {
@@ -627,6 +643,14 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
     return 0;
 }
 
+/**
+ * \~french
+ * \brief Ajoute les éventuel convertisseurs aux images en entrée
+ * \details Si un format de sortie a été spécifié et qu'il n'est pas identique à celui des images en entrée, on ajoute un convertisseur
+ *
+ * \param[in] input_images images en entrée
+ * \return code de retour, 0 si réussi, -1 sinon
+ */
 int add_converters(std::vector<FileImage*> input_images) {
     if (! output_format_provided) {
         // On n'a pas précisé de format en sortie, donc toutes les images doivent avoir le même
@@ -751,29 +775,8 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
     // Reechantillonnage
     Image* input_to_resample = input_images;
     if (style_provided) {
-        Image* styled_image = NULL;
-        
-        if (style->estompage_defined()) {
-            styled_image = new EstompageImage (input_images, style->get_estompage());
-        }
-        else if (style->pente_defined()) {
-            styled_image = new PenteImage (input_images, style->get_pente());
-        }
-        else if (style->aspect_defined()) {
-            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
-        }
-
-        if ( input_to_resample->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_resample = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_resample = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
-            if (styled_image != NULL) {
-                input_to_resample = styled_image;
-            }
-        }
+        StyledImage* s_image = StyledImage::create(input_images,style);
+        input_to_resample=s_image;
     }
 
     *resampled_image = new ResampledImage(input_to_resample, width_dst, height_dst, resx_dst, resy_dst, bbox_dst, interpolation, input_images->use_masks());
@@ -782,7 +785,7 @@ bool resample_images(FileImage* output_image, ExtendedCompoundImage* input_image
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ResampledImage";
         return false;
     }
-
+    
     return true;
 }
 
@@ -911,30 +914,9 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
     /********************** Application du style **********************/
     Image* input_to_reproject = input_images;
     if (style_provided) {
-        Image* styled_image = NULL;
-
-        if (style->estompage_defined()) {
-            styled_image = new EstompageImage (input_images, style->get_estompage());
-        }
-        else if (style->pente_defined()) {
-            styled_image = new PenteImage (input_images, style->get_pente());
-        }
-        else if (style->aspect_defined()) {
-            styled_image = new AspectImage (input_images, style->get_aspect()) ;           
-        }
-
-        if ( input_to_reproject->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-            if (styled_image != NULL) {
-                input_to_reproject = new PaletteImage ( styled_image , style->get_palette() );
-            } else {
-                input_to_reproject = new PaletteImage ( input_images , style->get_palette() );
-            }
-        } else {
-            if (styled_image != NULL) {
-                input_to_reproject = styled_image;
-            }
-        }
-
+        StyledImage* s_image = StyledImage::create(input_images,style);
+        
+        input_to_reproject = s_image;
         input_to_reproject->set_crs(input_images->get_crs());
     }
 
@@ -951,7 +933,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
 
     *reprojected_image = new ReprojectedImage(input_to_reproject, bbox_dst, resx_dst, resy_dst, grid, interpolation, input_images->use_masks());
     (*reprojected_image)->set_crs(output_image->get_crs());
-
+    
     if (!(*reprojected_image)->set_mask(reprojected_mask)) {
         BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the ReprojectedImage";
         return false;
@@ -977,7 +959,7 @@ bool reproject_images(FileImage* output_image, ExtendedCompoundImage* input_imag
  *
  * Les masques sont gérés en toile de fond, en étant attachés à chacune des images manipulées.
  * \param[in] output_image image de sortie
- * \param[in] input_images paquets d'images en entrée
+ * \param[in] sorted_input_images paquets d'images en entrée
  * \param[out] merged_image paquet d'images superposable avec l'image de sortie
  * \return 0 en cas de succès, -1 en cas d'erreur
  */
@@ -1022,27 +1004,8 @@ int merge_images(FileImage *output_image,                          // Sortie
              * on n'aura donc pas besoin de reechantillonnage.*/
             if (style_provided && ! (i == 0 && background_provided)) {
                 // Un style est fourni et nous ne sommes pas dans le cas de la première entrée qui est une image de fond
-                Image* styled_image = NULL;
-                
-                if (style->estompage_defined()) {
-                    styled_image = new EstompageImage (stackable_image, style->get_estompage());
-                }
-                else if (style->pente_defined()) {
-                    styled_image = new PenteImage (stackable_image, style->get_pente());
-                }
-                else if (style->aspect_defined()) {
-                    styled_image = new AspectImage (stackable_image, style->get_aspect()) ;           
-                }
-
-                if ( stackable_image->get_channels() == 1 && ! ( style->get_palette()->is_empty() ) ) {
-                    if (styled_image != NULL) {
-                        stackable_images.push_back(new PaletteImage ( styled_image , style->get_palette() ));
-                    } else {
-                        stackable_images.push_back(new PaletteImage ( stackable_image , style->get_palette() ));
-                    }
-                } else {
-                    stackable_images.push_back(styled_image);
-                }
+                StyledImage* s_image = StyledImage::create(stackable_image,style);
+                stackable_images.push_back(s_image);
             } else {
                 stackable_images.push_back(stackable_image);
             }

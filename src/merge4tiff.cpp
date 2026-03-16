@@ -36,11 +36,32 @@
  */
 
 /**
- * \file merge4tiff.cpp
+ * \page merge4tiff Commande merge4tiff
  * \author Institut national de l'information géographique et forestière
+ * \~ \image html merge4tiff.png \~french
  * \~french \brief Sous echantillonage de 4 images disposées en carré, avec utilisation possible de fond et de masques de données
  * \~english \brief Four images subsampling, formed a square, might use a background and data masks
- * \~ \image html merge4tiff.png
+ * 
+ * \~french
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref merge4tiff.cpp
+ * 
+ * \section diagram_merge4tiff Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{merge4tiff}
+ * 
+ */
+
+/** \file merge4tiff.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande merge4tiff
+ * 
+ * Le fonctionnement général est décrit dans la page \ref merge4tiff .
+ * 
+ * \~english
+ * \brief Implementation file for command merge4tiff
+ * 
+ * Global operation is described into page \ref merge4tiff .
  */
 
 #include <tiffio.h>
@@ -62,32 +83,34 @@ namespace keywords = boost::log::keywords;
 
 #include <rok4/image/Image.h>
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
 #include <rok4/image/file/FileImage.h>
-
+#include <rok4/image/ExtendedCompoundImage.h>
+#include <rok4/image/MergeImage.h>
+#include <rok4/image/SubsampledImage.h>
 #include "config.h"
 
 /* Valeurs de nodata */
 /** \~french Valeur de nodata sour forme de chaîne de caractère (passée en paramètre de la commande) */
-char* strnodata;
+char* strnodata = 0;
 
 /* Chemins des images en entrée et en sortie */
 /** \~french Chemin de l'image de fond */
-char* background_image_path;
+std::string background_image_path;
 /** \~french Chemin du masque associé à l'image de fond */
-char* background_mask_path;
+std::string background_mask_path;
 /** \~french Chemins des images en entrée */
-char* input_images_paths[4];
+std::vector<std::string> input_images_paths = {"", "", "", ""};
+;
 /** \~french Chemins des masques associés aux images en entrée */
-char* input_masks_paths[4];
+std::vector<std::string> input_masks_paths = {"", "", "", ""};
 /** \~french Chemin de l'image en sortie */
-char* output_image_path;
+std::string output_image_path;
 /** \~french Chemin du masque associé à l'image en sortie */
-char* output_mask_path;
+std::string output_mask_path;
 
 /* Caractéristiques des images en entrée et en sortie */
 /** \~french Valeur de gamma, pour foncer ou éclaircir des images en entier */
-double local_gamma;
+double local_gamma = 1.;
 /** \~french Largeur des images */
 uint32_t width;
 /** \~french Hauteur des images */
@@ -183,18 +206,6 @@ void error ( std::string message, int error_code ) {
  * \return code de retour, 0 si réussi, -1 sinon
  */
 int parse_command_line ( int argc, char* argv[] ) {
-    // Initialisation
-    local_gamma = 1.;
-    strnodata = 0;
-    compression = Compression::NONE;
-    background_image_path = 0;
-    background_mask_path = 0;
-    for ( int i=0; i<4; i++ ) {
-        input_images_paths[i] = 0;
-        input_masks_paths[i] = 0;
-    }
-    output_image_path = 0;
-    output_mask_path = 0;
 
     for ( int i = 1; i < argc; i++ ) {
         if ( argv[i][0] == '-' ) {
@@ -248,22 +259,22 @@ int parse_command_line ( int argc, char* argv[] ) {
                 }
                 switch ( argv[i-1][2] ) {
                 case '1':
-                    input_images_paths[0] = argv[i];
+                    input_images_paths[0] = std::string(argv[i]);
                     break;
                 case '2':
-                    input_images_paths[1] = argv[i];
+                    input_images_paths[1] = std::string(argv[i]);
                     break;
                 case '3':
-                    input_images_paths[2] = argv[i];
+                    input_images_paths[2] = std::string(argv[i]);
                     break;
                 case '4':
-                    input_images_paths[3] = argv[i];
+                    input_images_paths[3] = std::string(argv[i]);
                     break;
                 case 'b':
-                    background_image_path = argv[i];
+                    background_image_path = std::string(argv[i]);
                     break;
                 case 'o':
-                    output_image_path = argv[i];
+                    output_image_path = std::string(argv[i]);
                     break;
                 default:
                     BOOST_LOG_TRIVIAL(error) <<  "Unknown image's indice : -m" << argv[i-1][2] ;
@@ -277,22 +288,22 @@ int parse_command_line ( int argc, char* argv[] ) {
                 }
                 switch ( argv[i-1][2] ) {
                 case '1':
-                    input_masks_paths[0] = argv[i];
+                    input_masks_paths[0] = std::string(argv[i]);
                     break;
                 case '2':
-                    input_masks_paths[1] = argv[i];
+                    input_masks_paths[1] = std::string(argv[i]);
                     break;
                 case '3':
-                    input_masks_paths[2] = argv[i];
+                    input_masks_paths[2] = std::string(argv[i]);
                     break;
                 case '4':
-                    input_masks_paths[3] = argv[i];
+                    input_masks_paths[3] = std::string(argv[i]);
                     break;
                 case 'b':
-                    background_mask_path = argv[i];
+                    background_mask_path = std::string(argv[i]);
                     break;
                 case 'o':
-                    output_mask_path = argv[i];
+                    output_mask_path = std::string(argv[i]);
                     break;
                 default:
                     BOOST_LOG_TRIVIAL(error) <<  "Unknown mask's indice : -m" << argv[i-1][2] ;
@@ -344,7 +355,7 @@ int parse_command_line ( int argc, char* argv[] ) {
         BOOST_LOG_TRIVIAL(error) <<  "Missing nodata value" ;
         return -1;
     }
-    if ( output_image_path == 0 ) {
+    if ( output_image_path.empty() ) {
         BOOST_LOG_TRIVIAL(error) <<  "Missing output file" ;
         return -1;
     }
@@ -357,10 +368,10 @@ int parse_command_line ( int argc, char* argv[] ) {
  * \brief Contrôle les caractéristiques d'une image (format des canaux, tailles) et de son éventuel masque.
  * \details Si les composantes sont bonnes, le masque est attaché à l'image.
  * \param[in] image image à contrôler
- * \param[in] mask précise éventuellement un masque de donnée
+ * \param[in] position position de l'image (0, 1, 2 ou 3)
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int check_components ( FileImage* image, FileImage* mask) {
+int check_components ( FileImage* image, int position ) {
 
     if ( width == 0 ) { // read the parameters of the first input file
         width = image->get_width();
@@ -408,19 +419,24 @@ int check_components ( FileImage* image, FileImage* mask) {
         }
     }
 
-    if (mask != NULL) {
-        if ( ! ( mask->get_width() == width && mask->get_height() == height && mask->get_sample_format() == SampleFormat::UINT8 && 
-                mask->get_photometric() == Photometric::GRAY && mask->get_channels() == 1 ) ) {
-
-            BOOST_LOG_TRIVIAL(error) <<  "Error : all input masks must have the same parameters (width, height, etc...) : " << mask->get_filename();
-            return -1;
-        }
-
-        if ( ! image->set_mask(mask) ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Cannot add associated mask to the input FileImage " << image->get_filename() ;
-            return -1;
-        }
-        
+    // On va ajouter une bbox pour que le positionnement dans l'ExtendedCompoundImage soit correct
+    switch (position)
+    {
+    case -1:
+        image->set_bbox(BoundingBox<double> (0., 0., width, height));
+        break;
+    case 0:
+        image->set_bbox(BoundingBox<double> (0., height / 2., width / 2., height));
+        break;
+    case 1:
+        image->set_bbox(BoundingBox<double> (width / 2., height / 2., width, height));
+        break;
+    case 2:
+        image->set_bbox(BoundingBox<double> (0., 0., width / 2., height / 2.));
+        break;
+    case 3:
+        image->set_bbox(BoundingBox<double> (width / 2., 0., width, height / 2.));
+        break;
     }
 
     if (output_format_provided) {
@@ -438,316 +454,179 @@ int check_components ( FileImage* image, FileImage* mask) {
  * \~french
  * \brief Contrôle l'ensemble des images et masques, en entrée et sortie
  * \details Crée les objets TIFF, contrôle la cohérence des caractéristiques des images en entrée, ouvre les flux de lecture et écriture. Les éventuels masques associés sont ajoutés aux objets FileImage.
- * \param[in] input_images images en entrée
- * \param[in] background_image image de fond en entrée
  * \param[in] output_image image en sortie
+ * \param[in] output_mask masque en sortie
+ * \param[in] input_image image composée en entrée
  * \return code de retour, 0 si réussi, -1 sinon
  */
-int check_images ( FileImage* input_images[2][2], FileImage*& background_image, FileImage*& output_image, FileImage*& output_mask) {
+int load_images ( FileImage** output_image, FileImage** output_mask, Image **input_image) {
     width = 0;
+
+    std::vector<Image *> input_images;
+
+    bool missing_image = false;
+    bool with_mask = false;
+
+    BOOST_LOG_TRIVIAL(debug) <<  "Pack input images" ;
 
     for ( int i = 0; i < 4; i++ ) {
         BOOST_LOG_TRIVIAL(debug) <<  "Place " << i ;
         // Initialisation
-        if ( input_images_paths[i] == 0 ) {
+        if ( input_images_paths[i].empty() ) {
             BOOST_LOG_TRIVIAL(debug) <<  "No image" ;
-            input_images[i/2][i%2] = NULL;
+            missing_image = true;
             continue;
         }
 
         // Image en entrée
         FileImage* inputi = FileImage::create_to_read(input_images_paths[i]);
         if ( inputi == NULL ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unable to open input image: " + std::string ( input_images_paths[i] ) ;
+            BOOST_LOG_TRIVIAL(error) <<  "Unable to open input image: " << input_images_paths[i] ;
             return -1;
         }
-        input_images[i/2][i%2] = inputi;
 
-        // Eventuelle masque associé
-        FileImage* input_mask = NULL;
-        if ( input_masks_paths[i] != 0 ) {
-            input_mask = FileImage::create_to_read(input_masks_paths[i]);
-            if ( input_mask == NULL ) {
-                BOOST_LOG_TRIVIAL(error) <<  "Unable to open input mask: " << std::string ( input_masks_paths[i] ) ;
+        // Eventuel masque associé
+        if ( ! input_masks_paths[i].empty() ) {
+            FileImage* inputm = FileImage::create_to_read(input_masks_paths[i]);
+            if ( inputm == NULL ) {
+                BOOST_LOG_TRIVIAL(error) <<  "Unable to open input mask: " << input_masks_paths[i] ;
                 return -1;
             }
+            if (! inputi->set_mask(inputm)) {
+                BOOST_LOG_TRIVIAL(error) <<  "Unable to associate mask to image input mask: " << input_masks_paths[i] ;
+                return -1;
+            }
+
+            with_mask = true;
         }
 
         // Controle des composantes des images/masques et association
         BOOST_LOG_TRIVIAL(debug) <<  "Check" ;
-        if ( check_components ( inputi, input_mask ) < 0 ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unvalid components for the image " << std::string ( input_images_paths[i] ) << " (or its mask)" ;
-            return -1;
-        }  
-    }
-
-    background_image = NULL;
-
-    // Si on a quatre image et pas de masque (images considérées comme pleines), le fond est inutile
-    if ( input_images_paths[0] && input_images_paths[1] && input_images_paths[2] && input_images_paths[3] &&
-            ! input_masks_paths[0] && ! input_masks_paths[1] && ! input_masks_paths[2] && ! input_masks_paths[3] )
-        
-        background_image_path=0;
-
-    if ( background_image_path ) {
-        background_image = FileImage::create_to_read(background_image_path);
-        if ( background_image == NULL ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unable to open background image: " + std::string ( background_image_path ) ;
+        if ( check_components ( inputi, i ) < 0 ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Unvalid components for the image " << input_images_paths[i];
             return -1;
         }
 
-        FileImage* background_mask = NULL;
+        input_images.push_back(inputi);
+    }
 
-        if ( background_mask_path ) {
-            background_mask = FileImage::create_to_read(background_mask_path);
-            if ( background_mask == NULL ) {
-                BOOST_LOG_TRIVIAL(error) <<  "Unable to open background mask: " + std::string ( background_mask_path ) ;
+    BOOST_LOG_TRIVIAL(debug) <<  "Nodata interpretation" ;
+    // Conversion string->int[] du paramètre nodata
+    int int_nodata[samplesperpixel];
+
+    std::vector<std::string> vector_nodata;
+    boost::split(vector_nodata, strnodata, boost::is_any_of(","));
+    if (vector_nodata.size() != samplesperpixel) {
+        BOOST_LOG_TRIVIAL(error) << "Error with option -n : a value for nodata is missing (" << vector_nodata.size() << " value(s) provided for " << samplesperpixel << " band output)";
+        BOOST_LOG_TRIVIAL(error) << output_format_provided;
+        return -1;
+    }
+    
+    for ( int i = 0; i < samplesperpixel; i++ ) {
+        int_nodata[i] = atoi ( vector_nodata.at(i).c_str() );
+    }
+
+    ExtendedCompoundImage* eci = ExtendedCompoundImage::create(input_images, int_nodata, 0);
+    if ( eci == NULL ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Unable to pack input images";
+        return -1;
+    }
+    ExtendedCompoundMask* ecm = new ExtendedCompoundMask(eci);
+
+    if (! eci->set_mask(ecm)) {
+        BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Image's pack";
+        return -1;
+    }
+
+    SubsampledImage* si = SubsampledImage::create(eci, 2, 2);
+    if ( si == NULL ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Unable to subsample input images";
+        return -1;
+    }
+
+    SubsampledImage* sm = SubsampledImage::create(ecm, 2, 2);
+    if ( si == NULL ) {
+        BOOST_LOG_TRIVIAL(error) <<  "Unable to subsample input masks";
+        return -1;
+    }
+
+    if (! si->set_mask(sm)) {
+        BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Subsampled image";
+        return -1;
+    }
+
+    *input_image = si;
+
+    // Si il manque une image ou qu'on a au moins un masque, on doit prendre en compte le fond
+    if ( (missing_image || with_mask) && ! background_image_path.empty() ) {
+        BOOST_LOG_TRIVIAL(debug) <<  "Add background" ;
+
+        FileImage* bgi = FileImage::create_to_read(background_image_path);
+        if ( bgi == NULL ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Unable to open background image: " << background_image_path ;
+            return -1;
+        }
+
+        if ( ! background_mask_path.empty() ) {
+            FileImage* bgm = FileImage::create_to_read(background_mask_path);
+            if ( bgm == NULL ) {
+                BOOST_LOG_TRIVIAL(error) <<  "Unable to open background mask: " << background_mask_path ;
                 return -1;
             }
+            if (! bgi->set_mask(bgm)) {
+                BOOST_LOG_TRIVIAL(error) <<  "Unable to associate background mask to background image: " << background_mask_path ;
+                return -1;
+            }
+
         }
 
         // Controle des composantes des images/masques
-        if ( check_components ( background_image, background_mask ) < 0 ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unvalid components for the background image " << std::string ( background_image_path ) << " (or its mask)" ;
+        BOOST_LOG_TRIVIAL(debug) <<  "Check" ;
+        if ( check_components ( bgi, -1 ) < 0 ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Unvalid components for the background image " << background_image_path << " (or its mask)" ;
             return -1;
         }
+
+        std::vector<Image*> with_bg = {bgi, si};
+        MergeImage* mi = MergeImage::create(with_bg, samplesperpixel, int_nodata, NULL, Merge::NORMAL );
+
+        MergeMask* merged_mask = new MergeMask ( mi );
+
+        if (! mi->set_mask(merged_mask)) {
+            BOOST_LOG_TRIVIAL(error) << "Cannot add mask to the Image's pack with background";
+            return -1;
+        }
+
+        *input_image = mi;
     }
 
     /********************** EN SORTIE ***********************/
 
-    output_image = NULL;
-    output_mask = NULL;
+    *output_image = NULL;
+    *output_mask = NULL;
 
-    output_image = FileImage::create_to_write(output_image_path, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
+    *output_image = FileImage::create_to_write(output_image_path, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
                                      samplesperpixel, sampleformat, photometric, compression);
     if ( output_image == NULL ) {
-        BOOST_LOG_TRIVIAL(error) <<  "Unable to open output image: " + std::string ( output_image_path ) ;
+        BOOST_LOG_TRIVIAL(error) <<  "Unable to open output image: " << output_image_path ;
         return -1;
     }
 
-    if ( output_mask_path ) {
-        output_mask = FileImage::create_to_write(output_mask_path, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
+    if ( ! output_mask_path.empty() ) {
+        *output_mask = FileImage::create_to_write(output_mask_path, BoundingBox<double>(0,0,0,0), -1, -1, width, height,
                                                    1, SampleFormat::UINT8, Photometric::MASK, Compression::DEFLATE);
-        if ( output_mask == NULL ) {
-            BOOST_LOG_TRIVIAL(error) <<  "Unable to open output mask: " + std::string ( output_mask_path ) ;
+        if ( *output_mask == NULL ) {
+            BOOST_LOG_TRIVIAL(error) <<  "Unable to open output mask: " << output_mask_path ;
             return -1;
         }
-
-        output_image->set_mask(output_mask);
     }
 
     return 0;
 }
 
+// uint8_t merge_weights[1024];
+// for ( int i = 0; i <= 1020; i++ ) merge_weights[i] = 255 - ( uint8_t ) round ( pow ( double ( 1020 - i ) /1020., local_gamma ) * 255. );
 
-/**
- * \~french
- * \brief Remplit un buffer à partir d'une ligne d'une image et d'un potentiel masque associé
- * \details les pixels qui ne contiennent pas de donnée sont remplis avec la valeur de nodata
- * \param[in] background_image image de fond à lire
- * \param[out] image_line ligne de l'image en sortie
- * \param[out] mask_line ligne du masque en sortie
- * \param[in] line indice de la ligne source dans l'image (et son masque)
- * \param[in] nodata valeur de nodata
- * \return code de retour, 0 si réussi, -1 sinon
- */
-template <typename T>
-int fill_background_line ( FileImage* background_image, T* image_line, uint8_t* mask_line, int line, T* nodata ) {
-    if ( background_image->get_line( image_line, line ) == 0 ) return 1;
-
-    if ( background_image->get_mask() != NULL ) {
-        if ( background_image->get_mask()->get_line( mask_line, line ) == 0 ) return 1;
-        for ( int w = 0; w < width; w++ ) {
-            if ( mask_line[w] == 0 ) {
-                memcpy ( image_line + w*samplesperpixel, nodata,samplesperpixel*sizeof ( T ) );
-            }
-        }
-    } else {
-        memset ( mask_line,255,width );
-    }
-
-    return 0;
-}
-
-/**
- * \~french
- * \brief Fusionne les 4 images en entrée et le masque de fond dans l'image de sortie
- * \details Dans le cas entier, lors de la moyenne des 4 pixels, on utilise une valeur de gamma qui éclaircit (si supérieure à 1.0) ou fonce (si inférieure à 1.0) le résultat. Si gamma vaut 1, le résultat est une moyenne classique. Les masques sont déjà associé aux objets FileImage, sauf pour l'image de sortie.
- * \param[in] background_image image de fond en entrée
- * \param[in] input_images images en entrée
- * \param[in] output_image image en sortie
- * \param[in] output_image éventuel masque en sortie
- * \return code de retour, 0 si réussi, -1 sinon
- */
-template <typename T>
-int merge ( FileImage* background_image, FileImage* input_images[2][2], FileImage* output_image, FileImage* output_mask, T* nodata ) {
-    
-    uint8 merge_weights[1024];
-    for ( int i = 0; i <= 1020; i++ ) merge_weights[i] = 255 - ( uint8 ) round ( pow ( double ( 1020 - i ) /1020., local_gamma ) * 255. );
-
-    int samples_count = width * samplesperpixel;
-    int left,right;
-
-    T background_image_line[samples_count];
-    uint8_t background_mask_line[width];
-
-    int data_count;
-    float pixel[samplesperpixel];
-
-    T input_images_line_1[2*samples_count];
-    uint8_t input_masks_line_1[2*width];
-
-    T input_images_line_2[2*samples_count];
-    uint8_t input_masks_line_2[2*width];
-
-    T output_image_line[samples_count];
-    uint8_t output_mask_line[width];
-
-    // ----------- initialisation du fond -----------
-    for ( int i = 0; i < samples_count ; i++ )
-        background_image_line[i] = nodata[i%samplesperpixel];
-
-    memset ( background_mask_line,0,width );
-
-    for ( int y = 0; y < 2; y++ ) {
-        if ( input_images[y][0] ) left = 0;
-        else left = width;
-        if ( input_images[y][1] ) right = 2*width;
-        else right = width;
-
-        for ( uint32 h = 0; h < height / 2; h++ ) {
-
-            int line = y * height / 2 + h;
-
-            // ------------------- le fond ------------------
-            if ( background_image )
-                if ( fill_background_line ( background_image, background_image_line, background_mask_line, line, nodata ) ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to read background line" ;
-                    return -1;
-                }
-
-            if ( left == right ) {
-                // On n'a pas d'image en entrée pour cette ligne, on stocke le fond et on passe à la suivante
-                if ( output_image->write_line( background_image_line, line ) == -1 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to write image's line " << line ;
-                    return -1;
-                }
-                if ( output_mask )
-                    if ( output_mask->write_line( background_mask_line, line ) == -1 ) {
-                        BOOST_LOG_TRIVIAL(error) <<  "Unable to write mask's line " << line ;
-                        return -1;
-                    }
-
-                continue;
-            }
-
-            // -- initialisation de la sortie avec le fond --
-            memcpy ( output_image_line,background_image_line,samples_count*sizeof ( T ) );
-            memcpy ( output_mask_line,background_mask_line,width );
-            
-            memset ( input_masks_line_1,255,2*width );
-            memset ( input_masks_line_2,255,2*width );
-
-            // ----------------- les images -----------------
-            // ------ et les éventuels masques --------------
-            if ( input_images[y][0] ) {
-                if ( input_images[y][0]->get_line( input_images_line_1, 2*h ) == 0 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                    return -1;
-                }
-                if ( input_images[y][0]->get_line( input_images_line_2, 2*h+1 ) == 0 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                    return -1;
-                }
-
-                if ( input_images[y][0]->get_mask() ) {
-                    if ( input_images[y][0]->get_mask()->get_line( input_masks_line_1, 2*h ) == 0 ) {
-                        BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                        return -1;
-                    }
-                    if ( input_images[y][0]->get_mask()->get_line( input_masks_line_2, 2*h+1 ) == 0 ) {
-                        BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                        return -1;
-                    }
-                }
-            }
-
-
-            if ( input_images[y][1] ) {
-                if ( input_images[y][1]->get_line( input_images_line_1 + samples_count, 2*h ) == 0 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                    return -1;
-                }
-                if ( input_images[y][1]->get_line( input_images_line_2 + samples_count, 2*h+1 ) == 0 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                    return -1;
-                }
-
-                if ( input_images[y][1]->get_mask() ) {
-                    if ( input_images[y][1]->get_mask()->get_line( input_masks_line_1 + width, 2*h ) == 0 ) {
-                        BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                        return -1;
-                    }
-                    if ( input_images[y][1]->get_mask()->get_line( input_masks_line_2 + width, 2*h+1 ) == 0 ) {
-                        BOOST_LOG_TRIVIAL(error) <<  "Unable to read data line" ;
-                        return -1;
-                    }
-                }
-            }
-
-            // ----------------- la moyenne ----------------
-            for ( int input_pixel = left, input_sample = left * samplesperpixel; input_pixel < right;
-                    input_pixel += 2, input_sample += 2*samplesperpixel ) {
-
-                memset ( pixel,0,samplesperpixel*sizeof ( float ) );
-                data_count = 0;
-
-                if ( input_masks_line_1[input_pixel] ) {
-                    data_count++;
-                    for ( int c = 0; c < samplesperpixel; c++ ) pixel[c] += input_images_line_1[input_sample+c];
-                }
-
-                if ( input_masks_line_1[input_pixel+1] ) {
-                    data_count++;
-                    for ( int c = 0; c < samplesperpixel; c++ ) pixel[c] += input_images_line_1[input_sample+samplesperpixel+c];
-                }
-
-                if ( input_masks_line_2[input_pixel] ) {
-                    data_count++;
-                    for ( int c = 0; c < samplesperpixel; c++ ) pixel[c] += input_images_line_2[input_sample+c];
-                }
-
-                if ( input_masks_line_2[input_pixel+1] ) {
-                    data_count++;
-                    for ( int c = 0; c < samplesperpixel; c++ ) pixel[c] += input_images_line_2[input_sample+samplesperpixel+c];
-                }
-
-                if ( data_count > 1 ) {
-                    output_mask_line[input_pixel/2] = 255;
-                    if ( sizeof ( T ) == 1 ) {
-                        // Cas entier : utilisation d'un gamma
-                        for ( int c = 0; c < samplesperpixel; c++ ) output_image_line[input_sample/2+c] = merge_weights[ ( int ) pixel[c]*4/data_count];
-                    } else if ( sizeof ( T ) == 4 ) {
-                        for ( int c = 0; c < samplesperpixel; c++ ) output_image_line[input_sample/2+c] = pixel[c]/ ( float ) data_count;
-                    }
-                }
-            }
-
-            if ( output_image->write_line( output_image_line, line ) == -1 ) {
-                BOOST_LOG_TRIVIAL(error) <<  "Unable to write image" ;
-                return -1;
-            }
-            if ( output_mask ) {
-                if ( output_mask->write_line( output_mask_line, line ) == -1 ) {
-                    BOOST_LOG_TRIVIAL(error) <<  "Unable to write mask" ;
-                    return -1;
-                }
-            }
-        }
-    }
-
-    return 0;
-}
 
 /**
  ** \~french
@@ -763,9 +642,7 @@ int merge ( FileImage* background_image, FileImage* input_images[2][2], FileImag
  * \return 0 if success, -1 otherwise
  */
 int main ( int argc, char* argv[] ) {
-    FileImage* input_images[2][2];
-    for ( int i = 0; i < 2; i++ ) for ( int j = 0; j < 2; j++ ) input_images[i][j] = NULL;
-    FileImage* background_image = NULL;
+    Image* input_image = NULL;
     FileImage* output_image = NULL;
     FileImage* output_mask = NULL;
 
@@ -794,61 +671,51 @@ int main ( int argc, char* argv[] ) {
         output_format_provided = true;
     }
 
-    BOOST_LOG_TRIVIAL(debug) <<  "Check images" ;
-    // Controle des images
-    if ( check_images ( input_images, background_image, output_image, output_mask ) < 0 ) {
-        if ( background_image ) delete background_image;
+    BOOST_LOG_TRIVIAL(debug) <<  "Load images" ;
+    // Chargement des images
+    if ( load_images ( &output_image, &output_mask, &input_image ) < 0 ) {
+        if (input_image) delete input_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
 
-        for ( int i = 0; i < 2; i++ ) for ( int j = 0; j < 2; j++ ) {
-            if ( input_images[i][j] ) {
-                delete input_images[i][j] ;
-            }
+        error ( "Echec chargement des images",-1 );
+    }
+
+    BOOST_LOG_TRIVIAL(debug) << "Save image";
+    // Enregistrement de l'image fusionnée
+    if (output_image->write_image(input_image) < 0) {
+        if (input_image) delete input_image;
+        if (output_image) delete output_image;
+        if (output_mask) delete output_mask;
+        CrsBook::clean_crss();
+        ProjPool::clean_projs();
+        proj_cleanup();
+        error("Echec enregistrement de l image finale", -1);
+    }
+
+    if (output_mask != NULL) {
+        BOOST_LOG_TRIVIAL(debug) << "Save mask";
+        // Enregistrement du masque fusionné, si demandé
+        if (output_mask->write_image(input_image->Image::get_mask()) < 0) {
+            if (input_image) delete input_image;
+            if (output_image) delete output_image;
+            if (output_mask) delete output_mask;
+            CrsBook::clean_crss();
+            ProjPool::clean_projs();
+            proj_cleanup();
+            error("Echec enregistrement du masque final", -1);
         }
-        error ( "Echec controle des images",-1 );
-    }
-
-    BOOST_LOG_TRIVIAL(debug) <<  "Nodata interpretation" ;
-    // Conversion string->int[] du paramètre nodata
-    int int_nodata[samplesperpixel];
-
-    std::vector<std::string> vector_nodata;
-    boost::split(vector_nodata, strnodata, boost::is_any_of(","));
-    if (vector_nodata.size() != samplesperpixel) error ( "Error with option -n : a value for nodata is missing",-1 );
-    
-    for ( int i = 0; i < samplesperpixel; i++ ) {
-        int_nodata[i] = atoi ( vector_nodata.at(i).c_str() );
-    }
-
-    // Cas MNT
-    if ( sampleformat == SampleFormat::FLOAT32 ) {
-        BOOST_LOG_TRIVIAL(debug) <<  "Merge images (float)" ;
-        float nodata[samplesperpixel];
-        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( float ) int_nodata[i];
-        if ( merge<float> ( background_image, input_images, output_image, output_mask, nodata ) < 0 ) error ( "Unable to merge float images",-1 );
-    }
-    // Cas images
-    else if ( sampleformat == SampleFormat::UINT8 ) {
-        BOOST_LOG_TRIVIAL(debug) <<  "Merge images (uint8_t)" ;
-        uint8_t nodata[samplesperpixel];
-        for ( int i = 0; i < samplesperpixel; i++ ) nodata[i] = ( uint8_t ) int_nodata[i];
-        if ( merge<uint8_t> ( background_image, input_images, output_image, output_mask, nodata ) < 0 ) error ( "Unable to merge integer images",-1 );
-    } else {
-        error ( "Unhandled sample's format",-1 );
     }
 
 
     BOOST_LOG_TRIVIAL(debug) <<  "Clean" ;
     
+    if (input_image) delete input_image;
+    if (output_image) delete output_image;
+    if (output_mask) delete output_mask;
+
     CrsBook::clean_crss();
     ProjPool::clean_projs();
     proj_cleanup();
-
-    if ( background_image ) delete background_image;
-
-    for ( int i = 0; i < 2; i++ ) for ( int j = 0; j < 2; j++ ) {
-        if ( input_images[i][j] ) delete input_images[i][j] ;
-    }
-
-    delete output_image;
 }
 

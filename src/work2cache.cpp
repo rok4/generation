@@ -35,14 +35,32 @@
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
 
-/**
- * \file work2cache.cpp
+ /**
+ * \page work2cache Commande work2cache
  * \author Institut national de l'information géographique et forestière
- * \~french \brief Formattage d'une image, respectant les spécifications d'une pyramide de données ROK4
- * \~english \brief Image formatting, according to ROK4 specifications
- * \~french \details Le serveur ROK4 s'attend à trouver dans une pyramide d'images des images au format TIFF, tuilées, potentiellement compressées, avec une en-tête de taille fixe (2048 octets). C'est cet outil, via l'utilisation de la classe TiledTiffWriter, qui va "mettre au normes" les images.
- *
- * Vision libimage : FileImage -> Rok4Image
+ * \~french \details Formattage d'une image, respectant les spécifications d'une pyramide de données ROK4
+ * \~english \details Image formatting, according to ROK4 specifications
+ * 
+ * \~french
+ * 
+ * Le serveur ROK4 s'attend à trouver dans une pyramide d'images des images au format TIFF, tuilées, potentiellement compressées, avec une en-tête de taille fixe (2048 octets).
+ * 
+ * \section diagram_work2cache Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{work2cache}
+ * 
+ */
+
+/** \file work2cache.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande work2cache
+ * 
+ * Le fonctionnement général est décrit dans la page \ref work2cache .
+ * 
+ * \~english
+ * \brief Implementation file for command mergeNtiff
+ * 
+ * Global operation is described into page \ref mergeNtiff .
  */
 
 #include <cstdlib>
@@ -61,7 +79,8 @@ namespace keywords = boost::log::keywords;
 
 #include <rok4/storage/Context.h>
 #include <rok4/image/file/FileImage.h>
-#include <rok4/utils/Cache.h>
+#include <rok4/utils/CurlPool.h>
+#include <rok4/utils/StoragePool.h>
 #include <rok4/image/file/Rok4Image.h>
 #include "config.h"
 

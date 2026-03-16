@@ -36,11 +36,15 @@
  */
 
 /**
- * \file manageNodata.cpp
+ * \page manageNodata Commande manageNodata
  * \author Institut national de l'information géographique et forestière
+ * \~ \image html manageNodata.png \~french
  * \~french \brief Gère la couleur des pixels de nodata
  * \~english \brief Manage nodata pixel color
- * \~french \details Cet outil est destiné à :
+ * 
+ * \~french
+ * 
+ * Cet outil est destiné à :
  * \li identifier les pixels de nodata à partir d'une valeur et d'une tolérance
  * \li modifier les pixels qui contiennent cette valeur
  * \li écrire le masque de données associé à l'image
@@ -61,18 +65,35 @@
  * \li la couleur cible (obligatoire) : les pixels de cette couleur sont ceux potentiellement considérés comme du nodata et modifiés. On peut également préciser une tolérance en complément de la valeur. L'option "touche les bords" précise la façon dont on identifie les pixels de nodata.
  * \li la nouvelle couleur de nodata : si elle n'est pas précisée, cela veut dire qu'on ne veut pas la modifier
  * \li la nouvelle couleur de donnée : si elle n'est pas précisée, cela veut dire qu'on ne veut pas la modifier
- *
- * \~ \image html manageNodata.png \~french
- *
+ * 
  * Cet outil n'est qu'une interface permettant l'utilisation de la classe TiffNodataManager, qui réalise réellement tous les traitements.
  *
  * Le nombre de canaux du fichier en entrée et les valeurs de nodata renseignée doivent être cohérents.
+ * 
+ * L'implémentation de cette commande se trouve dans le fichier \ref manageNodata.cpp
+ * 
+ * \section diagram_manageNodata Détails du chaînage des différentes classes d'image :
+ * 
+ * @mermaid{manageNodata}
+ * 
+ */
+
+/** \file manageNodata.cpp
+ * \~french
+ * \brief Fichier d'implémentation de la commande manageNodata
+ * 
+ * Le fonctionnement général est décrit dans la page \ref manageNodata .
+ * 
+ * \~english
+ * \brief Implementation file for command manageNodata
+ * 
+ * Global operation is described into page \ref manageNodata .
  */
 
 using namespace std;
 
 #include <rok4/enums/Format.h>
-#include <rok4/utils/Cache.h>
+#include <rok4/utils/ProjPool.h>
 #include <rok4/image/file/TiffNodataManager.h>
 
 #include <boost/log/core.hpp>
