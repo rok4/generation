@@ -6,6 +6,10 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/) et ce pr
 
 ## [Unreleased]
 
+### Added
+
+- Compilation des artefacts sous ubuntu 24.04 (compatible debian 13 / trixie)
+
 ## [5.1.0] - 2026-03-16
 
 ### Added

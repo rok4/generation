@@ -19,14 +19,14 @@ Installations système requises (listées dans le paquet debian, installées ave
 
 ```bash
 ### librok4-dev
-curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-base-x.y.z-ubuntu-20.04-amd64.deb
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-base-x.y.z-ubuntu-24.04-amd64.deb
 # or, with ceph driver
-curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-ceph-x.y.z-ubuntu-20.04-amd64.deb
+curl -o librok4-dev.deb https://github.com/rok4/core-cpp/releases/download/x.y.z/librok4-ceph-x.y.z-ubuntu-24.04-amd64.deb
 
 apt install ./librok4-dev.deb
 
 ### rok4-generation
-curl -o rok4-generation.deb https://github.com/rok4/generation/releases/download/x.y.z/rok4-generation-x.y.z-ubuntu-20.04-amd64.deb
+curl -o rok4-generation.deb https://github.com/rok4/generation/releases/download/x.y.z/rok4-generation-x.y.z-ubuntu-24.04-amd64.deb
 
 apt install ./rok4-generation.deb
 
