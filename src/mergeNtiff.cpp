@@ -583,7 +583,7 @@ int load_images(FileImage** output_image, FileImage** output_mask, std::vector<F
         }
 
         if ( ! style->handle(samplesperpixel) ) {
-            BOOST_LOG_TRIVIAL(error) << "Cannot apply this style for this channels number";
+            BOOST_LOG_TRIVIAL(error) << "Cannot apply this style for this channels number (" << samplesperpixel << ")";
             return -1;
         }
 
@@ -1132,10 +1132,17 @@ int main(int argc, char** argv) {
     BOOST_LOG_TRIVIAL(debug) << "Load";
     // Chargement des images
     if (load_images(&output_image, &output_mask, &input_images) < 0) {
-        if (merged_image) delete merged_image;
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
+        if (output_mask) delete output_mask;
+        for ( uint i=0; i < input_images.size(); i++ ) {
+            if (input_images[i]) delete input_images[i];
+        }
+        if (style_provided) {
+            delete style;
+        }
         CrsBook::clean_crss();
+        StoragePool::clean_storages();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec chargement des images", -1);
@@ -1144,10 +1151,13 @@ int main(int argc, char** argv) {
     BOOST_LOG_TRIVIAL(debug) << "Add converters";
     // Ajout des modules de conversion aux images en entrée
     if (add_converters(input_images) < 0) {
-        if (merged_image) delete merged_image;
+        for ( uint i=0; i < input_images.size(); i++ ) {
+            delete input_images[i];
+        }
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         CrsBook::clean_crss();
+        StoragePool::clean_storages();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec ajout des convertisseurs", -1);
@@ -1163,10 +1173,13 @@ int main(int argc, char** argv) {
 
         char* char_iterator = strtok(strnodata, ",");
         if (char_iterator == NULL) {
-            if (merged_image) delete merged_image;
+            for ( uint i=0; i < input_images.size(); i++ ) {
+                delete input_images[i];
+            }
             if (output_image) delete output_image;
             if (output_mask) delete output_mask;
             CrsBook::clean_crss();
+            StoragePool::clean_storages();
             ProjPool::clean_projs();
             proj_cleanup();
             error("Error with option -n : a value for nodata is missing", -1);
@@ -1176,10 +1189,13 @@ int main(int argc, char** argv) {
         for (int i = 1; i < samplesperpixel; i++) {
             char_iterator = strtok(NULL, ",");
             if (char_iterator == NULL) {
-                if (merged_image) delete merged_image;
+                for ( uint i=0; i < input_images.size(); i++ ) {
+                    delete input_images[i];
+                }
                 if (output_image) delete output_image;
                 if (output_mask) delete output_mask;
                 CrsBook::clean_crss();
+                StoragePool::clean_storages();
                 ProjPool::clean_projs();
                 proj_cleanup();
                 error("Error with option -n : one value per sample(" + std::to_string(samplesperpixel) + "), separate with comma", -1);
@@ -1191,11 +1207,14 @@ int main(int argc, char** argv) {
     BOOST_LOG_TRIVIAL(debug) << "Sort";
     // Tri des images
     if (sort_images(input_images, &sorted_input_images) < 0) {
-        if (merged_image) delete merged_image;
+        for ( uint i=0; i < input_images.size(); i++ ) {
+            delete input_images[i];
+        }
         if (output_image) delete output_image;
         if (output_mask) delete output_mask;
         delete[] nodata;
         CrsBook::clean_crss();
+        StoragePool::clean_storages();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec tri des images", -1);
@@ -1209,6 +1228,7 @@ int main(int argc, char** argv) {
         if (output_mask) delete output_mask;
         delete[] nodata;
         CrsBook::clean_crss();
+        StoragePool::clean_storages();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec fusion des paquets d images", -1);
@@ -1222,6 +1242,7 @@ int main(int argc, char** argv) {
         if (output_mask) delete output_mask;
         delete[] nodata;
         CrsBook::clean_crss();
+        StoragePool::clean_storages();
         ProjPool::clean_projs();
         proj_cleanup();
         error("Echec enregistrement de l image finale", -1);
@@ -1236,6 +1257,7 @@ int main(int argc, char** argv) {
             if (output_mask) delete output_mask;
             delete[] nodata;
             CrsBook::clean_crss();
+            StoragePool::clean_storages();
             ProjPool::clean_projs();
             proj_cleanup();
             error("Echec enregistrement du masque final", -1);
