@@ -1,0 +1,26 @@
+var merge4tiff_8cpp =
+[
+    [ "check_components", "merge4tiff_8cpp.html#a8758abb5bbe188c448348c5d80070c54", null ],
+    [ "error", "merge4tiff_8cpp.html#a73a01a8b4c56aecd53a68494735c8997", null ],
+    [ "load_images", "merge4tiff_8cpp.html#adbf8da1240ce45fbef71e338ff152c59", null ],
+    [ "main", "merge4tiff_8cpp.html#a0ddf1224851353fc92bfbff6f499fa97", null ],
+    [ "parse_command_line", "merge4tiff_8cpp.html#aa181995d7df5c31711c06ff2657f2f29", null ],
+    [ "usage", "merge4tiff_8cpp.html#a2ef30c42cbc289d899a8be5d2d8f77d0", null ],
+    [ "background_image_path", "merge4tiff_8cpp.html#a6b372fa720e0998f5178c508066b2f2e", null ],
+    [ "background_mask_path", "merge4tiff_8cpp.html#a130113b2db46e7fa2ef9d701536d85f5", null ],
+    [ "compression", "merge4tiff_8cpp.html#a527676d008d5ab68518a5cb08bdea98f", null ],
+    [ "debug_logger", "merge4tiff_8cpp.html#af6821053e4d347fd51eab031ea845c98", null ],
+    [ "height", "merge4tiff_8cpp.html#a6ad4f820ce4e75cda0686fcaad5168be", null ],
+    [ "help", "merge4tiff_8cpp.html#aecfcd8d5595d8ba1a38ef3c624d1186a", null ],
+    [ "input_images_paths", "merge4tiff_8cpp.html#a995f28204377c8e8a8a2f8a4a53ca740", null ],
+    [ "input_masks_paths", "merge4tiff_8cpp.html#af9c80891dd3be008141a0e496ade3974", null ],
+    [ "local_gamma", "merge4tiff_8cpp.html#aa223ec17b11c86c3789c8d5dfede36d6", null ],
+    [ "output_format_provided", "merge4tiff_8cpp.html#af294fa8ae3795d366057d7fe76b42395", null ],
+    [ "output_image_path", "merge4tiff_8cpp.html#ac1c7c42fc81d392ba84c5a36dd353562", null ],
+    [ "output_mask_path", "merge4tiff_8cpp.html#ac20af0084bfb741feb4a280628e31b39", null ],
+    [ "photometric", "merge4tiff_8cpp.html#a359c6187cecc9f7ec9abc9c638eff616", null ],
+    [ "sampleformat", "merge4tiff_8cpp.html#a1953f88f170fc37a3149ec6a40db2a98", null ],
+    [ "samplesperpixel", "merge4tiff_8cpp.html#a9a69b73601b508dd6658c226f42cb1b4", null ],
+    [ "strnodata", "merge4tiff_8cpp.html#ab1a544f4fcc4a7e2890dd79e7a14c938", null ],
+    [ "width", "merge4tiff_8cpp.html#a325272ddd9a962f05deb905101d25cbd", null ]
+];
