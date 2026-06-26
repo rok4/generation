@@ -14,7 +14,7 @@ set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "Installation location")
 set(BUILD_VERSION "0.0.0" CACHE STRING "Build version")
 set(DEBUG_BUILD 0 CACHE BOOL "Debug mode compilation")
 set(DOC_ENABLED 1 CACHE BOOL "Documentation compilation")
-set(CPACK_SYSTEM_NAME "ubuntu-20.04" CACHE STRING "Building OS, to deduce package format to generate")
+set(CPACK_SYSTEM_NAME "ubuntu-22.04" CACHE STRING "Building OS, to deduce package format to generate")
 set(CPACK_PACKAGE_NAME "rok4-generation" CACHE STRING "Package's name")
 
 set(VERSION ${BUILD_VERSION})
@@ -134,7 +134,7 @@ set(CPACK_PACKAGE_VENDOR "IGN")
 set(CPACK_PACKAGE_CONTACT "IGN - Géoportail (<tout_rdev@ign.fr>)")
 
 
-if(CPACK_SYSTEM_NAME AND CPACK_SYSTEM_NAME STREQUAL "ubuntu-20.04" OR CPACK_SYSTEM_NAME STREQUAL "ubuntu-22.04")
+if(CPACK_SYSTEM_NAME AND CPACK_SYSTEM_NAME STREQUAL "ubuntu-20.04" OR CPACK_SYSTEM_NAME STREQUAL "ubuntu-22.04" OR CPACK_SYSTEM_NAME STREQUAL "ubuntu-24.04")
     set(CPACK_GENERATOR "DEB;TGZ")
 
     # Debian

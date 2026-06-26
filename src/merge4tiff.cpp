@@ -517,6 +517,9 @@ int load_images ( FileImage** output_image, FileImage** output_mask, Image **inp
     std::vector<std::string> vector_nodata;
     boost::split(vector_nodata, strnodata, boost::is_any_of(","));
     if (vector_nodata.size() != samplesperpixel) {
+        for ( uint i=0; i < input_images.size(); i++ ) {
+            delete input_images[i];
+        }
         BOOST_LOG_TRIVIAL(error) << "Error with option -n : a value for nodata is missing (" << vector_nodata.size() << " value(s) provided for " << samplesperpixel << " band output)";
         BOOST_LOG_TRIVIAL(error) << output_format_provided;
         return -1;
